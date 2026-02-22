@@ -1,0 +1,26 @@
+{
+  "id": "{{SKILL_ID}}",
+  "name": "{{SKILL_NAME}}",
+  "version": "0.1.0",
+  "description": "{{SKILL_DESCRIPTION}}",
+  "author": "{{SKILL_AUTHOR}}",
+  "capabilities": {
+    "network": true
+  },
+  "tools": [
+    {
+      "name": "{{SKILL_ID}}_fetch",
+      "description": "Fetches data from a URL",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL to fetch"
+          }
+        },
+        "required": ["url"]
+      }
+    }
+  ]
+}

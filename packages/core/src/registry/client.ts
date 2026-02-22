@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import type { RegistryConfig, RegistryEntry, RegistrySearchParams } from './types.js'
+import type { RegistryConfig, RegistryEntry, RegistrySearchParams, SkillDetail } from './types.js'
 
 const DEFAULT_CONFIG: RegistryConfig = {
 	registryUrl: 'https://raw.githubusercontent.com/openmotoko/skill-registry/main/index.json',
@@ -100,6 +100,22 @@ export class RegistryClient {
 		} catch {
 			return null
 		}
+	}
+
+	async getSkillDetail(id: string): Promise<SkillDetail> {
+		const res = await fetch(`${this.config.registryUrl.replace('/index.json', '')}/api/skills/${id}`)
+		if (!res.ok) throw new Error(`Failed to fetch skill detail: ${res.status}`)
+		return (await res.json()) as SkillDetail
+	}
+
+	async rate(skillId: string, userId: string, stars: number, comment?: string): Promise<void> {
+		const baseUrl = this.config.registryUrl.replace('/index.json', '')
+		const res = await fetch(`${baseUrl}/api/skills/${skillId}/rate`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ userId, stars, comment: comment ?? '' }),
+		})
+		if (!res.ok) throw new Error(`Failed to rate skill: ${res.status}`)
 	}
 
 	private writeDiskCache(data: CacheData): void {

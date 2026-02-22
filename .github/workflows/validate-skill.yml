@@ -46,6 +46,49 @@ jobs:
             fi
           done
 
+      - name: Security scan
+        run: |
+          for dir in skills/*/; do
+            if [ -f "$dir/manifest.json" ]; then
+              echo "=== Security scan: $dir ==="
+              manifest="$dir/manifest.json"
+
+              has_shell=$(node -e "const m=JSON.parse(require('fs').readFileSync('$manifest','utf-8'));console.log(m.capabilities?.shell===true)")
+              has_fs=$(node -e "const m=JSON.parse(require('fs').readFileSync('$manifest','utf-8'));console.log(m.capabilities?.filesystem?.enabled===true)")
+              has_net=$(node -e "const m=JSON.parse(require('fs').readFileSync('$manifest','utf-8'));console.log(m.capabilities?.network===true)")
+
+              for f in $(find "$dir" -name '*.ts' -o -name '*.js' | grep -v node_modules); do
+                if grep -qP '\beval\s*\(' "$f"; then
+                  echo "CRITICAL: eval() found in $f"
+                  exit 1
+                fi
+                if grep -qP '\bnew\s+Function\s*\(' "$f"; then
+                  echo "CRITICAL: new Function() found in $f"
+                  exit 1
+                fi
+                if grep -qP "from\s+['\"]node:child_process['\"]|require\s*\(\s*['\"]child_process['\"]\s*\)" "$f"; then
+                  if [ "$has_shell" != "true" ]; then
+                    echo "ERROR: $f uses child_process without shell capability"
+                    exit 1
+                  fi
+                fi
+                if grep -qP "from\s+['\"]node:fs['\"]|from\s+['\"]fs['\"]|from\s+['\"]node:fs/promises['\"]" "$f"; then
+                  if [ "$has_fs" != "true" ]; then
+                    echo "ERROR: $f uses fs without filesystem capability"
+                    exit 1
+                  fi
+                fi
+              done
+
+              if [ -f "$dir/package.json" ]; then
+                cd "$dir"
+                npx npm-audit-ci --moderate 2>/dev/null || echo "WARN: npm audit issues in $dir"
+                cd -
+              fi
+              echo "PASS: $dir"
+            fi
+          done
+
       - name: Build skills
         run: |
           for dir in skills/*/; do

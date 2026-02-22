@@ -1,0 +1,31 @@
+{
+  "id": "{{SKILL_ID}}",
+  "name": "{{SKILL_NAME}}",
+  "version": "0.1.0",
+  "description": "{{SKILL_DESCRIPTION}}",
+  "author": "{{SKILL_AUTHOR}}",
+  "capabilities": {
+    "network": true,
+    "shell": true
+  },
+  "tools": [
+    {
+      "name": "{{SKILL_ID}}_browse",
+      "description": "Opens a URL in a headless browser and returns the page content",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL to browse"
+          },
+          "selector": {
+            "type": "string",
+            "description": "Optional CSS selector to extract specific content"
+          }
+        },
+        "required": ["url"]
+      }
+    }
+  ]
+}

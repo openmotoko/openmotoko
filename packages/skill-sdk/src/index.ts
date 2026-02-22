@@ -1,3 +1,9 @@
+export {
+	formatError,
+	formatToolResult,
+	parseJsonInput,
+	validateInput,
+} from './helpers.js'
 export type {
 	IPCErrorMessage,
 	IPCExecuteMessage,
@@ -9,6 +15,7 @@ export type {
 } from './ipc.js'
 export type { Skill } from './skill.js'
 export { defineSkill } from './skill.js'
+export { SkillTestHarness } from './testing.js'
 export type {
 	SkillCapabilities,
 	SkillContext,

@@ -96,6 +96,32 @@ export interface ArtifactUpdatedEvent {
 	version: number
 }
 
+export interface AgentSpawnedEvent {
+	type: 'agent:spawned'
+	agentId: string
+	parentId: string
+	name: string
+	model: string
+}
+
+export interface AgentCompletedEvent {
+	type: 'agent:completed'
+	agentId: string
+	parentId: string
+	name: string
+	output: string
+	durationMs: number
+}
+
+export interface AgentFailedEvent {
+	type: 'agent:failed'
+	agentId: string
+	parentId: string
+	name: string
+	output: string
+	durationMs: number
+}
+
 export type AgentEvent =
 	| MessageReceivedEvent
 	| MessageSentEvent
@@ -111,6 +137,9 @@ export type AgentEvent =
 	| SchedulerFailedEvent
 	| ArtifactCreatedEvent
 	| ArtifactUpdatedEvent
+	| AgentSpawnedEvent
+	| AgentCompletedEvent
+	| AgentFailedEvent
 
 export type AgentEventType = AgentEvent['type']
 
@@ -131,4 +160,7 @@ export interface AgentEventMap {
 	'scheduler:failed': SchedulerFailedEvent
 	'artifact:created': ArtifactCreatedEvent
 	'artifact:updated': ArtifactUpdatedEvent
+	'agent:spawned': AgentSpawnedEvent
+	'agent:completed': AgentCompletedEvent
+	'agent:failed': AgentFailedEvent
 }

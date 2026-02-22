@@ -11,7 +11,36 @@ export interface RegistryEntry {
 	downloads: number
 	verified: boolean
 	tags: string[]
+	rating: number
+	ratingCount: number
+	securityStatus: 'passed' | 'failed' | 'pending' | 'unknown'
 	publishedAt: number
+}
+
+export interface SkillDetail extends RegistryEntry {
+	ratings: SkillRatingEntry[]
+	securityScan: SecurityScanEntry | null
+}
+
+export interface SkillRatingEntry {
+	id: string
+	userId: string
+	stars: number
+	comment: string
+	createdAt: number
+}
+
+export interface SecurityScanEntry {
+	passed: boolean
+	issues: SecurityIssue[]
+	scannedAt: number
+}
+
+export interface SecurityIssue {
+	severity: 'critical' | 'high' | 'medium' | 'low'
+	rule: string
+	message: string
+	file?: string
 }
 
 export interface RegistrySearchParams {

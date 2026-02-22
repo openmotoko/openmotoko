@@ -1,0 +1,19 @@
+{
+	"name": "create-openmotoko-skill",
+	"version": "0.1.0",
+	"type": "module",
+	"bin": {
+		"create-openmotoko-skill": "dist/index.js"
+	},
+	"scripts": {
+		"build": "tsc -b"
+	},
+	"dependencies": {
+		"@inquirer/prompts": "^8.2.1",
+		"chalk": "^5.6.2"
+	},
+	"devDependencies": {
+		"@types/node": "^22.13.4",
+		"typescript": "^5.8.3"
+	}
+}

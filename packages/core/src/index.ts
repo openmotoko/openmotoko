@@ -1,5 +1,6 @@
 export { nanoid } from 'nanoid'
 export * from './agent/index.js'
+export * from './agents/index.js'
 export * from './artifacts/index.js'
 export { BudgetEnforcer, budgetEnforcer } from './budget/index.js'
 export * from './channels/index.js'

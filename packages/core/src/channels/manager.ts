@@ -1,5 +1,6 @@
 import { eventBus } from '../events/bus.js'
 import { PairingManager } from './pairing.js'
+import type { ChannelPlugin } from './plugin.js'
 import { ChannelRouter } from './router.js'
 import type {
 	ChannelAdapter,
@@ -150,6 +151,15 @@ export class ChannelManager {
 	removeChannel(channelId: string): void {
 		this.channels.delete(channelId)
 		this.router.unregisterAdapter(channelId)
+	}
+
+	async addPlugin(
+		plugin: ChannelPlugin,
+		config: ChannelAdapterConfig,
+		options?: { groupConfig?: Partial<GroupConfig>; dmPolicy?: Partial<DmPolicy> },
+	): Promise<void> {
+		const adapter = plugin.create(config)
+		await this.addChannel(adapter, config, options)
 	}
 }
 

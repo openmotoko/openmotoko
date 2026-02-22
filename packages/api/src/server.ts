@@ -4,7 +4,9 @@ import corsPlugin from './plugins/cors.js'
 import rateLimitPlugin from './plugins/rate-limit.js'
 import tailscaleAuthPlugin from './plugins/tailscale-auth.js'
 import registerWebSocket from './plugins/websocket.js'
+import agentRoutes from './routes/agents.js'
 import activityRoutes from './routes/activity.js'
+import channelPluginRoutes from './routes/channel-plugins.js'
 import artifactRoutes from './routes/artifacts.js'
 import authRoutes from './routes/auth.js'
 import channelRoutes from './routes/channels.js'
@@ -48,6 +50,8 @@ export async function createServer() {
 		await scope.register(schedulerRoutes)
 		await scope.register(artifactRoutes)
 		await scope.register(tailscaleRoutes)
+		await scope.register(agentRoutes)
+		await scope.register(channelPluginRoutes)
 	})
 
 	return fastify

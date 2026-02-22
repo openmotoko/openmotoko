@@ -1,0 +1,24 @@
+{
+  "id": "{{SKILL_ID}}",
+  "name": "{{SKILL_NAME}}",
+  "version": "0.1.0",
+  "description": "{{SKILL_DESCRIPTION}}",
+  "author": "{{SKILL_AUTHOR}}",
+  "capabilities": {},
+  "tools": [
+    {
+      "name": "{{SKILL_ID}}_action",
+      "description": "Performs the main action",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "input": {
+            "type": "string",
+            "description": "The input to process"
+          }
+        },
+        "required": ["input"]
+      }
+    }
+  ]
+}

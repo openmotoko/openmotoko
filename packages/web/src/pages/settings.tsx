@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Hash, Save, Send, Settings, Wifi } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { ChannelPluginPanel } from '../components/settings/channel-plugin-panel'
 import { TailscalePanel } from '../components/settings/tailscale-panel'
 import { WebhookList } from '../components/webhooks/webhook-list'
 import type { Channel, Settings as SettingsType } from '../lib/api'
@@ -231,6 +232,10 @@ export function SettingsPage() {
 								<p className="text-xs font-ui text-static">No channels configured</p>
 							</div>
 						)}
+					</SettingsSection>
+
+					<SettingsSection title="Channel Plugins">
+						<ChannelPluginPanel />
 					</SettingsSection>
 
 					<SettingsSection title="Tailscale">

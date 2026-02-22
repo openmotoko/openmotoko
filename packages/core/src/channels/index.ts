@@ -19,3 +19,6 @@ export type {
 	OutboundMessage,
 	PairingRequest,
 } from './types.js'
+export type { ChannelPlugin, ChannelPluginMeta } from './plugin.js'
+export { ChannelPluginRegistry, getChannelPluginRegistry } from './plugin.js'
+export { loadChannelPlugin, loadChannelPlugins } from './plugin-loader.js'

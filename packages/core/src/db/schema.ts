@@ -100,6 +100,25 @@ export const costLog = sqliteTable('cost_log', {
 		.$defaultFn(() => Date.now()),
 })
 
+export const agents = sqliteTable('agents', {
+	id: text()
+		.primaryKey()
+		.$defaultFn(() => nanoid()),
+	parentId: text(),
+	name: text().notNull(),
+	role: text().notNull(),
+	model: text().notNull(),
+	systemPrompt: text().notNull(),
+	status: text().notNull().default('idle'),
+	budget: real().notNull().default(1.0),
+	spent: real().notNull().default(0),
+	conversationId: text().notNull(),
+	createdAt: integer()
+		.notNull()
+		.$defaultFn(() => Date.now()),
+	completedAt: integer(),
+})
+
 export type Conversation = typeof conversations.$inferSelect
 export type NewConversation = typeof conversations.$inferInsert
 export type Message = typeof messages.$inferSelect
@@ -114,3 +133,5 @@ export type Setting = typeof settings.$inferSelect
 export type NewSetting = typeof settings.$inferInsert
 export type CostLogEntry = typeof costLog.$inferSelect
 export type NewCostLogEntry = typeof costLog.$inferInsert
+export type Agent = typeof agents.$inferSelect
+export type NewAgent = typeof agents.$inferInsert

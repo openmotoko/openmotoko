@@ -20,6 +20,8 @@ COPY packages/channels/imessage/package.json packages/channels/imessage/
 COPY packages/channels/google-chat/package.json packages/channels/google-chat/
 COPY packages/channels/teams/package.json packages/channels/teams/
 COPY packages/channels/webchat/package.json packages/channels/webchat/
+COPY packages/registry-server/package.json packages/registry-server/
+COPY packages/create-skill/package.json packages/create-skill/
 
 RUN pnpm install --frozen-lockfile
 
@@ -30,6 +32,8 @@ COPY packages/skill-sdk/ packages/skill-sdk/
 COPY packages/skills/ packages/skills/
 COPY packages/cli/ packages/cli/
 COPY packages/channels/ packages/channels/
+COPY packages/registry-server/ packages/registry-server/
+COPY packages/create-skill/ packages/create-skill/
 
 RUN pnpm -r build
 RUN pnpm --filter @openmotoko/web build
@@ -61,6 +65,8 @@ COPY --from=build /app/packages/channels/ packages/channels/
 COPY --from=build /app/packages/cli/dist/ packages/cli/dist/
 COPY --from=build /app/packages/cli/package.json packages/cli/
 COPY --from=build /app/packages/web/dist/ packages/web/dist/
+COPY --from=build /app/packages/registry-server/dist/ packages/registry-server/dist/
+COPY --from=build /app/packages/registry-server/package.json packages/registry-server/
 
 RUN mkdir -p /app/data && chown -R openmotoko:openmotoko /app/data
 

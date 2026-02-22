@@ -1,9 +1,12 @@
 export { eventBus } from './bus.js'
 export type {
+	AgentCompletedEvent,
 	AgentEvent,
 	AgentEventByType,
 	AgentEventMap,
 	AgentEventType,
+	AgentFailedEvent,
+	AgentSpawnedEvent,
 	ArtifactCreatedEvent,
 	ArtifactUpdatedEvent,
 	ChannelMessageEvent,

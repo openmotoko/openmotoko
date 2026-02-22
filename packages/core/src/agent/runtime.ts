@@ -1,6 +1,8 @@
 import { resolve } from 'node:path'
 import type { SkillManifest, ToolDefinition } from '@openmotoko/skill-sdk'
 import { skillManifestSchema } from '@openmotoko/skill-sdk'
+import { AgentManager, getAgentManager } from '../agents/manager.js'
+import type { SpawnOptions } from '../agents/types.js'
 import type { CreateArtifactInput, UpdateArtifactInput } from '../artifacts/index.js'
 import { artifactManager } from '../artifacts/index.js'
 import { getDb } from '../db/client.js'
@@ -146,10 +148,59 @@ export class AgentRuntime {
 		]
 	}
 
+	private getAgentToolDefinitions(): ToolDefinition[] {
+		return [
+			{
+				name: 'spawn_agent',
+				description:
+					'Spawn a sub-agent to handle a specialized task in parallel. Returns the agent ID.',
+				inputSchema: {
+					type: 'object',
+					properties: {
+						task: {
+							type: 'string',
+							description: 'The specific task for the sub-agent to complete',
+						},
+						name: {
+							type: 'string',
+							description: 'A short name for the sub-agent',
+						},
+						model: {
+							type: 'string',
+							description: 'Model alias to use (fast, balanced, smart). Defaults to fast.',
+						},
+						budget: {
+							type: 'number',
+							description: 'Maximum budget in USD for this sub-agent. Defaults to 1.0.',
+						},
+					},
+					required: ['task'],
+				},
+			},
+			{
+				name: 'wait_agents',
+				description:
+					'Wait for one or more sub-agents to complete and return their results.',
+				inputSchema: {
+					type: 'object',
+					properties: {
+						agentIds: {
+							type: 'array',
+							items: { type: 'string' },
+							description: 'Array of agent IDs to wait for',
+						},
+					},
+					required: ['agentIds'],
+				},
+			},
+		]
+	}
+
 	getToolDefinitions(): ToolDefinition[] {
 		return [
 			...[...this.toolMap.values()].map((m) => m.toolDef),
 			...this.getArtifactToolDefinitions(),
+			...this.getAgentToolDefinitions(),
 		]
 	}
 
@@ -186,7 +237,7 @@ export class AgentRuntime {
 		return JSON.stringify({ success: true, artifact })
 	}
 
-	async executeToolCall(toolName: string, input: unknown): Promise<string> {
+	async executeToolCall(toolName: string, input: unknown, conversationId?: string): Promise<string> {
 		if (toolName === 'create_artifact' || toolName === 'update_artifact') {
 			try {
 				return await this.handleArtifactToolCall(toolName, input as Record<string, unknown>)
@@ -194,6 +245,34 @@ export class AgentRuntime {
 				return JSON.stringify({
 					success: false,
 					error: err instanceof Error ? err.message : 'Artifact tool execution failed',
+				})
+			}
+		}
+
+		if (toolName === 'spawn_agent') {
+			try {
+				const opts = input as SpawnOptions
+				const manager = getAgentManager(this.getRouter())
+				const agentId = await manager.spawn('primary', opts, conversationId ?? 'default')
+				return JSON.stringify({ success: true, agentId })
+			} catch (err) {
+				return JSON.stringify({
+					success: false,
+					error: err instanceof Error ? err.message : 'Failed to spawn agent',
+				})
+			}
+		}
+
+		if (toolName === 'wait_agents') {
+			try {
+				const { agentIds } = input as { agentIds: string[] }
+				const manager = getAgentManager(this.getRouter())
+				const results = await manager.waitForAll(agentIds)
+				return JSON.stringify({ success: true, results })
+			} catch (err) {
+				return JSON.stringify({
+					success: false,
+					error: err instanceof Error ? err.message : 'Failed to wait for agents',
 				})
 			}
 		}
