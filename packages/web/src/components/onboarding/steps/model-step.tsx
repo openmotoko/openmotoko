@@ -152,7 +152,7 @@ export function ModelStep({ data, onChange }: StepProps) {
 		<div className="space-y-6">
 			<div>
 				<h2 className="font-display font-bold text-lg text-chrome mb-1">Pick a default model</h2>
-				<p className="text-sm font-body text-static">
+				<p className="text-sm font-body text-chrome/60">
 					You can change this per conversation anytime.
 				</p>
 			</div>
@@ -186,7 +186,7 @@ export function ModelStep({ data, onChange }: StepProps) {
 									{m.tag}
 								</span>
 							</div>
-							<p className="text-xs font-body text-static mb-3">{m.desc}</p>
+							<p className="text-xs font-body text-chrome/50 mb-3">{m.desc}</p>
 							<div className="flex items-center gap-6">
 								<div className="flex items-center gap-2">
 									<span className="text-[10px] font-ui uppercase text-static">Speed</span>

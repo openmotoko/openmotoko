@@ -4,6 +4,12 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
+	resolve: {
+		dedupe: ['react', 'react-dom'],
+	},
+	optimizeDeps: {
+		include: ['react', 'react-dom'],
+	},
 	server: {
 		port: 5173,
 		proxy: {

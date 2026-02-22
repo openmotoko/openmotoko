@@ -34,7 +34,7 @@ export function WelcomeStep({ data, onComplete }: WelcomeStepProps) {
 			</motion.div>
 
 			<h2 className="font-display font-bold text-2xl text-chrome mb-2">You are all set</h2>
-			<p className="text-sm font-body text-static mb-8 max-w-md">
+			<p className="text-sm font-body text-chrome/60 mb-8 max-w-md">
 				Your agent is configured and ready. Start a conversation or fine-tune settings anytime.
 			</p>
 

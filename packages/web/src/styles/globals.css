@@ -9,7 +9,7 @@
 	--color-pulse: #FF2D78;
 	--color-alive: #39FF14;
 	--color-chrome: #E8F4F8;
-	--color-static: #4A6070;
+	--color-static: #7A92A4;
 
 	--color-ghost-hover: #33F3FF;
 	--color-ghost-muted: rgba(0, 240, 255, 0.15);
@@ -46,7 +46,7 @@
 	--pulse: #ff2d78;
 	--alive: #39ff14;
 	--chrome: #e8f4f8;
-	--static: #4a6070;
+	--static: #7a92a4;
 
 	--void-rgb: 10 14 26;
 	--shell-rgb: 13 21 38;
@@ -56,7 +56,7 @@
 	--pulse-rgb: 255 45 120;
 	--alive-rgb: 57 255 20;
 	--chrome-rgb: 232 244 248;
-	--static-rgb: 74 96 112;
+	--static-rgb: 122 146 164;
 
 	--ghost-hover: #33f3ff;
 	--ghost-muted: rgba(0, 240, 255, 0.15);
@@ -75,8 +75,8 @@
 	--alive-muted: rgba(57, 255, 20, 0.15);
 	--alive-border: rgba(57, 255, 20, 0.25);
 
-	--border-default: rgba(74, 96, 112, 0.2);
-	--border-hover: rgba(74, 96, 112, 0.4);
+	--border-default: rgba(122, 146, 164, 0.2);
+	--border-hover: rgba(122, 146, 164, 0.4);
 
 	--overlay: rgba(10, 14, 26, 0.8);
 	--glass: rgba(13, 21, 38, 0.6);
@@ -156,15 +156,15 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-	background: rgba(74, 96, 112, 0.3);
+	background: rgba(122, 146, 164, 0.3);
 	border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: rgba(74, 96, 112, 0.5);
+	background: rgba(122, 146, 164, 0.5);
 }
 
-scrollbar-color: rgba(74, 96, 112, 0.3) transparent;
+scrollbar-color: rgba(122, 146, 164, 0.3) transparent;
 scrollbar-width: thin;
 
 *:focus-visible {

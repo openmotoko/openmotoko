@@ -50,7 +50,7 @@ export function ChannelStep(_props: StepProps) {
 		<div className="space-y-6">
 			<div>
 				<h2 className="font-display font-bold text-lg text-chrome mb-1">Connect channels</h2>
-				<p className="text-sm font-body text-static">
+				<p className="text-sm font-body text-chrome/60">
 					Reach your agent from any messaging platform. This is optional.
 				</p>
 			</div>
@@ -100,8 +100,8 @@ export function ChannelStep(_props: StepProps) {
 					<span className="text-xs font-ui font-bold text-ghost uppercase tracking-wider block mb-2">
 						{active.name} Setup
 					</span>
-					<p className="text-xs font-body text-static leading-relaxed">{active.hint}</p>
-					<p className="text-xs font-body text-static/60 mt-2">
+				<p className="text-xs font-body text-chrome/50 leading-relaxed">{active.hint}</p>
+				<p className="text-xs font-body text-chrome/35 mt-2">
 						Configure in Settings after completing setup.
 					</p>
 				</motion.div>

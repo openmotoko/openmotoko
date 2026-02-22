@@ -25,7 +25,7 @@ export function ProviderStep({ data, onChange }: StepProps) {
 				<h2 className="font-display font-bold text-lg text-chrome mb-1">
 					Choose your LLM provider
 				</h2>
-				<p className="text-sm font-body text-static">
+				<p className="text-sm font-body text-chrome/60">
 					Select where your AI models run. You can add more later in Settings.
 				</p>
 			</div>
@@ -58,7 +58,7 @@ export function ProviderStep({ data, onChange }: StepProps) {
 									{p.name}
 								</span>
 							</div>
-							<p className="text-xs font-body text-static leading-relaxed">{p.desc}</p>
+							<p className="text-xs font-body text-chrome/50 leading-relaxed">{p.desc}</p>
 						</motion.button>
 					)
 				})}

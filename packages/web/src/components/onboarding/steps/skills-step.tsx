@@ -28,7 +28,7 @@ export function SkillsStep({ data, onChange }: StepProps) {
 		<div className="space-y-6">
 			<div>
 				<h2 className="font-display font-bold text-lg text-chrome mb-1">Enable skills</h2>
-				<p className="text-sm font-body text-static">
+				<p className="text-sm font-body text-chrome/60">
 					Skills give your agent capabilities. All are enabled by default.
 				</p>
 			</div>
