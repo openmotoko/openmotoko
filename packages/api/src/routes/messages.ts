@@ -1,11 +1,11 @@
-import type { LLMMessage, LLMResponse, RouterConfig } from '@openmotoko/core'
+import type { LLMMessage, LLMResponse } from '@openmotoko/core'
 import {
 	activity,
 	conversations,
 	costLog,
 	eventBus,
+	getAgentRuntime,
 	getDb,
-	LLMRouter,
 	messages,
 	nanoid,
 } from '@openmotoko/core'
@@ -22,23 +22,6 @@ const sendMessageSchema = z.object({
 const idParamsSchema = z.object({
 	id: z.string().min(1),
 })
-
-let router: LLMRouter | null = null
-
-function getRouter(): LLMRouter {
-	if (!router) {
-		const config: RouterConfig = {
-			providers: [],
-			modelAliases: {
-				fast: { provider: 'anthropic', model: 'claude-3-5-haiku-20241022' },
-				smart: { provider: 'anthropic', model: 'claude-sonnet-4-20250514' },
-				balanced: { provider: 'openai', model: 'gpt-4o' },
-			},
-		}
-		router = new LLMRouter(config)
-	}
-	return router
-}
 
 interface DbMessage {
 	role: string
@@ -122,11 +105,12 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 
 			const model = requestModel ?? conversation.model ?? 'smart'
 			const llmMessages = buildMessages(conversation.systemPrompt, existingMessages)
+			const runtime = getAgentRuntime()
 
 			let response: LLMResponse | undefined
 			let loopCount = 0
 			const maxLoops = 10
-			const llmRouter = getRouter()
+			const llmRouter = runtime.getRouter()
 
 			while (loopCount < maxLoops) {
 				loopCount++
@@ -202,9 +186,8 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 						args: toolCall.input as Record<string, unknown>,
 					})
 
-					const toolOutput = JSON.stringify({
-						error: `Tool ${toolCall.name} execution not yet connected to skill runtime`,
-					})
+					const skillId = runtime.findSkillForTool(toolCall.name)
+					const toolOutput = await runtime.executeToolCall(toolCall.name, toolCall.input)
 
 					eventBus.emit('tool:result', {
 						type: 'tool:result',
@@ -212,6 +195,18 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 						toolName: toolCall.name,
 						result: toolOutput,
 					})
+
+					if (skillId) {
+						await db.insert(activity).values({
+							id: nanoid(),
+							type: 'skill:activated',
+							conversationId,
+							channel: null,
+							skillId,
+							data: JSON.stringify({ tool: toolCall.name }),
+							createdAt: Date.now(),
+						})
+					}
 
 					llmMessages.push({
 						role: 'tool',

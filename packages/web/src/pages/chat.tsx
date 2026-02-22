@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion'
-import { Bot } from 'lucide-react'
+import { Bot, SlidersHorizontal } from 'lucide-react'
 import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { InputBar } from '../components/chat/input-bar'
 import { MessageBubble } from '../components/chat/message-bubble'
+import { ContextPanel } from '../components/context/context-panel'
 import { useConversation, useCreateConversation, useSendMessage } from '../hooks/use-conversations'
 import type { Message } from '../lib/api'
 import { useStore } from '../lib/store'
@@ -97,8 +98,14 @@ export function ChatPage() {
 	const { data: conversation } = useConversation(id)
 	const sendMessage = useSendMessage()
 	const createConversation = useCreateConversation()
-	const { streamingContent, streamingToolCalls, isAgentThinking, setActiveConversation } =
-		useStore()
+	const {
+		streamingContent,
+		streamingToolCalls,
+		isAgentThinking,
+		setActiveConversation,
+		contextPanelOpen,
+		toggleContextPanel,
+	} = useStore()
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
 
@@ -140,40 +147,59 @@ export function ChatPage() {
 	}
 
 	return (
-		<div className="flex flex-col h-full">
-			{conversation && (
-				<div className="flex items-center gap-3 px-6 py-3 border-b border-[var(--border-default)] bg-shell/30 backdrop-blur-sm flex-shrink-0">
-					<h1 className="font-display font-semibold text-sm text-chrome truncate">
-						{conversation.title || 'New Conversation'}
-					</h1>
-					{conversation.model && (
-						<span className="text-xs font-code text-ghost/70 cut-chevron bg-ghost-muted px-3 py-0.5 flex-shrink-0">
-							{conversation.model}
-						</span>
-					)}
+		<div className="flex h-full">
+			<div className="flex flex-col flex-1 min-w-0">
+				{conversation && (
+					<div className="flex items-center gap-3 px-6 py-3 border-b border-(--border-default) bg-shell/30 backdrop-blur-sm shrink-0">
+						<h1 className="font-display font-semibold text-sm text-chrome truncate flex-1">
+							{conversation.title || 'New Conversation'}
+						</h1>
+						{conversation.model && (
+							<span className="text-xs font-code text-ghost/70 cut-chevron bg-ghost-muted px-3 py-0.5 shrink-0">
+								{conversation.model}
+							</span>
+						)}
+						<button
+							type="button"
+							onClick={toggleContextPanel}
+							className={`w-7 h-7 flex items-center justify-center shrink-0 transition-colors cut-tr ${
+								contextPanelOpen ? 'bg-ghost-muted text-ghost' : 'text-static hover:text-chrome'
+							}`}
+							style={{ '--cut-md': '4px' } as React.CSSProperties}
+							aria-label="Toggle context panel"
+						>
+							<SlidersHorizontal size={14} />
+						</button>
+					</div>
+				)}
+
+				<div
+					ref={scrollContainerRef}
+					className="flex-1 overflow-y-auto px-6 py-4"
+					aria-live="polite"
+				>
+					{messages.length === 0 && !streamingContent && <EmptyState />}
+
+					{messages.map((msg) => (
+						<motion.div
+							key={msg.id}
+							initial={{ opacity: 0, y: 8 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.2 }}
+						>
+							<MessageBubble message={msg} />
+						</motion.div>
+					))}
+
+					<StreamingBubble content={streamingContent} toolCalls={streamingToolCalls} />
+
+					<div ref={messagesEndRef} />
 				</div>
-			)}
 
-			<div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-6 py-4" aria-live="polite">
-				{messages.length === 0 && !streamingContent && <EmptyState />}
-
-				{messages.map((msg) => (
-					<motion.div
-						key={msg.id}
-						initial={{ opacity: 0, y: 8 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.2 }}
-					>
-						<MessageBubble message={msg} />
-					</motion.div>
-				))}
-
-				<StreamingBubble content={streamingContent} toolCalls={streamingToolCalls} />
-
-				<div ref={messagesEndRef} />
+				<InputBar onSend={handleSend} disabled={isAgentThinking} />
 			</div>
 
-			<InputBar onSend={handleSend} disabled={isAgentThinking} />
+			{conversation && <ContextPanel conversation={conversation} />}
 		</div>
 	)
 }

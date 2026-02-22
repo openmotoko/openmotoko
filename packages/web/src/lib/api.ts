@@ -73,6 +73,13 @@ export interface SkillManifest {
 	tools: { name: string; description: string }[]
 }
 
+export interface SkillPermissions {
+	filesystem: { read: boolean; write: boolean; paths: string[] }
+	network: { outbound: boolean; domains: string[] }
+	shell: { execute: boolean; allowedCommands: string[] }
+	env: { read: boolean; keys: string[] }
+}
+
 export interface Settings {
 	[key: string]: unknown
 }
@@ -86,6 +93,75 @@ export interface Channel {
 
 export interface ConversationWithMessages extends Conversation {
 	messages: Message[]
+}
+
+export interface CostSummary {
+	total: number
+	byProvider: Record<string, number>
+	byModel: Record<string, number>
+}
+
+export interface CostHistoryEntry {
+	date: string
+	cost: number
+	tokens: number
+}
+
+export interface CostBreakdown {
+	providers: { name: string; cost: number; tokens: number }[]
+	models: { name: string; cost: number; tokens: number }[]
+}
+
+export interface BudgetSettings {
+	daily: number
+	monthly: number
+	alertThresholds: number[]
+}
+
+export interface ScheduledTaskItem {
+	id: string
+	name: string
+	description: string
+	cron: string
+	enabled: boolean
+	handler: string
+	payload: Record<string, unknown>
+	lastRunAt: number | null
+	nextRunAt: number | null
+	status: string
+	retryCount: number
+	maxRetries: number
+	createdAt: number
+}
+
+export interface TaskRunItem {
+	id: string
+	taskId: string
+	success: boolean
+	output: unknown
+	error: string | null
+	duration: number
+	createdAt: number
+}
+
+export interface TaskCreateData {
+	name: string
+	description?: string
+	cron: string
+	handler: string
+	payload?: Record<string, unknown>
+	maxRetries?: number
+}
+
+export interface WebhookItem {
+	id: string
+	name: string
+	secret: string
+	enabled: boolean
+	targetConversationId: string | null
+	handler: string
+	lastTriggeredAt: number | null
+	createdAt: number
 }
 
 class ApiClient {
@@ -130,6 +206,28 @@ class ApiClient {
 
 	async getConversation(id: string): Promise<ConversationWithMessages> {
 		return this.request(`/conversations/${id}`)
+	}
+
+	async updateConversation(
+		id: string,
+		data: { model?: string; systemPrompt?: string; title?: string },
+	): Promise<Conversation> {
+		return this.request(`/conversations/${id}`, {
+			method: 'PATCH',
+			body: JSON.stringify(data),
+		})
+	}
+
+	async deleteConversation(id: string): Promise<void> {
+		await this.request(`/conversations/${id}`, { method: 'DELETE' })
+	}
+
+	async exportConversation(id: string): Promise<ConversationWithMessages> {
+		return this.request(`/conversations/${id}/export`)
+	}
+
+	async compactConversation(id: string): Promise<Conversation> {
+		return this.request(`/conversations/${id}/compact`, { method: 'POST' })
 	}
 
 	async sendMessage(conversationId: string, content: string): Promise<Message> {
@@ -192,6 +290,105 @@ class ApiClient {
 		await this.request('/auth/logout', {
 			method: 'POST',
 		})
+	}
+
+	async getCostsToday(): Promise<CostSummary> {
+		return this.request('/costs/today')
+	}
+
+	async getCostHistory(days?: number): Promise<CostHistoryEntry[]> {
+		return this.request(`/costs/history${days ? `?days=${days}` : ''}`)
+	}
+
+	async getCostBreakdown(period?: string): Promise<CostBreakdown> {
+		return this.request(`/costs/breakdown${period ? `?period=${period}` : ''}`)
+	}
+
+	async getBudget(): Promise<BudgetSettings> {
+		return this.request('/settings/budget')
+	}
+
+	async updateBudget(budget: BudgetSettings): Promise<BudgetSettings> {
+		return this.request('/settings/budget', {
+			method: 'PUT',
+			body: JSON.stringify(budget),
+		})
+	}
+
+	async getSkillManifest(id: string): Promise<SkillManifest> {
+		return this.request(`/skills/${id}/manifest`)
+	}
+
+	async installSkill(data: { url: string }): Promise<Skill> {
+		return this.request('/skills/install', {
+			method: 'POST',
+			body: JSON.stringify(data),
+		})
+	}
+
+	async uninstallSkill(id: string): Promise<void> {
+		return this.request(`/skills/${id}`, { method: 'DELETE' })
+	}
+
+	async getSkillPermissions(id: string): Promise<SkillPermissions> {
+		return this.request(`/skills/${id}/permissions`)
+	}
+
+	async updateSkillPermissions(id: string, permissions: SkillPermissions): Promise<void> {
+		return this.request(`/skills/${id}/permissions`, {
+			method: 'PUT',
+			body: JSON.stringify(permissions),
+		})
+	}
+
+	async getWebhooks(): Promise<WebhookItem[]> {
+		return this.request('/webhooks')
+	}
+
+	async createWebhook(data: { name: string; targetConversationId?: string }): Promise<WebhookItem> {
+		return this.request('/webhooks', { method: 'POST', body: JSON.stringify(data) })
+	}
+
+	async deleteWebhook(id: string): Promise<void> {
+		return this.request(`/webhooks/${id}`, { method: 'DELETE' })
+	}
+
+	async toggleWebhook(id: string): Promise<void> {
+		return this.request(`/webhooks/${id}/toggle`, { method: 'POST' })
+	}
+
+	async getSchedulerTasks(): Promise<ScheduledTaskItem[]> {
+		return this.request('/scheduler/tasks')
+	}
+
+	async createSchedulerTask(data: TaskCreateData): Promise<ScheduledTaskItem> {
+		return this.request('/scheduler/tasks', {
+			method: 'POST',
+			body: JSON.stringify(data),
+		})
+	}
+
+	async updateSchedulerTask(id: string, data: Partial<TaskCreateData>): Promise<ScheduledTaskItem> {
+		return this.request(`/scheduler/tasks/${id}`, {
+			method: 'PUT',
+			body: JSON.stringify(data),
+		})
+	}
+
+	async deleteSchedulerTask(id: string): Promise<void> {
+		return this.request(`/scheduler/tasks/${id}`, { method: 'DELETE' })
+	}
+
+	async toggleSchedulerTask(id: string): Promise<ScheduledTaskItem> {
+		return this.request(`/scheduler/tasks/${id}/toggle`, { method: 'POST' })
+	}
+
+	async runSchedulerTask(id: string): Promise<{ success: boolean }> {
+		return this.request(`/scheduler/tasks/${id}/run`, { method: 'POST' })
+	}
+
+	async getTaskRuns(id: string): Promise<TaskRunItem[]> {
+		return this.request(`/scheduler/tasks/${id}/runs`)
 	}
 }
 

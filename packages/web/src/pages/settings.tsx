@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Hash, Save, Send, Settings, Wifi } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { WebhookList } from '../components/webhooks/webhook-list'
 import type { Channel, Settings as SettingsType } from '../lib/api'
 import { api } from '../lib/api'
 
@@ -229,6 +230,10 @@ export function SettingsPage() {
 								<p className="text-xs font-ui text-static">No channels configured</p>
 							</div>
 						)}
+					</SettingsSection>
+
+					<SettingsSection title="Webhooks">
+						<WebhookList />
 					</SettingsSection>
 				</div>
 			</div>

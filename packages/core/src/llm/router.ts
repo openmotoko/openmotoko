@@ -66,7 +66,8 @@ export class LLMRouter {
 		}
 
 		for (const providerId of this.providerOrder) {
-			const provider = this.providers.get(providerId)!
+			const provider = this.providers.get(providerId)
+			if (!provider) continue
 			if (
 				model.startsWith('claude') || model.startsWith('anthropic')
 					? provider.id === 'anthropic'
@@ -90,8 +91,8 @@ export class LLMRouter {
 	private getFallbackProviders(excludeId: string): LLMProvider[] {
 		return this.providerOrder
 			.filter((id) => id !== excludeId)
-			.map((id) => this.providers.get(id)!)
-			.filter(Boolean)
+			.map((id) => this.providers.get(id))
+			.filter((p): p is LLMProvider => p != null)
 	}
 
 	async chat(messages: LLMMessage[], config: LLMConfig): Promise<LLMResponse> {
@@ -183,6 +184,8 @@ export class LLMRouter {
 	}
 
 	listProviders(): LLMProvider[] {
-		return this.providerOrder.map((id) => this.providers.get(id)!).filter(Boolean)
+		return this.providerOrder
+			.map((id) => this.providers.get(id))
+			.filter((p): p is LLMProvider => p != null)
 	}
 }

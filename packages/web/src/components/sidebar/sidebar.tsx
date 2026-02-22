@@ -1,4 +1,4 @@
-import { Activity, MessageSquare, Puzzle, Settings } from 'lucide-react'
+import { Activity, Clock, DollarSign, MessageSquare, Puzzle, Settings } from 'lucide-react'
 import { useStore } from '../../lib/store'
 import { GlitchText } from '../shared/glitch-text'
 import { ConversationList } from './conversation-list'
@@ -34,7 +34,9 @@ export function Sidebar() {
 			<div className="py-2 border-b border-[var(--border-default)]">
 				<NavItem to="/chat" label="Chat" icon={MessageSquare} />
 				<NavItem to="/activity" label="Activity" icon={Activity} />
+				<NavItem to="/costs" label="Costs" icon={DollarSign} />
 				<NavItem to="/skills" label="Skills" icon={Puzzle} />
+				<NavItem to="/scheduler" label="Scheduler" icon={Clock} />
 				<NavItem to="/settings" label="Settings" icon={Settings} />
 			</div>
 

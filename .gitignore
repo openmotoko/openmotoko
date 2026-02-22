@@ -1,3 +1,4 @@
+**/node_modules/
 node_modules/
 dist/
 .env
@@ -11,10 +12,5 @@ dist/
 coverage/
 .cache/
 
-# inspiration
-logousage.html
 phases/
-OPENMOTOKO.md
-
-# dev
 .cursor/

@@ -1,13 +1,17 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
-import { Outlet } from 'react-router'
+import { Navigate, Outlet } from 'react-router'
 import { Sidebar } from '../components/sidebar/sidebar'
 import { useWebSocket } from '../hooks/use-websocket'
 import { useStore } from '../lib/store'
 
 export function RootLayout() {
-	const { sidebarOpen, toggleSidebar } = useStore()
+	const { sidebarOpen, toggleSidebar, onboardingComplete } = useStore()
 	useWebSocket()
+
+	if (!onboardingComplete) {
+		return <Navigate to="/onboard" replace />
+	}
 
 	return (
 		<div className="flex h-full w-full bg-void grid-bg">

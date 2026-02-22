@@ -1,0 +1,72 @@
+name: Publish Registry
+
+on:
+  release:
+    types: [published]
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build all skills
+        run: |
+          for dir in skills/*/; do
+            if [ -f "$dir/package.json" ]; then
+              echo "Building $dir"
+              cd "$dir"
+              pnpm install --frozen-lockfile
+              pnpm build || true
+              cd -
+            fi
+          done
+
+      - name: Package and generate checksums
+        run: |
+          mkdir -p dist/skills
+          for dir in skills/*/; do
+            if [ -f "$dir/manifest.json" ]; then
+              name=$(basename "$dir")
+              tar -czf "dist/skills/${name}.tar.gz" -C skills "$name"
+              sha256sum "dist/skills/${name}.tar.gz" >> dist/skills/checksums.txt
+            fi
+          done
+
+      - name: Generate index.json
+        run: node scripts/update-registry-index.js
+
+      - name: Commit and push index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.json
+          git diff --staged --quiet || git commit -m "Update registry index for ${{ github.ref_name }}"
+          git push origin HEAD:main
+
+      - name: Upload release assets
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for archive in dist/skills/*.tar.gz; do
+            gh release upload "${{ github.event.release.tag_name }}" "$archive"
+          done

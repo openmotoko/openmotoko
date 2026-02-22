@@ -1,15 +1,19 @@
-import { eventBus } from '@openmotoko/core'
+import type {
+	ChannelAdapter,
+	ChannelAdapterConfig,
+	InboundMessage,
+	MessageHandler,
+	OutboundMessage,
+} from '@openmotoko/core'
+import { eventBus, nanoid, splitMessage } from '@openmotoko/core'
 import { Bot, GrammyError, HttpError } from 'grammy'
-import type { ChannelAdapter, ChannelConfig, IncomingMessage, MessageHandler } from './types.js'
 
 export class TelegramChannel implements ChannelAdapter {
 	readonly id: string
-	readonly type = 'telegram'
+	readonly type = 'telegram' as const
 
 	private bot: Bot | null = null
 	private handler: MessageHandler | null = null
-	private config: ChannelConfig | null = null
-	private chatIdMap = new Map<string, string>()
 	private running = false
 
 	constructor(id: string) {
@@ -20,11 +24,13 @@ export class TelegramChannel implements ChannelAdapter {
 		this.handler = handler
 	}
 
-	async start(config: ChannelConfig): Promise<void> {
+	async start(config: ChannelAdapterConfig): Promise<void> {
 		if (this.running) return
 
-		this.config = config
-		this.bot = new Bot(config.token)
+		const token = config.token as string
+		const allowedChatIds = (config.allowedChatIds as string[] | undefined) ?? []
+
+		this.bot = new Bot(token)
 
 		this.bot.catch(({ error }) => {
 			if (error instanceof GrammyError) {
@@ -47,21 +53,32 @@ export class TelegramChannel implements ChannelAdapter {
 		this.bot.on('message:text', (ctx) => {
 			const chatId = String(ctx.chat.id)
 
-			if (this.config?.allowedChatIds?.length && !this.config.allowedChatIds.includes(chatId)) {
+			if (allowedChatIds.length && !allowedChatIds.includes(chatId)) {
 				return
 			}
 
-			const msg: IncomingMessage = {
+			const isGroup = ctx.chat.type === 'group' || ctx.chat.type === 'supergroup'
+			const botUsername = this.bot?.botInfo?.username
+			const isMention =
+				isGroup && botUsername
+					? ctx.message.text.toLowerCase().includes(`@${botUsername.toLowerCase()}`)
+					: false
+
+			const msg: InboundMessage = {
+				id: nanoid(),
+				channelId: this.id,
+				channelType: this.type,
 				chatId,
 				senderId: String(ctx.from.id),
 				senderName: [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(' '),
 				content: ctx.message.text,
-				channel: this.type,
+				isGroup,
+				groupId: isGroup ? chatId : undefined,
+				isMention,
+				replyToId: ctx.message.reply_to_message
+					? String(ctx.message.reply_to_message.message_id)
+					: undefined,
 				timestamp: ctx.message.date * 1000,
-			}
-
-			if (!this.chatIdMap.has(chatId)) {
-				this.chatIdMap.set(chatId, `tg_${chatId}`)
 			}
 
 			this.handler?.(msg)
@@ -88,18 +105,23 @@ export class TelegramChannel implements ChannelAdapter {
 		this.bot = null
 	}
 
-	async sendMessage(chatId: string, content: string): Promise<void> {
-		if (!this.bot) {
-			throw new Error('Bot is not running')
+	async sendMessage(msg: OutboundMessage): Promise<void> {
+		if (!this.bot) throw new Error('Bot is not running')
+
+		const chunks = splitMessage(msg.content, 4096)
+		for (const chunk of chunks) {
+			await this.bot.api.sendMessage(Number(msg.chatId), chunk, {
+				reply_to_message_id: msg.replyToId ? Number(msg.replyToId) : undefined,
+			})
 		}
-		await this.bot.api.sendMessage(Number(chatId), content)
 	}
 
-	getConversationId(chatId: string): string | undefined {
-		return this.chatIdMap.get(chatId)
+	async sendTyping(chatId: string): Promise<void> {
+		if (!this.bot) return
+		await this.bot.api.sendChatAction(Number(chatId), 'typing')
 	}
 
-	setConversationId(chatId: string, conversationId: string): void {
-		this.chatIdMap.set(chatId, conversationId)
+	getMaxMessageLength(): number {
+		return 4096
 	}
 }

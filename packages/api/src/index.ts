@@ -1,15 +1,20 @@
+import { getAgentRuntime, initAgentRuntime } from '@openmotoko/core'
 import { createServer } from './server.js'
 
 const port = Number(process.env.OPENMOTOKO_PORT ?? 3457)
 const host = process.env.OPENMOTOKO_HOST ?? '0.0.0.0'
 
 async function main() {
+	await initAgentRuntime()
 	const server = await createServer()
 
 	await server.listen({ port, host })
+	server.log.info(`Agent runtime initialized, skills loaded`)
 
 	const shutdown = async (signal: string) => {
 		server.log.info(`Received ${signal}, shutting down`)
+		const runtime = getAgentRuntime()
+		await runtime.shutdown()
 		await server.close()
 		process.exit(0)
 	}

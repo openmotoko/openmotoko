@@ -60,6 +60,26 @@ export interface ChannelMessageEvent {
 	content: string
 }
 
+export interface SchedulerStartedEvent {
+	type: 'scheduler:started'
+	taskId: string
+	taskName: string
+}
+
+export interface SchedulerCompletedEvent {
+	type: 'scheduler:completed'
+	taskId: string
+	taskName: string
+	duration: number
+}
+
+export interface SchedulerFailedEvent {
+	type: 'scheduler:failed'
+	taskId: string
+	taskName: string
+	error: string
+}
+
 export type AgentEvent =
 	| MessageReceivedEvent
 	| MessageSentEvent
@@ -70,6 +90,9 @@ export type AgentEvent =
 	| CostUpdatedEvent
 	| SkillActivatedEvent
 	| ChannelMessageEvent
+	| SchedulerStartedEvent
+	| SchedulerCompletedEvent
+	| SchedulerFailedEvent
 
 export type AgentEventType = AgentEvent['type']
 
@@ -85,4 +108,7 @@ export interface AgentEventMap {
 	'cost:updated': CostUpdatedEvent
 	'skill:activated': SkillActivatedEvent
 	'channel:message': ChannelMessageEvent
+	'scheduler:started': SchedulerStartedEvent
+	'scheduler:completed': SchedulerCompletedEvent
+	'scheduler:failed': SchedulerFailedEvent
 }

@@ -26,7 +26,10 @@ interface AppState {
 	}
 
 	sidebarOpen: boolean
+	contextPanelOpen: boolean
 	activePage: string
+
+	onboardingComplete: boolean
 
 	wsConnected: boolean
 	costToday: number
@@ -47,7 +50,11 @@ interface AppState {
 
 	setSidebarOpen: (open: boolean) => void
 	toggleSidebar: () => void
+	setContextPanelOpen: (open: boolean) => void
+	toggleContextPanel: () => void
 	setActivePage: (page: string) => void
+
+	setOnboardingComplete: (complete: boolean) => void
 
 	setWsConnected: (connected: boolean) => void
 	setCostToday: (cost: number) => void
@@ -69,7 +76,10 @@ export const useStore = create<AppState>((set) => ({
 	},
 
 	sidebarOpen: true,
+	contextPanelOpen: false,
 	activePage: 'chat',
+
+	onboardingComplete: localStorage.getItem('openmotoko-onboarding') === 'done',
 
 	wsConnected: false,
 	costToday: 0,
@@ -133,7 +143,16 @@ export const useStore = create<AppState>((set) => ({
 
 	toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
+	setContextPanelOpen: (open) => set({ contextPanelOpen: open }),
+
+	toggleContextPanel: () => set((state) => ({ contextPanelOpen: !state.contextPanelOpen })),
+
 	setActivePage: (page) => set({ activePage: page }),
+
+	setOnboardingComplete: (complete) => {
+		localStorage.setItem('openmotoko-onboarding', complete ? 'done' : '')
+		set({ onboardingComplete: complete })
+	},
 
 	setWsConnected: (connected) => set({ wsConnected: connected }),
 
