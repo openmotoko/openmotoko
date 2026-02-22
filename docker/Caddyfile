@@ -1,0 +1,27 @@
+{$DOMAIN} {
+	reverse_proxy openmotoko:3457
+
+	@websocket {
+		header Connection *Upgrade*
+		header Upgrade websocket
+		path /ws
+	}
+	reverse_proxy @websocket openmotoko:3457
+
+	encode gzip zstd
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		-Server
+	}
+
+	log {
+		output file /data/logs/access.log {
+			roll_size 10mb
+			roll_keep 5
+		}
+	}
+}

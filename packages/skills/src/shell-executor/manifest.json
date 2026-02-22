@@ -1,0 +1,35 @@
+{
+	"id": "shell-executor",
+	"name": "Shell Executor",
+	"version": "0.1.0",
+	"description": "Execute shell commands with timeout and working directory support",
+	"author": "openmotoko",
+	"capabilities": {
+		"shell": true
+	},
+	"tools": [
+		{
+			"name": "execute_command",
+			"description": "Execute a shell command and return its output",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"command": {
+						"type": "string",
+						"description": "The shell command to execute"
+					},
+					"cwd": {
+						"type": "string",
+						"description": "Working directory for the command"
+					},
+					"timeout": {
+						"type": "number",
+						"description": "Timeout in milliseconds",
+						"default": 30000
+					}
+				},
+				"required": ["command"]
+			}
+		}
+	]
+}

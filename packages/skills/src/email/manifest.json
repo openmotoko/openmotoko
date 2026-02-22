@@ -1,0 +1,50 @@
+{
+	"id": "email",
+	"name": "Email",
+	"version": "0.1.0",
+	"description": "Read and send emails via IMAP and SMTP",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true,
+		"env": ["SMTP_*", "IMAP_*"]
+	},
+	"tools": [
+		{
+			"name": "read_inbox",
+			"description": "Read recent emails from the inbox",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"limit": {
+						"type": "number",
+						"description": "Maximum number of emails to return",
+						"default": 10
+					}
+				},
+				"required": []
+			}
+		},
+		{
+			"name": "send_email",
+			"description": "Send an email",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"to": {
+						"type": "string",
+						"description": "Recipient email address"
+					},
+					"subject": {
+						"type": "string",
+						"description": "Email subject"
+					},
+					"body": {
+						"type": "string",
+						"description": "Email body text"
+					}
+				},
+				"required": ["to", "subject", "body"]
+			}
+		}
+	]
+}

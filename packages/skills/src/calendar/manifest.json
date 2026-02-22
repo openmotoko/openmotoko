@@ -1,0 +1,56 @@
+{
+	"id": "calendar",
+	"name": "Calendar",
+	"version": "0.1.0",
+	"description": "Manage calendar events with an in-memory store",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true
+	},
+	"tools": [
+		{
+			"name": "list_events",
+			"description": "List calendar events within a date range",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"start": {
+						"type": "string",
+						"description": "Start date/time in ISO 8601 format"
+					},
+					"end": {
+						"type": "string",
+						"description": "End date/time in ISO 8601 format"
+					}
+				},
+				"required": ["start", "end"]
+			}
+		},
+		{
+			"name": "create_event",
+			"description": "Create a new calendar event",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"title": {
+						"type": "string",
+						"description": "Event title"
+					},
+					"start": {
+						"type": "string",
+						"description": "Start date/time in ISO 8601 format"
+					},
+					"end": {
+						"type": "string",
+						"description": "End date/time in ISO 8601 format"
+					},
+					"description": {
+						"type": "string",
+						"description": "Event description"
+					}
+				},
+				"required": ["title", "start", "end"]
+			}
+		}
+	]
+}

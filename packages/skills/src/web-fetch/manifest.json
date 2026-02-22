@@ -1,0 +1,54 @@
+{
+	"id": "web-fetch",
+	"name": "Web Fetch",
+	"version": "0.1.0",
+	"description": "Make HTTP requests and extract content from web pages",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true
+	},
+	"tools": [
+		{
+			"name": "fetch_url",
+			"description": "Make an HTTP request to a URL",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"url": {
+						"type": "string",
+						"description": "The URL to fetch"
+					},
+					"method": {
+						"type": "string",
+						"description": "HTTP method",
+						"default": "GET",
+						"enum": ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"]
+					},
+					"headers": {
+						"type": "object",
+						"description": "HTTP headers as key-value pairs"
+					},
+					"body": {
+						"type": "string",
+						"description": "Request body"
+					}
+				},
+				"required": ["url"]
+			}
+		},
+		{
+			"name": "extract_content",
+			"description": "Fetch a URL and extract its text content, stripping HTML tags",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"url": {
+						"type": "string",
+						"description": "The URL to fetch and extract text from"
+					}
+				},
+				"required": ["url"]
+			}
+		}
+	]
+}

@@ -1,0 +1,39 @@
+{
+  "name": "@openmotoko/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./llm": "./dist/llm/index.js",
+    "./db": "./dist/db/index.js",
+    "./skills": "./dist/skills/index.js"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node --import tsx src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@openmotoko/skill-sdk": "workspace:*",
+    "@anthropic-ai/sdk": "^0.78.0",
+    "openai": "^6.22.0",
+    "@google/generative-ai": "^0.24.1",
+    "ollama": "^0.6.3",
+    "drizzle-orm": "^0.45.1",
+    "better-sqlite3": "^12.6.2",
+    "zod": "^4.3.6",
+    "nanoid": "^5.1.6",
+    "node-cron": "^4.2.1"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.30.5",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.13.4",
+    "typescript": "^5.8.3",
+    "tsx": "^4.19.3"
+  }
+}

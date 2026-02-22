@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.env
+.env.local
+*.db
+*.db-journal
+.DS_Store
+*.log
+.vite/
+.turbo/
+coverage/
+.cache/
+
+# inspiration
+logousage.html
+phases/
+OPENMOTOKO.md
+
+# dev
+.cursor/

@@ -1,0 +1,87 @@
+{
+	"id": "github",
+	"name": "GitHub",
+	"version": "0.1.0",
+	"description": "Interact with GitHub repositories, issues, and pull requests",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true,
+		"env": ["GITHUB_TOKEN"]
+	},
+	"tools": [
+		{
+			"name": "list_issues",
+			"description": "List issues for a GitHub repository",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"owner": {
+						"type": "string",
+						"description": "Repository owner"
+					},
+					"repo": {
+						"type": "string",
+						"description": "Repository name"
+					}
+				},
+				"required": ["owner", "repo"]
+			}
+		},
+		{
+			"name": "create_pr",
+			"description": "Create a pull request",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"owner": {
+						"type": "string",
+						"description": "Repository owner"
+					},
+					"repo": {
+						"type": "string",
+						"description": "Repository name"
+					},
+					"title": {
+						"type": "string",
+						"description": "Pull request title"
+					},
+					"body": {
+						"type": "string",
+						"description": "Pull request body/description"
+					},
+					"head": {
+						"type": "string",
+						"description": "The branch that contains the changes"
+					},
+					"base": {
+						"type": "string",
+						"description": "The branch you want to merge into"
+					}
+				},
+				"required": ["owner", "repo", "title", "body", "head", "base"]
+			}
+		},
+		{
+			"name": "get_file",
+			"description": "Get the contents of a file from a GitHub repository",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"owner": {
+						"type": "string",
+						"description": "Repository owner"
+					},
+					"repo": {
+						"type": "string",
+						"description": "Repository name"
+					},
+					"path": {
+						"type": "string",
+						"description": "Path to the file in the repository"
+					}
+				},
+				"required": ["owner", "repo", "path"]
+			}
+		}
+	]
+}

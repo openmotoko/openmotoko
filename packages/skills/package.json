@@ -1,0 +1,22 @@
+{
+  "name": "@openmotoko/skills",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@octokit/rest": "^22.0.1",
+    "@openmotoko/skill-sdk": "workspace:*",
+    "imapflow": "^1.2.10",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "@types/nodemailer": "^7.0.11",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,56 @@
+{
+	"id": "timer-cron",
+	"name": "Timer & Cron",
+	"version": "0.1.0",
+	"description": "Set timers and schedule recurring tasks with cron expressions",
+	"author": "openmotoko",
+	"capabilities": {
+		"shell": false
+	},
+	"tools": [
+		{
+			"name": "set_timer",
+			"description": "Set a one-time timer that fires after a given number of seconds",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Unique name for the timer"
+					},
+					"seconds": {
+						"type": "number",
+						"description": "Number of seconds until the timer fires"
+					},
+					"callback_message": {
+						"type": "string",
+						"description": "Message to emit when the timer fires"
+					}
+				},
+				"required": ["name", "seconds", "callback_message"]
+			}
+		},
+		{
+			"name": "create_schedule",
+			"description": "Create a recurring schedule using a cron expression",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Unique name for the schedule"
+					},
+					"cron_expression": {
+						"type": "string",
+						"description": "Cron expression (e.g. '*/5 * * * *' for every 5 minutes)"
+					},
+					"callback_message": {
+						"type": "string",
+						"description": "Message to emit on each scheduled tick"
+					}
+				},
+				"required": ["name", "cron_expression", "callback_message"]
+			}
+		}
+	]
+}

@@ -1,0 +1,31 @@
+{
+	"id": "web-search",
+	"name": "Web Search",
+	"version": "0.1.0",
+	"description": "Search the web using DuckDuckGo",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true
+	},
+	"tools": [
+		{
+			"name": "search_web",
+			"description": "Search the web and return results with titles, URLs, and snippets",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"description": "The search query"
+					},
+					"limit": {
+						"type": "number",
+						"description": "Maximum number of results to return",
+						"default": 10
+					}
+				},
+				"required": ["query"]
+			}
+		}
+	]
+}
