@@ -7,6 +7,21 @@ function send(msg: IPCMessage) {
 	process.send?.(msg)
 }
 
+const SAFE_ENV_PREFIXES = ['NODE_', 'npm_', 'PATH', 'HOME', 'LANG', 'TERM', 'SHELL']
+
+function buildSandboxedEnv(declaredEnvKeys: string[]): Record<string, string | undefined> {
+	const sandboxed: Record<string, string | undefined> = {}
+	for (const key of declaredEnvKeys) {
+		sandboxed[key] = process.env[key]
+	}
+	for (const key of Object.keys(process.env)) {
+		if (SAFE_ENV_PREFIXES.some((p) => key.startsWith(p))) {
+			sandboxed[key] = process.env[key]
+		}
+	}
+	return sandboxed
+}
+
 async function handleMessage(msg: IPCMessage) {
 	switch (msg.type) {
 		case 'init': {
@@ -49,9 +64,10 @@ async function handleMessage(msg: IPCMessage) {
 			}
 			const currentManifest = manifest
 			try {
+				const declaredEnvKeys = currentManifest.capabilities?.env ?? []
 				const context: SkillContext = {
 					manifest: currentManifest,
-					env: process.env as Record<string, string | undefined>,
+					env: buildSandboxedEnv(declaredEnvKeys),
 					log: (message: string) => console.log(`[${currentManifest.id}] ${message}`),
 				}
 				const result = await handler(msg.toolName, msg.input as Record<string, unknown>, context)

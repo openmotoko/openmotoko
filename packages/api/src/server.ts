@@ -1,14 +1,15 @@
+import helmet from '@fastify/helmet'
 import Fastify from 'fastify'
 import authPlugin from './plugins/auth.js'
 import corsPlugin from './plugins/cors.js'
 import rateLimitPlugin from './plugins/rate-limit.js'
 import tailscaleAuthPlugin from './plugins/tailscale-auth.js'
 import registerWebSocket from './plugins/websocket.js'
-import agentRoutes from './routes/agents.js'
 import activityRoutes from './routes/activity.js'
-import channelPluginRoutes from './routes/channel-plugins.js'
+import agentRoutes from './routes/agents.js'
 import artifactRoutes from './routes/artifacts.js'
 import authRoutes from './routes/auth.js'
+import channelPluginRoutes from './routes/channel-plugins.js'
 import channelRoutes from './routes/channels.js'
 import conversationRoutes from './routes/conversations.js'
 import costRoutes from './routes/costs.js'
@@ -28,6 +29,17 @@ export async function createServer() {
 		},
 	})
 
+	await fastify.register(helmet, {
+		contentSecurityPolicy: {
+			directives: {
+				defaultSrc: ["'self'"],
+				scriptSrc: ["'self'", "'unsafe-inline'"],
+				styleSrc: ["'self'", "'unsafe-inline'"],
+				connectSrc: ["'self'", 'ws:', 'wss:'],
+			},
+		},
+		crossOriginEmbedderPolicy: false,
+	})
 	await fastify.register(corsPlugin)
 	await fastify.register(rateLimitPlugin)
 	await fastify.register(authPlugin)

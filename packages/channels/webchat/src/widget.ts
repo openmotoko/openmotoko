@@ -224,7 +224,7 @@ var input=document.getElementById('input');
 var sendBtn=document.getElementById('send-btn');
 var statusEl=document.getElementById('status');
 var ws=null;
-var sessionId='webchat_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+var sessionId='webchat_'+Array.from(crypto.getRandomValues(new Uint8Array(8)),function(b){return b.toString(16).padStart(2,'0')}).join('')+Date.now().toString(36);
 var connected=false;
 var typingEl=null;
 
@@ -297,6 +297,11 @@ return text
 .replace(/\`([^\`]+)\`/g,'<code>$1</code>')
 .replace(/\\*\\*(.+?)\\*\\*/g,'<strong>$1</strong>')
 .replace(/\\*(.+?)\\*/g,'<em>$1</em>')
+.replace(/\[([^\]]+)\]\(([^)]+)\)/g,function(_,t,u){
+var lu=u.trim().toLowerCase();
+if(lu.indexOf('javascript:')===0||lu.indexOf('data:')===0||lu.indexOf('vbscript:')===0)return t;
+return '<a href="'+u+'" target="_blank" rel="noopener noreferrer">'+t+'</a>';
+})
 .replace(/\\n/g,'<br>');
 }
 

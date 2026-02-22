@@ -41,10 +41,17 @@ function renderMarkdown(md: string): string {
 		'<li class="ml-4 text-sm text-chrome/90 font-body list-decimal">$1</li>',
 	)
 
-	html = html.replace(
-		/\[([^\]]+)\]\(([^)]+)\)/g,
-		'<a href="$2" target="_blank" rel="noopener" class="text-ghost hover:text-ghost-hover underline">$1</a>',
-	)
+	html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, text, url) => {
+		const trimmedUrl = (url as string).trim().toLowerCase()
+		if (
+			trimmedUrl.startsWith('javascript:') ||
+			trimmedUrl.startsWith('data:') ||
+			trimmedUrl.startsWith('vbscript:')
+		) {
+			return text as string
+		}
+		return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-ghost hover:text-ghost-hover underline">${text}</a>`
+	})
 
 	html = html.replace(/^---$/gm, '<hr class="border-(--border-default) my-6" />')
 

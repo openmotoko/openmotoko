@@ -14,9 +14,11 @@ import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { validate } from '../middleware/validate.js'
 
+const MAX_MESSAGE_LENGTH = 100_000
+
 const sendMessageSchema = z.object({
-	content: z.string().min(1),
-	model: z.string().optional(),
+	content: z.string().min(1).max(MAX_MESSAGE_LENGTH),
+	model: z.string().max(64).optional(),
 })
 
 const idParamsSchema = z.object({
@@ -30,6 +32,15 @@ interface DbMessage {
 	toolResults: string | null
 }
 
+function safeJsonParse(raw: string | null): unknown {
+	if (!raw) return undefined
+	try {
+		return JSON.parse(raw)
+	} catch {
+		return undefined
+	}
+}
+
 function buildMessages(systemPrompt: string | null, dbMessages: DbMessage[]): LLMMessage[] {
 	const msgs: LLMMessage[] = []
 
@@ -41,8 +52,8 @@ function buildMessages(systemPrompt: string | null, dbMessages: DbMessage[]): LL
 		msgs.push({
 			role: msg.role as LLMMessage['role'],
 			content: msg.content,
-			toolCalls: msg.toolCalls ? JSON.parse(msg.toolCalls) : undefined,
-			toolResults: msg.toolResults ? JSON.parse(msg.toolResults) : undefined,
+			toolCalls: safeJsonParse(msg.toolCalls) as LLMMessage['toolCalls'],
+			toolResults: safeJsonParse(msg.toolResults) as LLMMessage['toolResults'],
 		})
 	}
 

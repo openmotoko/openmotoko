@@ -3,6 +3,7 @@ import type { AgentEvent, AgentEventType } from '@openmotoko/core'
 import { eventBus } from '@openmotoko/core'
 import type { FastifyInstance } from 'fastify'
 import type { WebSocket } from 'ws'
+import { getSession } from './auth.js'
 
 const clients = new Set<WebSocket>()
 
@@ -35,6 +36,16 @@ const ALL_EVENT_TYPES: AgentEventType[] = [
 	'agent:failed',
 ]
 
+function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+	if (!cookieHeader) return {}
+	const result: Record<string, string> = {}
+	for (const pair of cookieHeader.split(';')) {
+		const [key, ...rest] = pair.trim().split('=')
+		if (key) result[key.trim()] = rest.join('=').trim()
+	}
+	return result
+}
+
 export default async function registerWebSocket(fastify: FastifyInstance) {
 	await fastify.register(websocketPlugin)
 
@@ -44,7 +55,15 @@ export default async function registerWebSocket(fastify: FastifyInstance) {
 		})
 	}
 
-	fastify.get('/ws', { websocket: true }, (socket) => {
+	fastify.get('/ws', { websocket: true }, (socket, request) => {
+		const cookies = parseCookies(request.headers.cookie)
+		const token = cookies.session ?? (request.query as Record<string, string>).token
+
+		if (!token || !getSession(token)) {
+			socket.close(4001, 'Unauthorized')
+			return
+		}
+
 		clients.add(socket as unknown as WebSocket)
 
 		socket.on('close', () => {

@@ -36,6 +36,8 @@ export function validate(schema: ValidationSchema) {
 						message: issue.message,
 					})
 				}
+			} else {
+				;(request as unknown as Record<string, unknown>).params = result.data
 			}
 		}
 
@@ -49,6 +51,8 @@ export function validate(schema: ValidationSchema) {
 						message: issue.message,
 					})
 				}
+			} else {
+				;(request as unknown as Record<string, unknown>).query = result.data
 			}
 		}
 

@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { nanoid } from 'nanoid'
 import type { ChannelType, PairingRequest } from './types.js'
 
@@ -10,9 +11,10 @@ export class PairingManager {
 
 	generatePairingCode(): string {
 		const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+		const bytes = randomBytes(PAIRING_CODE_LENGTH)
 		let code = ''
 		for (let i = 0; i < PAIRING_CODE_LENGTH; i++) {
-			code += chars[Math.floor(Math.random() * chars.length)]
+			code += chars[bytes[i] % chars.length]
 		}
 		return code
 	}

@@ -9,7 +9,9 @@ interface Session {
 
 const sessions = new Map<string, Session>()
 
-const PUBLIC_ROUTES = new Set(['/api/auth/login'])
+const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
+
+const PUBLIC_ROUTES = new Set(['/api/auth/login', '/health'])
 
 export function createSession(userId: string): string {
 	const token = crypto.randomBytes(32).toString('hex')
@@ -22,7 +24,22 @@ export function destroySession(token: string): boolean {
 }
 
 export function getSession(token: string): Session | undefined {
-	return sessions.get(token)
+	const session = sessions.get(token)
+	if (!session) return undefined
+	if (Date.now() - session.createdAt > SESSION_MAX_AGE_MS) {
+		sessions.delete(token)
+		return undefined
+	}
+	return session
+}
+
+export function pruneExpiredSessions(): void {
+	const now = Date.now()
+	for (const [token, session] of sessions) {
+		if (now - session.createdAt > SESSION_MAX_AGE_MS) {
+			sessions.delete(token)
+		}
+	}
 }
 
 declare module 'fastify' {
@@ -36,9 +53,13 @@ async function authPlugin(fastify: FastifyInstance) {
 
 	fastify.decorateRequest('userId', '')
 
+	const pruneInterval = setInterval(pruneExpiredSessions, 60 * 60 * 1000)
+	fastify.addHook('onClose', () => clearInterval(pruneInterval))
+
 	fastify.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
-		if (PUBLIC_ROUTES.has(request.url)) return
-		if (request.url === '/ws') return
+		const urlPath = request.url.split('?')[0]
+		if (PUBLIC_ROUTES.has(urlPath)) return
+		if (urlPath === '/ws') return
 
 		const token = request.cookies.session
 		if (!token) {
@@ -48,7 +69,7 @@ async function authPlugin(fastify: FastifyInstance) {
 			})
 		}
 
-		const session = sessions.get(token)
+		const session = getSession(token)
 		if (!session) {
 			return reply.status(401).send({
 				error: 'Invalid or expired session',

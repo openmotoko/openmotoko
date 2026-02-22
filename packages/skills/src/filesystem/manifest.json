@@ -6,7 +6,8 @@
 	"author": "openmotoko",
 	"capabilities": {
 		"filesystem": {
-			"paths": ["*"]
+			"enabled": true,
+			"paths": ["~", "."]
 		}
 	},
 	"tools": [

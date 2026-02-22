@@ -31,7 +31,26 @@ export default async function publishRoutes(fastify: FastifyInstance) {
 			writeFileSync(archivePath, buffer)
 
 			const { execSync } = await import('node:child_process')
-			execSync('tar -xzf package.tar.gz --strip-components=1', { cwd: tmpDir })
+			execSync(
+				'tar -xzf package.tar.gz --strip-components=1 --no-same-owner --no-same-permissions 2>&1 | head -c 4096',
+				{ cwd: tmpDir, timeout: 30_000, maxBuffer: 5 * 1024 * 1024 },
+			)
+
+			const { readdirSync, lstatSync } = await import('node:fs')
+			const checkSymlinks = (dir: string, depth = 0): void => {
+				if (depth > 10) return
+				for (const entry of readdirSync(dir)) {
+					const fullPath = join(dir, entry)
+					const stat = lstatSync(fullPath)
+					if (stat.isSymbolicLink()) {
+						throw new Error(`Symlinks are not allowed in skill packages: ${entry}`)
+					}
+					if (stat.isDirectory()) {
+						checkSymlinks(fullPath, depth + 1)
+					}
+				}
+			}
+			checkSymlinks(tmpDir)
 
 			const manifestPath = join(tmpDir, 'manifest.json')
 			if (!existsSync(manifestPath)) {

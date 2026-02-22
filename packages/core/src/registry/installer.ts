@@ -71,10 +71,33 @@ export class SkillInstaller {
 
 	private async extractPackage(buffer: Buffer, targetDir: string): Promise<void> {
 		const { execSync } = await import('node:child_process')
+		const { readdirSync, lstatSync } = await import('node:fs')
 		const archivePath = join(targetDir, '_archive.tar.gz')
 		writeFileSync(archivePath, buffer)
-		execSync(`tar -xzf _archive.tar.gz --strip-components=1`, { cwd: targetDir })
+		execSync(
+			'tar -xzf _archive.tar.gz --strip-components=1 --no-same-owner --no-same-permissions',
+			{
+				cwd: targetDir,
+				timeout: 30_000,
+				maxBuffer: 5 * 1024 * 1024,
+			},
+		)
 		rmSync(archivePath)
+
+		const checkSymlinks = (dir: string, depth = 0): void => {
+			if (depth > 10) return
+			for (const entry of readdirSync(dir)) {
+				const fullPath = join(dir, entry)
+				const stat = lstatSync(fullPath)
+				if (stat.isSymbolicLink()) {
+					throw new Error(`Symlinks are not allowed in skill packages: ${entry}`)
+				}
+				if (stat.isDirectory()) {
+					checkSymlinks(fullPath, depth + 1)
+				}
+			}
+		}
+		checkSymlinks(targetDir)
 	}
 
 	private validateManifest(skillDir: string): SkillManifest {
