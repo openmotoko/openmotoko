@@ -4,9 +4,15 @@ interface GlitchTextProps {
 	text: string
 	className?: string
 	as?: 'span' | 'h1' | 'h2' | 'h3' | 'p'
+	'aria-label'?: string
 }
 
-export function GlitchText({ text, className = '', as: Tag = 'span' }: GlitchTextProps) {
+export function GlitchText({
+	text,
+	className = '',
+	as: Tag = 'span',
+	'aria-label': ariaLabel,
+}: GlitchTextProps) {
 	const [isHovered, setIsHovered] = useState(false)
 
 	return (
@@ -15,6 +21,7 @@ export function GlitchText({ text, className = '', as: Tag = 'span' }: GlitchTex
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 			data-text={text}
+			aria-label={ariaLabel ?? text}
 		>
 			{text}
 			{isHovered && (

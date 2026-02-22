@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 import { RootLayout } from './layouts/root-layout'
 import { ActivityPage } from './pages/activity'
+import { CanvasPage } from './pages/canvas'
 import { ChatPage } from './pages/chat'
 import { CostsPage } from './pages/costs'
 import { OnboardPage } from './pages/onboard'
@@ -43,6 +44,14 @@ export const router = createBrowserRouter([
 			{
 				path: '/scheduler',
 				element: <SchedulerPage />,
+			},
+			{
+				path: '/canvas',
+				element: <CanvasPage />,
+			},
+			{
+				path: '/canvas/:id',
+				element: <CanvasPage />,
 			},
 			{
 				path: '/settings',

@@ -130,6 +130,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 					${isUser ? 'bg-ghost-muted text-chrome cut-tr' : 'bg-shell text-chrome cut-bl cut-border'}
 				`}
 				style={{ '--cut-md': '10px' } as React.CSSProperties}
+				aria-live={isUser ? undefined : 'polite'}
 			>
 				<div className="flex items-center gap-2 mb-1">
 					<span className="text-xs font-ui font-bold uppercase tracking-wider text-static">

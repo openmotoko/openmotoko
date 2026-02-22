@@ -5,6 +5,7 @@ import { agentCommand } from './commands/agent.js'
 import { channelsCommand } from './commands/channels.js'
 import { doctorCommand } from './commands/doctor.js'
 import { onboardCommand } from './commands/onboard.js'
+import { tailscaleCommand } from './commands/tailscale.js'
 
 program
 	.name('openmotoko')
@@ -16,5 +17,6 @@ program.addCommand(agentCommand)
 program.addCommand(channelsCommand)
 program.addCommand(doctorCommand)
 program.addCommand(onboardCommand)
+program.addCommand(tailscaleCommand())
 
 program.parse()

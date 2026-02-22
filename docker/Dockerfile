@@ -10,17 +10,26 @@ COPY packages/api/package.json packages/api/
 COPY packages/web/package.json packages/web/
 COPY packages/skill-sdk/package.json packages/skill-sdk/
 COPY packages/skills/package.json packages/skills/
+COPY packages/cli/package.json packages/cli/
 COPY packages/channels/telegram/package.json packages/channels/telegram/
+COPY packages/channels/whatsapp/package.json packages/channels/whatsapp/
+COPY packages/channels/discord/package.json packages/channels/discord/
+COPY packages/channels/slack/package.json packages/channels/slack/
+COPY packages/channels/signal/package.json packages/channels/signal/
+COPY packages/channels/imessage/package.json packages/channels/imessage/
+COPY packages/channels/google-chat/package.json packages/channels/google-chat/
+COPY packages/channels/teams/package.json packages/channels/teams/
+COPY packages/channels/webchat/package.json packages/channels/webchat/
 
 RUN pnpm install --frozen-lockfile
 
-COPY tsconfig.json ./
 COPY packages/core/ packages/core/
 COPY packages/api/ packages/api/
 COPY packages/web/ packages/web/
 COPY packages/skill-sdk/ packages/skill-sdk/
 COPY packages/skills/ packages/skills/
-COPY packages/channels/telegram/ packages/channels/telegram/
+COPY packages/cli/ packages/cli/
+COPY packages/channels/ packages/channels/
 
 RUN pnpm -r build
 RUN pnpm --filter @openmotoko/web build
@@ -31,7 +40,7 @@ FROM node:22-alpine AS production
 RUN addgroup -g 1001 openmotoko && \
     adduser -u 1001 -G openmotoko -s /bin/sh -D openmotoko
 
-RUN apk add --no-cache curl tini
+RUN apk add --no-cache curl tini tailscale
 
 WORKDIR /app
 
@@ -48,9 +57,9 @@ COPY --from=build /app/packages/skill-sdk/package.json packages/skill-sdk/
 COPY --from=build /app/packages/skills/dist/ packages/skills/dist/
 COPY --from=build /app/packages/skills/package.json packages/skills/
 COPY --from=build /app/packages/skills/node_modules/ packages/skills/node_modules/
-COPY --from=build /app/packages/channels/telegram/dist/ packages/channels/telegram/dist/
-COPY --from=build /app/packages/channels/telegram/package.json packages/channels/telegram/
-COPY --from=build /app/packages/channels/telegram/node_modules/ packages/channels/telegram/node_modules/
+COPY --from=build /app/packages/channels/ packages/channels/
+COPY --from=build /app/packages/cli/dist/ packages/cli/dist/
+COPY --from=build /app/packages/cli/package.json packages/cli/
 COPY --from=build /app/packages/web/dist/ packages/web/dist/
 
 RUN mkdir -p /app/data && chown -R openmotoko:openmotoko /app/data

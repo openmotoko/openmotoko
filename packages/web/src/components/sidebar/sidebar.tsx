@@ -1,4 +1,4 @@
-import { Activity, Clock, DollarSign, MessageSquare, Puzzle, Settings } from 'lucide-react'
+import { Activity, Clock, DollarSign, Layers, MessageSquare, Puzzle, Settings } from 'lucide-react'
 import { useStore } from '../../lib/store'
 import { GlitchText } from '../shared/glitch-text'
 import { ConversationList } from './conversation-list'
@@ -8,7 +8,7 @@ export function Sidebar() {
 	const wsConnected = useStore((s) => s.wsConnected)
 
 	return (
-		<nav className="flex flex-col h-full w-[260px] bg-shell">
+		<nav aria-label="Main navigation" className="flex flex-col h-full w-[260px] bg-shell">
 			<div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--border-default)]">
 				<div className="w-8 h-8 bg-ghost-muted flex items-center justify-center cut-hex flex-shrink-0">
 					<span className="text-ghost font-display font-bold text-sm">M</span>
@@ -18,7 +18,7 @@ export function Sidebar() {
 						text="OPENMOTOKO"
 						className="font-display font-bold text-sm text-chrome tracking-wider"
 					/>
-					<div className="flex items-center gap-1.5 mt-0.5">
+					<output className="flex items-center gap-1.5 mt-0.5" aria-live="polite">
 						<div
 							className={`w-1.5 h-1.5 rounded-full ${
 								wsConnected ? 'bg-alive animate-ghost-pulse' : 'bg-static'
@@ -27,7 +27,7 @@ export function Sidebar() {
 						<span className="text-xs font-ui text-static">
 							{wsConnected ? 'ONLINE' : 'OFFLINE'}
 						</span>
-					</div>
+					</output>
 				</div>
 			</div>
 
@@ -37,6 +37,7 @@ export function Sidebar() {
 				<NavItem to="/costs" label="Costs" icon={DollarSign} />
 				<NavItem to="/skills" label="Skills" icon={Puzzle} />
 				<NavItem to="/scheduler" label="Scheduler" icon={Clock} />
+				<NavItem to="/canvas" label="Canvas" icon={Layers} />
 				<NavItem to="/settings" label="Settings" icon={Settings} />
 			</div>
 

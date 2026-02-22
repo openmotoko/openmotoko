@@ -1,8 +1,12 @@
 import { resolve } from 'node:path'
 import type { SkillManifest, ToolDefinition } from '@openmotoko/skill-sdk'
 import { skillManifestSchema } from '@openmotoko/skill-sdk'
+import type { CreateArtifactInput, UpdateArtifactInput } from '../artifacts/index.js'
+import { artifactManager } from '../artifacts/index.js'
 import { getDb } from '../db/client.js'
 import { skills } from '../db/schema.js'
+import { eventBus } from '../events/bus.js'
+import type { ArtifactCreatedEvent, ArtifactUpdatedEvent } from '../events/types.js'
 import { AnthropicProvider } from '../llm/providers/anthropic.js'
 import { GoogleProvider } from '../llm/providers/google.js'
 import { OllamaProvider } from '../llm/providers/ollama.js'
@@ -97,11 +101,103 @@ export class AgentRuntime {
 		return this.llmRouter as LLMRouter
 	}
 
+	private getArtifactToolDefinitions(): ToolDefinition[] {
+		return [
+			{
+				name: 'create_artifact',
+				description:
+					'Create a visual artifact (code file, markdown document, HTML page, or Mermaid diagram) that will be rendered in the Canvas workspace',
+				inputSchema: {
+					type: 'object',
+					properties: {
+						conversationId: {
+							type: 'string',
+							description: 'The conversation ID to attach this artifact to',
+						},
+						type: {
+							type: 'string',
+							enum: ['code', 'markdown', 'html', 'mermaid', 'text'],
+							description: 'The type of artifact',
+						},
+						title: { type: 'string', description: 'A short title for the artifact' },
+						content: { type: 'string', description: 'The full content of the artifact' },
+						language: {
+							type: 'string',
+							description:
+								'Programming language for code artifacts (e.g. typescript, python, rust)',
+						},
+					},
+					required: ['conversationId', 'type', 'title', 'content'],
+				},
+			},
+			{
+				name: 'update_artifact',
+				description: 'Update an existing artifact with new content. Creates a new version.',
+				inputSchema: {
+					type: 'object',
+					properties: {
+						id: { type: 'string', description: 'The artifact ID to update' },
+						content: { type: 'string', description: 'The new content for the artifact' },
+						title: { type: 'string', description: 'Optional new title' },
+					},
+					required: ['id', 'content'],
+				},
+			},
+		]
+	}
+
 	getToolDefinitions(): ToolDefinition[] {
-		return [...this.toolMap.values()].map((m) => m.toolDef)
+		return [
+			...[...this.toolMap.values()].map((m) => m.toolDef),
+			...this.getArtifactToolDefinitions(),
+		]
+	}
+
+	private async handleArtifactToolCall(
+		toolName: string,
+		input: Record<string, unknown>,
+	): Promise<string> {
+		if (toolName === 'create_artifact') {
+			const artifact = await artifactManager.create(input as unknown as CreateArtifactInput)
+			const event: ArtifactCreatedEvent = {
+				type: 'artifact:created',
+				artifactId: artifact.id,
+				conversationId: artifact.conversationId,
+				title: artifact.title,
+				artifactType: artifact.type,
+			}
+			eventBus.emit(event.type, event)
+			return JSON.stringify({ success: true, artifact })
+		}
+
+		const { id, ...rest } = input
+		const artifact = await artifactManager.update(
+			id as string,
+			rest as unknown as UpdateArtifactInput,
+		)
+		const event: ArtifactUpdatedEvent = {
+			type: 'artifact:updated',
+			artifactId: artifact.id,
+			conversationId: artifact.conversationId,
+			title: artifact.title,
+			version: artifact.version,
+		}
+		eventBus.emit(event.type, event)
+		return JSON.stringify({ success: true, artifact })
 	}
 
 	async executeToolCall(toolName: string, input: unknown): Promise<string> {
+		if (toolName === 'create_artifact' || toolName === 'update_artifact') {
+			try {
+				return await this.handleArtifactToolCall(toolName, input as Record<string, unknown>)
+			} catch (err) {
+				return JSON.stringify({
+					success: false,
+					error: err instanceof Error ? err.message : 'Artifact tool execution failed',
+				})
+			}
+		}
+
 		const mapping = this.toolMap.get(toolName)
 		if (!mapping) {
 			return JSON.stringify({

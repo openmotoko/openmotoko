@@ -44,7 +44,8 @@
 			"packages/web/src/**/*.tsx",
 			"packages/skill-sdk/src/**/*.ts",
 			"packages/skills/src/**/*.ts",
-			"packages/channels/**/src/**/*.ts"
+			"packages/channels/**/src/**/*.ts",
+			"packages/desktop/src/**/*.ts"
 		]
 	}
 }

@@ -28,6 +28,8 @@ const ALL_EVENT_TYPES: AgentEventType[] = [
 	'scheduler:started',
 	'scheduler:completed',
 	'scheduler:failed',
+	'artifact:created',
+	'artifact:updated',
 ]
 
 export default async function registerWebSocket(fastify: FastifyInstance) {

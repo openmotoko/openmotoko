@@ -390,6 +390,52 @@ class ApiClient {
 	async getTaskRuns(id: string): Promise<TaskRunItem[]> {
 		return this.request(`/scheduler/tasks/${id}/runs`)
 	}
+
+	async getTailscaleStatus(): Promise<unknown> {
+		return this.request('/tailscale/status')
+	}
+
+	async getTailscaleNodes(): Promise<unknown[]> {
+		return this.request('/tailscale/nodes')
+	}
+
+	async startTailscaleServe(): Promise<{ success: boolean }> {
+		return this.request('/tailscale/serve/start', { method: 'POST' })
+	}
+
+	async stopTailscaleServe(): Promise<{ success: boolean }> {
+		return this.request('/tailscale/serve/stop', { method: 'POST' })
+	}
+
+	async getArtifacts(conversationId: string): Promise<unknown[]> {
+		return this.request(`/artifacts?conversationId=${conversationId}`)
+	}
+
+	async getArtifact(id: string): Promise<unknown> {
+		return this.request(`/artifacts/${id}`)
+	}
+
+	async createArtifact(data: {
+		conversationId: string
+		type: string
+		title: string
+		content: string
+		language?: string
+	}): Promise<unknown> {
+		return this.request('/artifacts', { method: 'POST', body: JSON.stringify(data) })
+	}
+
+	async updateArtifact(id: string, data: { content: string; title?: string }): Promise<unknown> {
+		return this.request(`/artifacts/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+	}
+
+	async deleteArtifact(id: string): Promise<void> {
+		return this.request(`/artifacts/${id}`, { method: 'DELETE' })
+	}
+
+	async getArtifactVersions(id: string): Promise<unknown[]> {
+		return this.request(`/artifacts/${id}/versions`)
+	}
 }
 
 export const api = new ApiClient()

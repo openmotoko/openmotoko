@@ -80,6 +80,22 @@ export interface SchedulerFailedEvent {
 	error: string
 }
 
+export interface ArtifactCreatedEvent {
+	type: 'artifact:created'
+	artifactId: string
+	conversationId: string
+	title: string
+	artifactType: string
+}
+
+export interface ArtifactUpdatedEvent {
+	type: 'artifact:updated'
+	artifactId: string
+	conversationId: string
+	title: string
+	version: number
+}
+
 export type AgentEvent =
 	| MessageReceivedEvent
 	| MessageSentEvent
@@ -93,6 +109,8 @@ export type AgentEvent =
 	| SchedulerStartedEvent
 	| SchedulerCompletedEvent
 	| SchedulerFailedEvent
+	| ArtifactCreatedEvent
+	| ArtifactUpdatedEvent
 
 export type AgentEventType = AgentEvent['type']
 
@@ -111,4 +129,6 @@ export interface AgentEventMap {
 	'scheduler:started': SchedulerStartedEvent
 	'scheduler:completed': SchedulerCompletedEvent
 	'scheduler:failed': SchedulerFailedEvent
+	'artifact:created': ArtifactCreatedEvent
+	'artifact:updated': ArtifactUpdatedEvent
 }

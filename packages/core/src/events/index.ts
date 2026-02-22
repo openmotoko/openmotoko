@@ -4,6 +4,8 @@ export type {
 	AgentEventByType,
 	AgentEventMap,
 	AgentEventType,
+	ArtifactCreatedEvent,
+	ArtifactUpdatedEvent,
 	ChannelMessageEvent,
 	CostUpdatedEvent,
 	LlmCompleteEvent,

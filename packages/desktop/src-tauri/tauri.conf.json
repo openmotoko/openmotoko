@@ -1,0 +1,67 @@
+{
+	"$schema": "https://schema.tauri.app/config/2",
+	"productName": "OpenMotoko",
+	"version": "0.1.0",
+	"identifier": "ai.openmotoko.desktop",
+	"build": {
+		"beforeDevCommand": "pnpm --filter @openmotoko/web dev",
+		"beforeBuildCommand": "pnpm --filter @openmotoko/web build",
+		"devUrl": "http://localhost:5173",
+		"frontendDist": "../../packages/web/dist"
+	},
+	"app": {
+		"withGlobalTauri": true,
+		"windows": [
+			{
+				"title": "OpenMotoko",
+				"width": 1200,
+				"height": 800,
+				"minWidth": 800,
+				"minHeight": 600,
+				"decorations": false,
+				"transparent": false,
+				"center": true
+			}
+		],
+		"security": {
+			"csp": null
+		},
+		"trayIcon": {
+			"iconPath": "icons/icon.png",
+			"iconAsTemplate": true
+		}
+	},
+	"bundle": {
+		"active": true,
+		"targets": "all",
+		"createUpdaterArtifacts": true,
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		],
+		"macOS": {
+			"minimumSystemVersion": "10.15"
+		},
+		"windows": {
+			"nsis": {
+				"installMode": "perMachine"
+			}
+		}
+	},
+	"plugins": {
+		"updater": {
+			"endpoints": [
+				"https://github.com/openmotoko/openmotoko/releases/latest/download/latest.json"
+			],
+			"pubkey": ""
+		},
+		"deep-link": {
+			"desktop": {
+				"schemes": ["openmotoko"]
+			}
+		}
+	}
+}

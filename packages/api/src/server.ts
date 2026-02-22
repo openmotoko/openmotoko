@@ -2,8 +2,10 @@ import Fastify from 'fastify'
 import authPlugin from './plugins/auth.js'
 import corsPlugin from './plugins/cors.js'
 import rateLimitPlugin from './plugins/rate-limit.js'
+import tailscaleAuthPlugin from './plugins/tailscale-auth.js'
 import registerWebSocket from './plugins/websocket.js'
 import activityRoutes from './routes/activity.js'
+import artifactRoutes from './routes/artifacts.js'
 import authRoutes from './routes/auth.js'
 import channelRoutes from './routes/channels.js'
 import conversationRoutes from './routes/conversations.js'
@@ -14,6 +16,7 @@ import registryRoutes from './routes/registry.js'
 import schedulerRoutes from './routes/scheduler.js'
 import settingsRoutes from './routes/settings.js'
 import skillRoutes from './routes/skills.js'
+import tailscaleRoutes from './routes/tailscale.js'
 import webhookRoutes from './routes/webhooks.js'
 
 export async function createServer() {
@@ -26,6 +29,7 @@ export async function createServer() {
 	await fastify.register(corsPlugin)
 	await fastify.register(rateLimitPlugin)
 	await fastify.register(authPlugin)
+	await fastify.register(tailscaleAuthPlugin)
 
 	await fastify.register(registerWebSocket)
 
@@ -42,6 +46,8 @@ export async function createServer() {
 		await scope.register(costRoutes)
 		await scope.register(webhookRoutes)
 		await scope.register(schedulerRoutes)
+		await scope.register(artifactRoutes)
+		await scope.register(tailscaleRoutes)
 	})
 
 	return fastify
