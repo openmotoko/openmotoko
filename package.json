@@ -14,6 +14,9 @@
 		"dev": "pnpm --filter @openmotoko/api dev & pnpm --filter @openmotoko/web dev",
 		"dev:api": "pnpm --filter @openmotoko/api dev",
 		"dev:web": "pnpm --filter @openmotoko/web dev",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:coverage": "vitest run --coverage",
 		"check": "biome check .",
 		"check:fix": "biome check --write .",
 		"db:generate": "pnpm --filter @openmotoko/core db:generate",
@@ -21,6 +24,8 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.4.4",
-		"typescript": "^5.8.3"
+		"@vitest/coverage-v8": "^4.0.18",
+		"typescript": "^5.8.3",
+		"vitest": "^4.0.18"
 	}
 }
