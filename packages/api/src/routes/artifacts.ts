@@ -1,6 +1,16 @@
 import { artifactManager } from '@openmotoko/core'
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
+import { validate } from '../middleware/validate.js'
+
+const idParamsSchema = z.object({ id: z.string().min(1).max(128) })
+
+const versionParamsSchema = z.object({
+	id: z.string().min(1).max(128),
+	version: z.string().regex(/^\d+$/),
+})
+
+const listQuerySchema = z.object({ conversationId: z.string().min(1).max(128) })
 
 const createSchema = z.object({
 	conversationId: z.string(),
@@ -18,62 +28,72 @@ const updateSchema = z.object({
 })
 
 export default async function artifactRoutes(fastify: FastifyInstance) {
-	fastify.get('/api/artifacts', async (request) => {
-		const { conversationId } = request.query as { conversationId?: string }
-		if (!conversationId) {
-			return { error: 'conversationId query parameter required' }
-		}
-		return artifactManager.getByConversation(conversationId)
-	})
+	fastify.get(
+		'/api/artifacts',
+		{ preHandler: validate({ query: listQuerySchema }) },
+		async (request) => {
+			const { conversationId } = request.query as { conversationId: string }
+			return artifactManager.getByConversation(conversationId)
+		},
+	)
 
-	fastify.get<{ Params: { id: string } }>('/api/artifacts/:id', async (request, reply) => {
-		const artifact = await artifactManager.get(request.params.id)
-		if (!artifact) {
-			return reply.status(404).send({ error: 'Artifact not found', code: 'NOT_FOUND' })
-		}
-		return artifact
-	})
+	fastify.get<{ Params: { id: string } }>(
+		'/api/artifacts/:id',
+		{ preHandler: validate({ params: idParamsSchema }) },
+		async (request, reply) => {
+			const artifact = await artifactManager.get(request.params.id)
+			if (!artifact) {
+				return reply.status(404).send({ error: 'Artifact not found', code: 'NOT_FOUND' })
+			}
+			return artifact
+		},
+	)
 
-	fastify.post('/api/artifacts', async (request, reply) => {
-		const parsed = createSchema.safeParse(request.body)
-		if (!parsed.success) {
-			return reply
-				.status(400)
-				.send({ error: 'Invalid input', code: 'VALIDATION_ERROR', details: parsed.error })
-		}
-		return artifactManager.create(parsed.data)
-	})
+	fastify.post(
+		'/api/artifacts',
+		{ preHandler: validate({ body: createSchema }) },
+		async (request) => {
+			return artifactManager.create(request.body as z.infer<typeof createSchema>)
+		},
+	)
 
-	fastify.patch<{ Params: { id: string } }>('/api/artifacts/:id', async (request, reply) => {
-		const parsed = updateSchema.safeParse(request.body)
-		if (!parsed.success) {
-			return reply
-				.status(400)
-				.send({ error: 'Invalid input', code: 'VALIDATION_ERROR', details: parsed.error })
-		}
-		try {
-			return await artifactManager.update(request.params.id, parsed.data)
-		} catch (_err) {
-			return reply.status(404).send({ error: 'Artifact not found', code: 'NOT_FOUND' })
-		}
-	})
+	fastify.patch<{ Params: { id: string } }>(
+		'/api/artifacts/:id',
+		{ preHandler: validate({ params: idParamsSchema, body: updateSchema }) },
+		async (request, reply) => {
+			try {
+				return await artifactManager.update(
+					request.params.id,
+					request.body as z.infer<typeof updateSchema>,
+				)
+			} catch (_err) {
+				return reply.status(404).send({ error: 'Artifact not found', code: 'NOT_FOUND' })
+			}
+		},
+	)
 
-	fastify.delete<{ Params: { id: string } }>('/api/artifacts/:id', async (request, _reply) => {
-		await artifactManager.delete(request.params.id)
-		return { success: true }
-	})
+	fastify.delete<{ Params: { id: string } }>(
+		'/api/artifacts/:id',
+		{ preHandler: validate({ params: idParamsSchema }) },
+		async (request, _reply) => {
+			await artifactManager.delete(request.params.id)
+			return { success: true }
+		},
+	)
 
-	fastify.get<{ Params: { id: string } }>('/api/artifacts/:id/versions', async (request) => {
-		return artifactManager.getVersions(request.params.id)
-	})
+	fastify.get<{ Params: { id: string } }>(
+		'/api/artifacts/:id/versions',
+		{ preHandler: validate({ params: idParamsSchema }) },
+		async (request) => {
+			return artifactManager.getVersions(request.params.id)
+		},
+	)
 
 	fastify.get<{ Params: { id: string; version: string } }>(
 		'/api/artifacts/:id/versions/:version',
+		{ preHandler: validate({ params: versionParamsSchema }) },
 		async (request, reply) => {
 			const version = Number.parseInt(request.params.version, 10)
-			if (Number.isNaN(version)) {
-				return reply.status(400).send({ error: 'Invalid version', code: 'VALIDATION_ERROR' })
-			}
 			const result = await artifactManager.getVersion(request.params.id, version)
 			if (!result) {
 				return reply.status(404).send({ error: 'Version not found', code: 'NOT_FOUND' })

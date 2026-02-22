@@ -118,6 +118,14 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 			const llmMessages = buildMessages(conversation.systemPrompt, existingMessages)
 			const runtime = getAgentRuntime()
 
+			const budgetCheck = await runtime.checkBudget(0)
+			if (!budgetCheck.allowed) {
+				return reply.status(429).send({
+					error: budgetCheck.reason ?? 'Budget limit exceeded',
+					code: 'BUDGET_EXCEEDED',
+				})
+			}
+
 			let response: LLMResponse | undefined
 			let loopCount = 0
 			const maxLoops = 10

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Globe, Monitor, Power, PowerOff, RefreshCw, Wifi } from 'lucide-react'
 import { useState } from 'react'
+import { api } from '../../lib/api'
 
 interface TailscaleStatusResponse {
 	installed: boolean
@@ -28,45 +29,29 @@ interface TailscaleNode {
 	ipv4: string | null
 }
 
-async function fetchStatus(): Promise<TailscaleStatusResponse> {
-	const res = await fetch('/api/tailscale/status', { credentials: 'include' })
-	return res.json()
-}
-
-async function fetchNodes(): Promise<TailscaleNode[]> {
-	const res = await fetch('/api/tailscale/nodes', { credentials: 'include' })
-	return res.json()
-}
-
 export function TailscalePanel() {
 	const queryClient = useQueryClient()
 	const [showNodes, setShowNodes] = useState(false)
 
 	const { data: status, isLoading } = useQuery({
 		queryKey: ['tailscale-status'],
-		queryFn: fetchStatus,
-		refetchInterval: 30000,
+		queryFn: () => api.getTailscaleStatus() as Promise<TailscaleStatusResponse>,
+		refetchInterval: 30_000,
 	})
 
 	const { data: nodes } = useQuery({
 		queryKey: ['tailscale-nodes'],
-		queryFn: fetchNodes,
+		queryFn: () => api.getTailscaleNodes() as Promise<TailscaleNode[]>,
 		enabled: showNodes,
 	})
 
 	const startMutation = useMutation({
-		mutationFn: () =>
-			fetch('/api/tailscale/serve/start', { method: 'POST', credentials: 'include' }).then((r) =>
-				r.json(),
-			),
+		mutationFn: () => api.startTailscaleServe(),
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tailscale-status'] }),
 	})
 
 	const stopMutation = useMutation({
-		mutationFn: () =>
-			fetch('/api/tailscale/serve/stop', { method: 'POST', credentials: 'include' }).then((r) =>
-				r.json(),
-			),
+		mutationFn: () => api.stopTailscaleServe(),
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tailscale-status'] }),
 	})
 

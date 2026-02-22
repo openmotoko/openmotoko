@@ -7,7 +7,6 @@ export * from './channels/index.js'
 export * from './db/index.js'
 export * from './events/index.js'
 export type {
-	CostTrackerConfig,
 	LLMChunk,
 	LLMConfig,
 	LLMMessage,
@@ -21,7 +20,6 @@ export type {
 } from './llm/index.js'
 export {
 	AnthropicProvider,
-	CostTracker,
 	collectStream,
 	GoogleProvider,
 	LLMRouter,

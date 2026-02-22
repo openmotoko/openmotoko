@@ -4,6 +4,7 @@ export interface OnboardingData {
 	ollamaHost: string
 	model: string | null
 	enabledSkills: string[]
+	channels: string[]
 }
 
 export interface StepProps {

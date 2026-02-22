@@ -65,15 +65,25 @@ export default async function skillsRoutes(fastify: FastifyInstance) {
 				})
 			: rows
 
-		const total = db
-			.select({ count: sql<number>`count(*)` })
-			.from(registrySkills)
-			.where(where)
-			.all()
+		let total: number
+		if (params.tags) {
+			const allRows = db.select().from(registrySkills).where(where).all()
+			total = allRows.filter((r) => {
+				const rowTags = JSON.parse(r.tags) as string[]
+				return params.tags!.split(',').some((t) => rowTags.includes(t.trim()))
+			}).length
+		} else {
+			const result = db
+				.select({ count: sql<number>`count(*)` })
+				.from(registrySkills)
+				.where(where)
+				.all()
+			total = result[0]?.count ?? 0
+		}
 
 		return reply.send({
 			skills: filtered.map((r) => ({ ...r, tags: JSON.parse(r.tags), verified: r.verified === 1 })),
-			total: total[0]?.count ?? 0,
+			total,
 		})
 	})
 

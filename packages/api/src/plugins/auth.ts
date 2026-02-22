@@ -11,7 +11,7 @@ const sessions = new Map<string, Session>()
 
 const SESSION_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
-const PUBLIC_ROUTES = new Set(['/api/auth/login', '/health'])
+const PUBLIC_ROUTES = new Set(['/api/auth/login', '/api/health', '/health'])
 
 export function createSession(userId: string): string {
 	const token = crypto.randomBytes(32).toString('hex')
@@ -60,6 +60,7 @@ async function authPlugin(fastify: FastifyInstance) {
 		const urlPath = request.url.split('?')[0]
 		if (PUBLIC_ROUTES.has(urlPath)) return
 		if (urlPath === '/ws') return
+		if (urlPath.match(/^\/api\/webhooks\/[^/]+\/trigger$/) || urlPath === '/api/webhooks/gmail') return
 
 		const token = request.cookies.session
 		if (!token) {

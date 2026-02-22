@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { Hash, MessageCircle, MessageSquare, MessagesSquare, Send, Shield } from 'lucide-react'
-import { useState } from 'react'
 import type { StepProps } from '../types'
 
 const CHANNELS = [
@@ -42,9 +41,13 @@ const CHANNELS = [
 	},
 ] as const
 
-export function ChannelStep(_props: StepProps) {
-	const [selected, setSelected] = useState<string | null>(null)
-	const active = CHANNELS.find((c) => c.id === selected)
+export function ChannelStep({ data, onChange }: StepProps) {
+	const toggleChannel = (id: string) => {
+		const current = data.channels ?? []
+		const next = current.includes(id) ? current.filter((c) => c !== id) : [...current, id]
+		onChange({ channels: next })
+	}
+	const active = CHANNELS.find((c) => data.channels?.includes(c.id))
 
 	return (
 		<div className="space-y-6">
@@ -64,24 +67,24 @@ export function ChannelStep(_props: StepProps) {
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: i * 0.05 }}
 						whileTap={{ scale: 0.97 }}
-						onClick={() => setSelected(selected === ch.id ? null : ch.id)}
-						className={`text-left p-4 border transition-all cut-tr cut-border ${
-							selected === ch.id
-								? 'bg-ghost-muted border-[var(--ghost-border)]'
-								: 'bg-shell border-[var(--border-default)] hover:border-static'
-						}`}
+					onClick={() => toggleChannel(ch.id)}
+					className={`text-left p-4 border transition-all cut-tr cut-border ${
+						data.channels?.includes(ch.id)
+							? 'bg-ghost-muted border-[var(--ghost-border)]'
+							: 'bg-shell border-[var(--border-default)] hover:border-static'
+					}`}
 						style={{ '--cut-md': '8px' } as React.CSSProperties}
 					>
 						<div className="flex items-center gap-3">
 							<div
 								className={`w-8 h-8 flex items-center justify-center cut-hex flex-shrink-0 ${
-									selected === ch.id ? 'bg-ghost/20' : 'bg-void/50'
+									data.channels?.includes(ch.id) ? 'bg-ghost/20' : 'bg-void/50'
 								}`}
 							>
-								<ch.icon size={14} className={selected === ch.id ? 'text-ghost' : 'text-static'} />
+								<ch.icon size={14} className={data.channels?.includes(ch.id) ? 'text-ghost' : 'text-static'} />
 							</div>
 							<span
-								className={`font-ui font-bold text-sm ${selected === ch.id ? 'text-ghost' : 'text-chrome'}`}
+								className={`font-ui font-bold text-sm ${data.channels?.includes(ch.id) ? 'text-ghost' : 'text-chrome'}`}
 							>
 								{ch.name}
 							</span>

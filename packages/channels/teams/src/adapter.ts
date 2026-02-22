@@ -28,6 +28,7 @@ export class TeamsChannel implements ChannelAdapter {
 	private adapter: CloudAdapter | null = null
 	private handler: MessageHandler | null = null
 	private contextRefs = new Map<string, TurnContext>()
+	private static readonly MAX_CONTEXT_REFS = 1000
 	private running = false
 
 	constructor(id: string) {
@@ -72,6 +73,10 @@ export class TeamsChannel implements ChannelAdapter {
 
 		await this.adapter.process(req, res, async (context: TurnContext) => {
 			if (context.activity.type === ActivityTypes.Message) {
+				if (this.contextRefs.size >= TeamsChannel.MAX_CONTEXT_REFS) {
+					const oldest = this.contextRefs.keys().next().value
+					if (oldest) this.contextRefs.delete(oldest)
+				}
 				this.contextRefs.set(context.activity.conversation.id, context)
 				await this.processMessage(context)
 			}

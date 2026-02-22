@@ -66,7 +66,7 @@ function StreamingBubble({
 	)
 }
 
-function EmptyState() {
+function EmptyState({ onSuggestion }: { onSuggestion?: (text: string) => void }) {
 	return (
 		<div className="flex flex-col items-center justify-center h-full px-8">
 			<div className="w-16 h-16 bg-ghost-muted flex items-center justify-center cut-hex mb-6">
@@ -81,6 +81,7 @@ function EmptyState() {
 					<button
 						key={suggestion}
 						type="button"
+						onClick={() => onSuggestion?.(suggestion)}
 						className="px-3 py-2 text-xs font-ui text-static border border-[var(--border-default)] hover:border-[var(--ghost-border)] hover:text-ghost transition-all cut-tr"
 						style={{ '--cut-md': '6px' } as React.CSSProperties}
 					>
@@ -140,7 +141,7 @@ export function ChatPage() {
 	if (!id) {
 		return (
 			<div className="flex flex-col h-full">
-				<EmptyState />
+				<EmptyState onSuggestion={handleSend} />
 				<InputBar onSend={handleSend} disabled={isAgentThinking} />
 			</div>
 		)
@@ -178,7 +179,7 @@ export function ChatPage() {
 					className="flex-1 overflow-y-auto px-6 py-4"
 					aria-live="polite"
 				>
-					{messages.length === 0 && !streamingContent && <EmptyState />}
+					{messages.length === 0 && !streamingContent && <EmptyState onSuggestion={handleSend} />}
 
 					{messages.map((msg) => (
 						<motion.div

@@ -13,6 +13,15 @@ const STORAGE_DIR = join(homedir(), '.openmotoko', 'registry', 'packages')
 
 export default async function publishRoutes(fastify: FastifyInstance) {
 	fastify.post('/api/skills/publish', async (request, reply) => {
+		const apiKey = request.headers['x-api-key'] as string | undefined
+		const expectedKey = process.env.REGISTRY_API_KEY
+		if (!expectedKey) {
+			return reply.status(503).send({ error: 'Publishing is not configured', code: 'UNAVAILABLE' })
+		}
+		if (!apiKey || apiKey !== expectedKey) {
+			return reply.status(401).send({ error: 'Invalid or missing API key', code: 'UNAUTHORIZED' })
+		}
+
 		const file = await request.file()
 		if (!file) return reply.status(400).send({ error: 'No file uploaded' })
 
@@ -126,5 +135,44 @@ export default async function publishRoutes(fastify: FastifyInstance) {
 		} finally {
 			rmSync(tmpDir, { recursive: true, force: true })
 		}
+	})
+
+	fastify.delete('/api/skills/:id', async (request, reply) => {
+		const apiKey = request.headers['x-api-key'] as string | undefined
+		const expectedKey = process.env.REGISTRY_API_KEY
+		if (!expectedKey) {
+			return reply.status(503).send({ error: 'Not configured', code: 'UNAVAILABLE' })
+		}
+		if (!apiKey || apiKey !== expectedKey) {
+			return reply.status(401).send({ error: 'Invalid API key', code: 'UNAUTHORIZED' })
+		}
+		const { id } = request.params as { id: string }
+		const db = getRegistryDb()
+		const [skill] = db.select().from(registrySkills).where(eq(registrySkills.id, id)).all()
+		if (!skill) {
+			return reply.status(404).send({ error: 'Skill not found', code: 'NOT_FOUND' })
+		}
+		if (existsSync(skill.downloadUrl)) {
+			(await import('node:fs')).unlinkSync(skill.downloadUrl)
+		}
+		db.delete(registrySkills).where(eq(registrySkills.id, id)).run()
+		return reply.status(204).send()
+	})
+
+	fastify.get('/api/skills/:id/download', async (request, reply) => {
+		const { id } = request.params as { id: string }
+		const db = getRegistryDb()
+		const [skill] = db.select().from(registrySkills).where(eq(registrySkills.id, id)).all()
+		if (!skill) {
+			return reply.status(404).send({ error: 'Skill not found', code: 'NOT_FOUND' })
+		}
+		if (!existsSync(skill.downloadUrl)) {
+			return reply.status(404).send({ error: 'Package file not found', code: 'NOT_FOUND' })
+		}
+		const stream = (await import('node:fs')).createReadStream(skill.downloadUrl)
+		return reply
+			.header('Content-Type', 'application/gzip')
+			.header('Content-Disposition', `attachment; filename="${id}-${skill.version}.tar.gz"`)
+			.send(stream)
 	})
 }

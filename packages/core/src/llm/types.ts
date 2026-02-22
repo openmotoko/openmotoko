@@ -33,6 +33,7 @@ export interface LLMChunk {
 	content: string
 	done: boolean
 	toolCall?: ToolCall
+	toolCalls?: ToolCall[]
 }
 
 export interface ToolCall {

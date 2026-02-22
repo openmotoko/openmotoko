@@ -437,59 +437,6 @@ class ApiClient {
 		return this.request(`/artifacts/${id}/versions`)
 	}
 
-	async getAgents(): Promise<unknown[]> {
-		const result = await this.request<{ agents: unknown[] }>('/agents')
-		return result.agents
-	}
-
-	async getAgent(id: string): Promise<unknown> {
-		return this.request(`/agents/${id}`)
-	}
-
-	async killAgent(id: string): Promise<void> {
-		await this.request(`/agents/${id}`, { method: 'DELETE' })
-	}
-
-	async searchRegistry(params?: {
-		q?: string
-		tags?: string
-		verified?: string
-		limit?: number
-		offset?: number
-	}): Promise<{ entries: unknown[]; total: number }> {
-		const query = new URLSearchParams()
-		if (params?.q) query.set('q', params.q)
-		if (params?.tags) query.set('tags', params.tags)
-		if (params?.verified) query.set('verified', params.verified)
-		if (params?.limit) query.set('limit', String(params.limit))
-		if (params?.offset) query.set('offset', String(params.offset))
-		const qs = query.toString()
-		return this.request(`/registry/search${qs ? `?${qs}` : ''}`)
-	}
-
-	async getRegistrySkillDetail(id: string): Promise<unknown> {
-		return this.request(`/registry/${id}`)
-	}
-
-	async installRegistrySkill(id: string): Promise<unknown> {
-		return this.request('/registry/install', {
-			method: 'POST',
-			body: JSON.stringify({ id }),
-		})
-	}
-
-	async rateRegistrySkill(
-		skillId: string,
-		userId: string,
-		stars: number,
-		comment?: string,
-	): Promise<void> {
-		await this.request('/registry/rate', {
-			method: 'POST',
-			body: JSON.stringify({ skillId, userId, stars, comment }),
-		})
-	}
-
 	async getChannelPlugins(): Promise<unknown[]> {
 		return this.request('/channel-plugins')
 	}

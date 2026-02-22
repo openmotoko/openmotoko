@@ -115,16 +115,29 @@ export class OllamaProvider implements LLMProvider {
 			model: config.model,
 			messages: toOllamaMessages(messages, config.systemPrompt),
 			stream: true,
+			...(config.tools?.length ? { tools: toOllamaTools(config.tools) } : {}),
 			options: {
 				...(config.temperature != null ? { temperature: config.temperature } : {}),
 				...(config.maxTokens != null ? { num_predict: config.maxTokens } : {}),
 			},
 		})
 
+		const accumulatedToolCalls: ToolCall[] = []
+
 		for await (const part of response) {
+			const partToolCalls = extractToolCalls(
+				part.message.tool_calls as
+					| Array<{ function: { name: string; arguments: Record<string, unknown> } }>
+					| undefined,
+			)
+			if (partToolCalls.length > 0) {
+				accumulatedToolCalls.push(...partToolCalls)
+			}
+
 			yield {
 				content: part.message.content,
 				done: part.done,
+				...(part.done && accumulatedToolCalls.length > 0 ? { toolCalls: accumulatedToolCalls } : {}),
 			}
 		}
 	}

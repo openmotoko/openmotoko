@@ -16,11 +16,15 @@ export async function registerGlobalShortcuts() {
 				})
 			}
 		})
-	} catch {}
+	} catch (err) {
+		console.error('Failed to register shortcuts:', err)
+	}
 }
 
 export async function unregisterShortcuts() {
 	try {
 		await unregisterAll()
-	} catch {}
+	} catch (err) {
+		console.error('Failed to unregister shortcuts:', err)
+	}
 }

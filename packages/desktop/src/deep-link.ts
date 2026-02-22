@@ -11,5 +11,7 @@ export async function setupDeepLinks(navigate: (path: string) => void) {
 				}
 			}
 		})
-	} catch {}
+	} catch (err) {
+		console.error('Failed to setup deep links:', err)
+	}
 }

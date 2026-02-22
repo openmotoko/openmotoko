@@ -83,7 +83,7 @@ export function ConversationList() {
 				aria-activedescendant={activeConversationId ? `conv-${activeConversationId}` : undefined}
 				onKeyDown={handleListKeyDown}
 				className="flex-1 overflow-y-auto px-2"
-				tabIndex="0"
+				tabIndex={0}
 			>
 				{isLoading && (
 					<div className="px-2 py-4">

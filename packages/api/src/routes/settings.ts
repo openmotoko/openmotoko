@@ -3,7 +3,26 @@ import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { validate } from '../middleware/validate.js'
 
-const updateSettingsSchema = z.record(z.string(), z.unknown())
+const ALLOWED_SETTINGS_KEYS = new Set([
+	'defaultModel',
+	'onboardingComplete',
+	'anthropicApiKey',
+	'openaiApiKey',
+	'googleAiApiKey',
+	'ollamaHost',
+	'systemPrompt',
+	'budget',
+	'theme',
+	'llm.defaultProvider',
+	'llm.defaultModel',
+	'app.port',
+	'app.host',
+])
+
+const updateSettingsSchema = z.record(z.string(), z.unknown()).refine(
+	(data) => Object.keys(data).every((key) => ALLOWED_SETTINGS_KEYS.has(key)),
+	{ message: 'Unknown setting key' },
+)
 
 export default async function settingsRoutes(fastify: FastifyInstance) {
 	fastify.get('/api/settings', async (_request, reply) => {

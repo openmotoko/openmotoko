@@ -21,19 +21,21 @@ export function SkillDetail({ skill, open, onClose }: SkillDetailProps) {
 		setConfirmUninstall(false)
 	}, [])
 
+	const skillId = skill?.id ?? ''
+
 	const { data: permissions } = useQuery({
-		queryKey: ['skill-permissions', skill?.id],
-		queryFn: () => api.getSkillPermissions(skill?.id),
+		queryKey: ['skill-permissions', skillId],
+		queryFn: () => api.getSkillPermissions(skillId),
 		enabled: !!skill,
 	})
 
 	const updatePerms = useMutation({
-		mutationFn: (perms: SkillPermissions) => api.updateSkillPermissions(skill?.id, perms),
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['skill-permissions', skill?.id] }),
+		mutationFn: (perms: SkillPermissions) => api.updateSkillPermissions(skillId, perms),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['skill-permissions', skillId] }),
 	})
 
 	const uninstall = useMutation({
-		mutationFn: () => api.uninstallSkill(skill?.id),
+		mutationFn: () => api.uninstallSkill(skillId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['skills'] })
 			onClose()

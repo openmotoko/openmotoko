@@ -7,6 +7,7 @@ import type { CreateArtifactInput, UpdateArtifactInput } from '../artifacts/inde
 import { artifactManager } from '../artifacts/index.js'
 import { getDb } from '../db/client.js'
 import { skills } from '../db/schema.js'
+import { budgetEnforcer } from '../budget/index.js'
 import { eventBus } from '../events/bus.js'
 import type { ArtifactCreatedEvent, ArtifactUpdatedEvent } from '../events/types.js'
 import { AnthropicProvider } from '../llm/providers/anthropic.js'
@@ -79,7 +80,14 @@ export class AgentRuntime {
 			try {
 				manifest = skillManifestSchema.parse(JSON.parse(row.manifest))
 			} catch {
-				continue
+				try {
+					const diskManifestPath = resolve(this.skillsBasePath, row.name, 'manifest.json')
+					const fs = await import('node:fs')
+					const raw = fs.readFileSync(diskManifestPath, 'utf-8')
+					manifest = skillManifestSchema.parse(JSON.parse(raw))
+				} catch {
+					continue
+				}
 			}
 
 			const skillPath = resolve(this.skillsBasePath, row.id, 'index.js')
@@ -101,6 +109,10 @@ export class AgentRuntime {
 			this.initLLMRouter()
 		}
 		return this.llmRouter as LLMRouter
+	}
+
+	async checkBudget(estimatedCost: number): Promise<{ allowed: boolean; reason?: string }> {
+		return budgetEnforcer.checkBudget(estimatedCost)
 	}
 
 	private getArtifactToolDefinitions(): ToolDefinition[] {

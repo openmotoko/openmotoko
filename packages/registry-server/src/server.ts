@@ -12,7 +12,7 @@ export async function createRegistryServer() {
   const fastify = Fastify({ logger: true });
 
   const allowedOrigin =
-    process.env.REGISTRY_CORS_ORIGIN ?? "http://localhost:5173";
+    process.env.REGISTRY_CORS_ORIGIN ?? (process.env.NODE_ENV === "production" ? false : "http://localhost:5173");
   await fastify.register(helmet, {
     contentSecurityPolicy: {
       directives: {

@@ -1,4 +1,4 @@
-import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { nanoid } from 'nanoid'
 
 export const registrySkills = sqliteTable('registry_skills', {
@@ -25,7 +25,9 @@ export const skillRatings = sqliteTable('skill_ratings', {
 	stars: integer().notNull(),
 	comment: text().notNull().default(''),
 	createdAt: integer('created_at').notNull().$defaultFn(() => Date.now()),
-})
+}, (table) => [
+	uniqueIndex('skill_ratings_skill_user_idx').on(table.skillId, table.userId),
+])
 
 export const securityScans = sqliteTable('security_scans', {
 	id: text().primaryKey().$defaultFn(() => nanoid()),

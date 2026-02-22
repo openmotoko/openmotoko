@@ -66,11 +66,22 @@ export default async function registerWebSocket(fastify: FastifyInstance) {
 
 		clients.add(socket as unknown as WebSocket)
 
+		const pingInterval = setInterval(() => {
+			if (socket.readyState === socket.OPEN) {
+				socket.ping()
+			} else {
+				clearInterval(pingInterval)
+				clients.delete(socket as unknown as WebSocket)
+			}
+		}, 30000)
+
 		socket.on('close', () => {
+			clearInterval(pingInterval)
 			clients.delete(socket as unknown as WebSocket)
 		})
 
 		socket.on('error', () => {
+			clearInterval(pingInterval)
 			clients.delete(socket as unknown as WebSocket)
 		})
 	})

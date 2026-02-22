@@ -12,6 +12,13 @@ const loginAttempts = new Map<string, { count: number; resetAt: number }>()
 const MAX_LOGIN_ATTEMPTS = 5
 const LOGIN_LOCKOUT_MS = 15 * 60 * 1000
 
+setInterval(() => {
+	const now = Date.now()
+	for (const [ip, entry] of loginAttempts) {
+		if (now > entry.resetAt) loginAttempts.delete(ip)
+	}
+}, 60 * 60 * 1000)
+
 function getClientIp(request: { ip: string }): string {
 	return request.ip
 }

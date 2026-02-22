@@ -32,6 +32,7 @@ export function OnboardingFlow({ onComplete }: { onComplete: () => void }) {
 		ollamaHost: 'http://localhost:11434',
 		model: null,
 		enabledSkills: [],
+		channels: [],
 	})
 
 	const update = useCallback((patch: Partial<OnboardingData>) => {

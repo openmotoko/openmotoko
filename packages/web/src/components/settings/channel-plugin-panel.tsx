@@ -64,7 +64,7 @@ export function ChannelPluginPanel() {
 				<p className="text-[10px] font-ui text-pulse">
 					{installMutation.error instanceof Error
 						? installMutation.error.message
-						: 'Installation fehlgeschlagen'}
+						: 'Installation failed'}
 				</p>
 			)}
 
@@ -75,7 +75,7 @@ export function ChannelPluginPanel() {
 				</div>
 			) : (plugins as ChannelPluginInfo[]).length === 0 ? (
 				<p className="text-xs font-ui text-static/50 py-4 text-center">
-					Keine Channel Plugins installiert
+					No channel plugins installed
 				</p>
 			) : (
 				<div className="space-y-2">
