@@ -1,7 +1,7 @@
 {
 	"id": "web-fetch",
 	"name": "Web Fetch",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"description": "Make HTTP requests and extract content from web pages",
 	"author": "openmotoko",
 	"capabilities": {

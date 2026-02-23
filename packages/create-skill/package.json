@@ -1,6 +1,6 @@
 {
   "name": "create-openmotoko-skill",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Scaffold a new OpenMotoko skill project",
   "license": "MIT",
   "type": "module",

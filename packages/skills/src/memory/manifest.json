@@ -1,7 +1,7 @@
 {
 	"id": "memory",
 	"name": "Memory",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"description": "Persistent knowledge store for notes, facts, and preferences across conversations",
 	"author": "openmotoko",
 	"capabilities": {

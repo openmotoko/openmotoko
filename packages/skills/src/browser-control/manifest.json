@@ -1,7 +1,7 @@
 {
 	"id": "browser-control",
 	"name": "Browser Control",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"description": "Automate browser interactions using Playwright",
 	"author": "openmotoko",
 	"capabilities": {
