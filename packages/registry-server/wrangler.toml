@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "openmotoko-registry"
-database_id = "placeholder"
+database_id = "47cc225d-b3f9-464e-aabe-92820761bedc"
 
 [[r2_buckets]]
 binding = "PACKAGES"
