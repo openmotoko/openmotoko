@@ -1,5 +1,6 @@
 import { getHelpText, isCommand, parseCommand } from './commands.js'
 import { CHANNEL_MAX_LENGTH, splitMessage } from './media.js'
+import { enforcePolicy } from './policy.js'
 import type { ChannelAdapter, ChannelType, InboundMessage } from './types.js'
 
 export type InboundHandler = (msg: InboundMessage) => Promise<string | null>
@@ -45,6 +46,18 @@ export class ChannelRouter {
 	}
 
 	private async routeMessage(adapter: ChannelAdapter, msg: InboundMessage): Promise<void> {
+		const policyResult = await enforcePolicy(adapter.type, msg)
+		if (!policyResult.allowed) {
+			if (policyResult.pairingChallenge) {
+				await this.sendResponse(
+					adapter,
+					msg.chatId,
+					`Pairing required. Send this code to connect: ${policyResult.pairingChallenge}`,
+				)
+			}
+			return
+		}
+
 		if (isCommand(msg.content)) {
 			const cmd = parseCommand(msg.content)
 			if (cmd?.type === 'help') {

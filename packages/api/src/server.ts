@@ -1,4 +1,5 @@
 import helmet from '@fastify/helmet'
+import { eventBus, watchConfig } from '@openmotoko/core'
 import Fastify from 'fastify'
 import authPlugin from './plugins/auth.js'
 import corsPlugin from './plugins/cors.js'
@@ -15,6 +16,7 @@ import conversationRoutes from './routes/conversations.js'
 import costRoutes from './routes/costs.js'
 import healthRoutes from './routes/health.js'
 import messageRoutes from './routes/messages.js'
+import openaiCompatRoutes from './routes/openai-compat.js'
 import registryRoutes from './routes/registry.js'
 import schedulerRoutes from './routes/scheduler.js'
 import settingsRoutes from './routes/settings.js'
@@ -64,6 +66,14 @@ export async function createServer() {
 		await scope.register(tailscaleRoutes)
 		await scope.register(agentRoutes)
 		await scope.register(channelPluginRoutes)
+		await scope.register(openaiCompatRoutes)
+	})
+
+	watchConfig(undefined, () => {
+		eventBus.emit('config:changed', {
+			type: 'config:changed',
+			timestamp: Date.now(),
+		})
 	})
 
 	return fastify

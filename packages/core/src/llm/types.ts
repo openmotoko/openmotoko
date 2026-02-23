@@ -19,6 +19,7 @@ export interface LLMConfig {
 	maxTokens?: number
 	tools?: ToolDefinition[]
 	systemPrompt?: string
+	thinkingLevel?: 'off' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh'
 }
 
 export interface LLMResponse {

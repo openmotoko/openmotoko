@@ -122,6 +122,24 @@ export interface AgentFailedEvent {
 	durationMs: number
 }
 
+export interface IntentCreatedEvent {
+	type: 'intent:created'
+	intentId: string
+	summary: string
+	requiresApproval: boolean
+}
+
+export interface IntentResolvedEvent {
+	type: 'intent:resolved'
+	intentId: string
+	status: string
+}
+
+export interface ConfigChangedEvent {
+	type: 'config:changed'
+	timestamp: number
+}
+
 export type AgentEvent =
 	| MessageReceivedEvent
 	| MessageSentEvent
@@ -140,6 +158,9 @@ export type AgentEvent =
 	| AgentSpawnedEvent
 	| AgentCompletedEvent
 	| AgentFailedEvent
+	| IntentCreatedEvent
+	| IntentResolvedEvent
+	| ConfigChangedEvent
 
 export type AgentEventType = AgentEvent['type']
 
@@ -163,4 +184,7 @@ export interface AgentEventMap {
 	'agent:spawned': AgentSpawnedEvent
 	'agent:completed': AgentCompletedEvent
 	'agent:failed': AgentFailedEvent
+	'intent:created': IntentCreatedEvent
+	'intent:resolved': IntentResolvedEvent
+	'config:changed': ConfigChangedEvent
 }

@@ -8,6 +8,11 @@ export type ChannelType =
 	| 'google-chat'
 	| 'teams'
 	| 'webchat'
+	| 'matrix'
+	| 'feishu'
+	| 'line'
+	| 'irc'
+	| 'mattermost'
 
 export type ActivationMode = 'mention' | 'always' | 'command-only'
 

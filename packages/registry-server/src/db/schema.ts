@@ -34,7 +34,13 @@ export const securityScans = sqliteTable('security_scans', {
 	skillId: text('skill_id').notNull().references(() => registrySkills.id),
 	version: text().notNull(),
 	passed: integer().notNull().default(0),
+	grade: text().notNull().default(''),
+	score: integer().notNull().default(0),
 	issues: text().notNull().default('[]'),
+	findings: text().notNull().default('[]'),
+	scannedFiles: integer('scanned_files').notNull().default(0),
+	totalLines: integer('total_lines').notNull().default(0),
+	scanDuration: integer('scan_duration').notNull().default(0),
 	scannedAt: integer('scanned_at').notNull().$defaultFn(() => Date.now()),
 })
 

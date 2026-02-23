@@ -68,4 +68,9 @@ export const CHANNEL_MAX_LENGTH: Record<string, number> = {
 	'google-chat': 4096,
 	teams: 28000,
 	webchat: 100000,
+	matrix: 65536,
+	feishu: 4096,
+	line: 5000,
+	irc: 512,
+	mattermost: 16383,
 }

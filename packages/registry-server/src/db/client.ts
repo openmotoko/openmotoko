@@ -55,7 +55,13 @@ export function initDb(): void {
 			skill_id TEXT NOT NULL REFERENCES registry_skills(id),
 			version TEXT NOT NULL,
 			passed INTEGER NOT NULL DEFAULT 0,
+			grade TEXT NOT NULL DEFAULT '',
+			score INTEGER NOT NULL DEFAULT 0,
 			issues TEXT NOT NULL DEFAULT '[]',
+			findings TEXT NOT NULL DEFAULT '[]',
+			scanned_files INTEGER NOT NULL DEFAULT 0,
+			total_lines INTEGER NOT NULL DEFAULT 0,
+			scan_duration INTEGER NOT NULL DEFAULT 0,
 			scanned_at INTEGER NOT NULL
 		);
 

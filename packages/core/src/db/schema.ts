@@ -119,6 +119,18 @@ export const agents = sqliteTable('agents', {
 	completedAt: integer(),
 })
 
+export const channelAllowlist = sqliteTable('channel_allowlist', {
+	id: text()
+		.primaryKey()
+		.$defaultFn(() => nanoid()),
+	channelType: text().notNull(),
+	senderId: text().notNull(),
+	senderName: text(),
+	approvedAt: integer()
+		.notNull()
+		.$defaultFn(() => Date.now()),
+})
+
 export type Conversation = typeof conversations.$inferSelect
 export type NewConversation = typeof conversations.$inferInsert
 export type Message = typeof messages.$inferSelect
@@ -135,3 +147,5 @@ export type CostLogEntry = typeof costLog.$inferSelect
 export type NewCostLogEntry = typeof costLog.$inferInsert
 export type Agent = typeof agents.$inferSelect
 export type NewAgent = typeof agents.$inferInsert
+export type ChannelAllowlistEntry = typeof channelAllowlist.$inferSelect
+export type NewChannelAllowlistEntry = typeof channelAllowlist.$inferInsert

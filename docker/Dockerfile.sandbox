@@ -1,0 +1,10 @@
+FROM node:24-alpine
+
+RUN adduser -D -u 1001 sandbox && \
+    mkdir -p /workspace && \
+    chown sandbox:sandbox /workspace
+
+USER sandbox
+WORKDIR /workspace
+
+ENV NODE_ENV=production

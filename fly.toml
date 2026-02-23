@@ -1,0 +1,19 @@
+app = "openmotoko"
+primary_region = "fra"
+
+[build]
+  dockerfile = "docker/Dockerfile"
+
+[http_service]
+  internal_port = 3457
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+
+[env]
+  NODE_ENV = "production"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1

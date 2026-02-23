@@ -16,14 +16,15 @@ function createTempSkill(files: Record<string, string>): string {
 }
 
 describe('runSecurityScan', () => {
-	it('passes clean skill', async () => {
+	it('passes clean skill with grade A', async () => {
 		const dir = createTempSkill({
 			'index.ts': 'export const handler = async () => ({ success: true })',
 		})
 		try {
 			const result = await runSecurityScan(dir, { id: 'clean', capabilities: {} })
-			expect(result.passed).toBe(true)
-			expect(result.issues).toHaveLength(0)
+			expect(result.grade).toBe('A')
+			expect(result.score).toBe(100)
+			expect(result.findings).toHaveLength(0)
 		} finally {
 			rmSync(dir, { recursive: true, force: true })
 		}
@@ -35,8 +36,8 @@ describe('runSecurityScan', () => {
 		})
 		try {
 			const result = await runSecurityScan(dir, { id: 'eval', capabilities: {} })
-			expect(result.passed).toBe(false)
-			expect(result.issues.some((i) => i.rule === 'no-eval')).toBe(true)
+			expect(result.findings.some((f) => f.patternId === 'eval-exec')).toBe(true)
+			expect(result.score).toBeLessThan(100)
 		} finally {
 			rmSync(dir, { recursive: true, force: true })
 		}
@@ -48,71 +49,73 @@ describe('runSecurityScan', () => {
 		})
 		try {
 			const result = await runSecurityScan(dir, { id: 'func', capabilities: {} })
-			expect(result.passed).toBe(false)
-			expect(result.issues.some((i) => i.rule === 'no-new-function')).toBe(true)
+			expect(result.findings.some((f) => f.patternId === 'new-function')).toBe(true)
 		} finally {
 			rmSync(dir, { recursive: true, force: true })
 		}
 	})
 
-	it('detects undeclared shell capability', async () => {
+	it('detects child_process import', async () => {
 		const dir = createTempSkill({
-			'index.ts': "import { exec } from 'node:child_process'\nexec('ls')",
+			'index.ts': "import { exec } from 'child_process'\nexec('ls')",
 		})
 		try {
 			const result = await runSecurityScan(dir, { id: 'shell', capabilities: {} })
-			expect(result.issues.some((i) => i.rule === 'undeclared-shell')).toBe(true)
+			expect(result.findings.some((f) => f.patternId === 'import-child-process')).toBe(true)
 		} finally {
 			rmSync(dir, { recursive: true, force: true })
 		}
 	})
 
-	it('allows declared shell capability', async () => {
-		const dir = createTempSkill({
-			'index.ts': "import { exec } from 'node:child_process'\nexec('ls')",
-		})
-		try {
-			const result = await runSecurityScan(dir, { id: 'ok', capabilities: { shell: true } })
-			expect(result.issues.filter((i) => i.rule === 'undeclared-shell')).toHaveLength(0)
-		} finally {
-			rmSync(dir, { recursive: true, force: true })
-		}
-	})
-
-	it('detects undeclared filesystem capability', async () => {
-		const dir = createTempSkill({
-			'index.ts': "import { readFileSync } from 'node:fs'\nreadFileSync('/tmp/x')",
-		})
-		try {
-			const result = await runSecurityScan(dir, { id: 'fs', capabilities: {} })
-			expect(result.issues.some((i) => i.rule === 'undeclared-filesystem')).toBe(true)
-		} finally {
-			rmSync(dir, { recursive: true, force: true })
-		}
-	})
-
-	it('allows declared filesystem capability', async () => {
-		const dir = createTempSkill({
-			'index.ts': "import { readFileSync } from 'node:fs'\nreadFileSync('/tmp/x')",
-		})
-		try {
-			const result = await runSecurityScan(dir, {
-				id: 'ok',
-				capabilities: { filesystem: { enabled: true } },
-			})
-			expect(result.issues.filter((i) => i.rule === 'undeclared-filesystem')).toHaveLength(0)
-		} finally {
-			rmSync(dir, { recursive: true, force: true })
-		}
-	})
-
-	it('detects undeclared network capability', async () => {
+	it('detects fetch() calls', async () => {
 		const dir = createTempSkill({
 			'index.ts': "const res = fetch('https://example.com')",
 		})
 		try {
 			const result = await runSecurityScan(dir, { id: 'net', capabilities: {} })
-			expect(result.issues.some((i) => i.rule === 'undeclared-network')).toBe(true)
+			expect(result.findings.some((f) => f.patternId === 'net-fetch')).toBe(true)
+		} finally {
+			rmSync(dir, { recursive: true, force: true })
+		}
+	})
+
+	it('detects hardcoded credentials', async () => {
+		const dir = createTempSkill({
+			'index.ts': 'const api_key = "abcdefghijklmnopqrstuvwx"',
+		})
+		try {
+			const result = await runSecurityScan(dir, { id: 'cred', capabilities: {} })
+			expect(result.findings.some((f) => f.patternId === 'hardcoded-key')).toBe(true)
+		} finally {
+			rmSync(dir, { recursive: true, force: true })
+		}
+	})
+
+	it('detects prototype pollution', async () => {
+		const dir = createTempSkill({
+			'index.ts': 'const a = obj.__proto__',
+		})
+		try {
+			const result = await runSecurityScan(dir, { id: 'proto', capabilities: {} })
+			expect(result.findings.some((f) => f.patternId === 'prototype-pollution')).toBe(true)
+		} finally {
+			rmSync(dir, { recursive: true, force: true })
+		}
+	})
+
+	it('assigns grade F for many critical findings', async () => {
+		const dir = createTempSkill({
+			'index.ts': [
+				'eval("a")',
+				'new Function("b")',
+				'const secret = "AKIA1234567890ABCDEF"',
+				'const x = obj.__proto__',
+				'require("vm")',
+			].join('\n'),
+		})
+		try {
+			const result = await runSecurityScan(dir, { id: 'bad', capabilities: {} })
+			expect(result.grade).toBe('F')
 		} finally {
 			rmSync(dir, { recursive: true, force: true })
 		}
@@ -126,7 +129,38 @@ describe('runSecurityScan', () => {
 		})
 		try {
 			const result = await runSecurityScan(dir, { id: 'clean', capabilities: {} })
-			expect(result.passed).toBe(true)
+			expect(result.grade).toBe('A')
+			expect(result.findings).toHaveLength(0)
+		} finally {
+			rmSync(dir, { recursive: true, force: true })
+		}
+	})
+
+	it('includes file and line in findings', async () => {
+		const dir = createTempSkill({
+			'src/handler.ts': 'const x = 1\nconst y = eval("2")\nconst z = 3',
+		})
+		try {
+			const result = await runSecurityScan(dir, { id: 'loc', capabilities: {} })
+			const finding = result.findings.find((f) => f.patternId === 'eval-exec')
+			expect(finding).toBeDefined()
+			expect(finding!.file).toBe('src/handler.ts')
+			expect(finding!.line).toBe(2)
+		} finally {
+			rmSync(dir, { recursive: true, force: true })
+		}
+	})
+
+	it('reports scan metadata', async () => {
+		const dir = createTempSkill({
+			'a.ts': 'export const a = 1',
+			'b.ts': 'export const b = 2',
+		})
+		try {
+			const result = await runSecurityScan(dir, { id: 'meta', capabilities: {} })
+			expect(result.scannedFiles).toBe(2)
+			expect(result.totalLines).toBeGreaterThan(0)
+			expect(result.scanDuration).toBeGreaterThanOrEqual(0)
 		} finally {
 			rmSync(dir, { recursive: true, force: true })
 		}

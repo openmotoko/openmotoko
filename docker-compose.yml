@@ -1,0 +1,24 @@
+services:
+  openmotoko:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "${PORT:-3457}:3457"
+    volumes:
+      - openmotoko-data:/app/data
+    environment:
+      - OPENMOTOKO_PASSWORD=${OPENMOTOKO_PASSWORD}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY:-}
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3457/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  openmotoko-data:

@@ -116,8 +116,63 @@ export default async function skillsRoutes(fastify: FastifyInstance) {
 			verified: skill.verified === 1,
 			ratings,
 			securityScan: latestScan
-				? { ...latestScan, passed: latestScan.passed === 1, issues: JSON.parse(latestScan.issues) }
+				? {
+						...latestScan,
+						passed: latestScan.passed === 1,
+						grade: latestScan.grade,
+						score: latestScan.score,
+						findings: JSON.parse(latestScan.findings),
+						scannedFiles: latestScan.scannedFiles,
+						totalLines: latestScan.totalLines,
+						scanDuration: latestScan.scanDuration,
+					}
 				: null,
+		})
+	})
+
+	fastify.get('/api/skills/:id/scan', async (request, reply) => {
+		const { id } = request.params as { id: string }
+		const db = getRegistryDb()
+
+		const [skill] = db.select().from(registrySkills).where(eq(registrySkills.id, id)).limit(1).all()
+		if (!skill) return reply.status(404).send({ error: 'Skill not found', code: 'NOT_FOUND' })
+
+		const scans = db
+			.select()
+			.from(securityScans)
+			.where(eq(securityScans.skillId, id))
+			.orderBy(desc(securityScans.scannedAt))
+			.limit(10)
+			.all()
+
+		if (scans.length === 0) {
+			return reply.status(404).send({ error: 'No scan results found', code: 'NO_SCANS' })
+		}
+
+		const latest = scans[0]
+		return reply.send({
+			skillId: id,
+			latest: {
+				id: latest.id,
+				version: latest.version,
+				passed: latest.passed === 1,
+				grade: latest.grade,
+				score: latest.score,
+				findings: JSON.parse(latest.findings),
+				scannedFiles: latest.scannedFiles,
+				totalLines: latest.totalLines,
+				scanDuration: latest.scanDuration,
+				scannedAt: latest.scannedAt,
+			},
+			history: scans.map((s) => ({
+				id: s.id,
+				version: s.version,
+				passed: s.passed === 1,
+				grade: s.grade,
+				score: s.score,
+				findingCount: JSON.parse(s.findings).length,
+				scannedAt: s.scannedAt,
+			})),
 		})
 	})
 }

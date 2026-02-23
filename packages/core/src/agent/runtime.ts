@@ -6,17 +6,20 @@ import type { SpawnOptions } from '../agents/types.js'
 import type { CreateArtifactInput, UpdateArtifactInput } from '../artifacts/index.js'
 import { artifactManager } from '../artifacts/index.js'
 import { budgetEnforcer } from '../budget/index.js'
+import { getConfig } from '../config/loader.js'
 import { getDb } from '../db/client.js'
 import { skills } from '../db/schema.js'
 import { eventBus } from '../events/bus.js'
 import type { ArtifactCreatedEvent, ArtifactUpdatedEvent } from '../events/types.js'
 import { AnthropicProvider } from '../llm/providers/anthropic.js'
+import { GenericOpenAIProvider } from '../llm/providers/generic-openai.js'
 import { GoogleProvider } from '../llm/providers/google.js'
 import { OllamaProvider } from '../llm/providers/ollama.js'
 import { OpenAIProvider } from '../llm/providers/openai.js'
 import type { RouterConfig } from '../llm/router.js'
 import { LLMRouter } from '../llm/router.js'
 import type { LLMProvider } from '../llm/types.js'
+import { McpClientManager } from '../mcp/client.js'
 import { SkillRuntime } from '../skills/runtime.js'
 
 interface ToolMapping {
@@ -27,6 +30,7 @@ interface ToolMapping {
 export class AgentRuntime {
 	private skillRuntime: SkillRuntime
 	private llmRouter: LLMRouter | null = null
+	private mcpClient: McpClientManager | null = null
 	private toolMap = new Map<string, ToolMapping>()
 	private skillsBasePath: string
 
@@ -39,6 +43,12 @@ export class AgentRuntime {
 	async initialize(): Promise<void> {
 		this.initLLMRouter()
 		await this.loadAndStartSkills()
+
+		const config = getConfig()
+		if (config.mcp.servers.length > 0) {
+			this.mcpClient = new McpClientManager()
+			await this.mcpClient.connectAll(config.mcp)
+		}
 	}
 
 	private initLLMRouter(): void {
@@ -56,6 +66,17 @@ export class AgentRuntime {
 
 		const ollamaHost = process.env.OLLAMA_HOST ?? 'http://localhost:11434'
 		providers.push(new OllamaProvider(ollamaHost))
+
+		if (process.env.GENERIC_LLM_BASE_URL) {
+			providers.push(
+				new GenericOpenAIProvider({
+					baseUrl: process.env.GENERIC_LLM_BASE_URL,
+					apiKey: process.env.GENERIC_LLM_API_KEY ?? '',
+					name: process.env.GENERIC_LLM_NAME,
+					providerId: process.env.GENERIC_LLM_PROVIDER_ID,
+				}),
+			)
+		}
 
 		const config: RouterConfig = {
 			providers,
@@ -208,10 +229,12 @@ export class AgentRuntime {
 	}
 
 	getToolDefinitions(): ToolDefinition[] {
+		const mcpTools = this.mcpClient?.getTools() ?? []
 		return [
 			...[...this.toolMap.values()].map((m) => m.toolDef),
 			...this.getArtifactToolDefinitions(),
 			...this.getAgentToolDefinitions(),
+			...mcpTools,
 		]
 	}
 
@@ -253,6 +276,18 @@ export class AgentRuntime {
 		input: unknown,
 		conversationId?: string,
 	): Promise<string> {
+		if (this.mcpClient?.isMcpTool(toolName)) {
+			try {
+				const result = await this.mcpClient.callTool(toolName, input)
+				return typeof result === 'string' ? result : JSON.stringify(result)
+			} catch (err) {
+				return JSON.stringify({
+					success: false,
+					error: err instanceof Error ? err.message : 'MCP tool execution failed',
+				})
+			}
+		}
+
 		if (toolName === 'create_artifact' || toolName === 'update_artifact') {
 			try {
 				return await this.handleArtifactToolCall(toolName, input as Record<string, unknown>)
@@ -316,6 +351,7 @@ export class AgentRuntime {
 	}
 
 	async shutdown(): Promise<void> {
+		await this.mcpClient?.disconnectAll()
 		await this.skillRuntime.stopAll()
 	}
 }

@@ -73,6 +73,16 @@ export default async function publishRoutes(fastify: FastifyInstance) {
 
 			const scanResult = await runSecurityScan(tmpDir, manifest)
 
+			if (scanResult.grade === 'F') {
+				return reply.status(422).send({
+					error: 'Security scan failed',
+					code: 'SCAN_REJECTED',
+					grade: scanResult.grade,
+					score: scanResult.score,
+					findings: scanResult.findings,
+				})
+			}
+
 			const db = getRegistryDb()
 			const skillId = manifest.id as string
 
@@ -119,8 +129,14 @@ export default async function publishRoutes(fastify: FastifyInstance) {
 					id: nanoid(),
 					skillId,
 					version: manifest.version,
-					passed: scanResult.passed ? 1 : 0,
-					issues: JSON.stringify(scanResult.issues),
+					passed: 1,
+					grade: scanResult.grade,
+					score: scanResult.score,
+					issues: JSON.stringify(scanResult.findings),
+					findings: JSON.stringify(scanResult.findings),
+					scannedFiles: scanResult.scannedFiles,
+					totalLines: scanResult.totalLines,
+					scanDuration: scanResult.scanDuration,
 					scannedAt: Date.now(),
 				})
 				.run()
@@ -130,7 +146,14 @@ export default async function publishRoutes(fastify: FastifyInstance) {
 				name: manifest.name,
 				version: manifest.version,
 				checksum,
-				securityScan: scanResult,
+				securityScan: {
+					grade: scanResult.grade,
+					score: scanResult.score,
+					findings: scanResult.findings,
+					scannedFiles: scanResult.scannedFiles,
+					totalLines: scanResult.totalLines,
+					scanDuration: scanResult.scanDuration,
+				},
 			})
 		} finally {
 			rmSync(tmpDir, { recursive: true, force: true })

@@ -1,8 +1,9 @@
-import { access } from 'node:fs/promises'
+import { access, readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { Command } from 'commander'
 import chalk from 'chalk'
 import ora from 'ora'
-import { getApiUrl, getDbPath } from '../utils.js'
+import { getApiUrl, getDbPath, getConfigDir } from '../utils.js'
 
 interface HealthResponse {
 	status: string
@@ -83,6 +84,34 @@ async function runDoctor(): Promise<void> {
 		hasFailure = true
 	}
 
+	spinner.start('Checking config file...')
+	const configPath = join(getConfigDir(), 'openmotoko.json')
+	let configHasProviders = false
+	try {
+		await access(configPath)
+		spinner.stop()
+		pass('Config file', configPath)
+
+		try {
+			const raw = await readFile(configPath, 'utf-8')
+			const parsed = JSON.parse(raw)
+			const { openMotokoConfigSchema } = await import('@openmotoko/core')
+			openMotokoConfigSchema.parse(parsed)
+			pass('Config schema', 'valid')
+
+			if (parsed.llm?.providers?.length > 0) {
+				configHasProviders = true
+			}
+		} catch {
+			fail('Config schema', 'invalid or unparseable')
+			hasFailure = true
+		}
+	} catch {
+		spinner.stop()
+		fail('Config file', `not found at ${configPath}`)
+		hasFailure = true
+	}
+
 	spinner.start('Checking LLM providers...')
 	spinner.stop()
 	const providers: Array<{ name: string; envKey: string }> = [
@@ -91,7 +120,11 @@ async function runDoctor(): Promise<void> {
 		{ name: 'Google AI', envKey: 'GOOGLE_AI_API_KEY' },
 	]
 
-	let anyProvider = false
+	let anyProvider = configHasProviders
+	if (configHasProviders) {
+		pass('LLM config', 'providers configured')
+	}
+
 	for (const provider of providers) {
 		if (process.env[provider.envKey]) {
 			pass(`${provider.name}`, 'API key set')

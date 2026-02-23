@@ -1,5 +1,6 @@
 export {
 	AnthropicProvider,
+	GenericOpenAIProvider,
 	GoogleProvider,
 	OllamaProvider,
 	OpenAIProvider,
