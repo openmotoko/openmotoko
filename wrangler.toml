@@ -1,2 +1,3 @@
 name = "openmotoko"
 pages_build_output_dir = "packages/landing/dist"
+compatibility_date = "2026-02-23"
