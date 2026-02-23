@@ -1,0 +1,47 @@
+<svg viewBox="0 0 340 80" width="340" height="80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 300;
+        src: url(data:font/woff2;base64,d09GMgABAAAAAAUwABAAAAAAChAAAATUAAI2BAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbIBx+BmA/U1RBVEwAdBEICodwhiIBNgIkA0gLJgAEIAWEIAcgDAcbBghRlDBOLcRXA7YxFfqikJJAZOLCYbjrd5FXEFiqtGyYj3XfxXMZFoMy4qGxb/N29/6JKXjUDglCcc1QyZb6RcRKh6iVeP7zedb7qZMhFlmxGiicNoUyUqpRRkvpapx2bwPdlr5uUTa2C+ZizDaAtrTiNIWWz3/eXaP221cWsUwoYpmSiPEQ0cSLqDXzUEiEyhCKfI0i2l9p5B/SDyl9dWN+mhUlyPW/vwFEA8EAoIgYFEGfBaOgC4K7HLQaHBwAgj6n8DCT5THPg/O7IM1QnPNcOakTMfMpz2eFO0CLoOg4So3oUcUE5OgQEHQBetBBLjKslavoJBXldbkM4FI6PDfBFAtQ6NU1q2MvHoDvVtyqu/vdvOfISSBQDpdBrITV1VTBBBgb93rZ0jof4ckHO9CwaGZgkOqGbtvkJoAqSkYAAgoqJigEE5RuAxPiKDQrOK+zsnETVahxSwQFyyLyKl1/8N9jDz1wx22iFa+rhqCrBVCEYRCOefwGxslIkI0ARjABKIABOlgYF1kj9KP06KLwqPHqhISYaF2sbpo2ITaK8BMNeCVeXkdUnu1N2d9NEipiW08PYKu7u/FKYlsfUqzpxXEFFQ1RwBgYFVxvL/n7+mytuIV3a/cSW8+VQDgiYDUBRSijYeBrOJpVCCUuHTkzhC03xXFUVpMbwwZ0JYZjilMHs2KxvAavPXUOA2OJ4ETkyamsDuTdtDFSAtkVHhuiVTiKBly5yoKyQ/noxkT54opaoubIieRDpzLriGosuPUhWvOI2PYAVp/7eEB+NCCaXrw1vuB0z6g/X+NLMzPZ+q8Q7IbQnJ0b4scVHyR7hCZBvuDzWcdZRNykGeSO2z2/ptqmJnjsYOjlJKO5gRFZcz3iHCuZ5ms4H2+107QgcAqPYAPBz/D+Y47Pl1mzJJngE/eKdvDX9nmFWsFj1hFPPYPtH1ckjsKEsU9hWi9bbzTWsyLLCUZY7M8INCdwIscLFMXTOgj2rjhkzpY4lv0foazig6alBxmni+WcTuYgBBvmAuasesblky3xJ3hpT8GKwnU7KLuDpu12agfoe4UmfW51tFjos1h5J1dgMAvfpJHOZLHNXmgul/Ssf45c48u3chRlKcjRm63fpZGOlJJOZ2FOdcgAu/e146Pj1V6Y1htqm+VP9iUzjJ2mk5VpJwrIXaBMHH5ZesB8683kyX8u7TOX3tZE8xeccHX8xGsTJlybOP4qYBqIAUgsaCD2PwNkNcDPqNBydCmSMeRHuhcgACVHSQlfKX9s0T+R2lr/wY87mi5eb+Xvd7e9dRcdBYRfiKdtGvD3js2B9MTYVEMtQy6CkNGA+U7/1BkkuJx5KkzCsHiYg7ldgWCs27pcpw51uaqg32sKab34DLI8jrovL4b8klfn/B5uZvIuc02VdRzOUhEG8pTkVV9eWIdVnFcYOf9bxWaZbYm5ZC1azUcyMbAoqVyIJquz0W0+3lxBsi7zkDxm6TILSTTXLG2ahM1H4iwwX6tZ5pqHNFmr+eabbZ4CenotZKMdLxAyU9gsnfQCdRabQs8yZWNu90clSjVpeX/bDkFzmcxkYmRUyIlXGGZ4hiNUEiPM06mHSFf9cIEq07RJYXW0Pyiogyys1CydgroogIMHTED04vc52LDZ3gEAAAA=) format('woff2');
+      }
+      @font-face {
+        font-family: 'JetBrains Mono';
+        font-style: normal;
+        font-weight: 700;
+        src: url(data:font/woff2;base64,d09GMgABAAAAAAM0ABAAAAAABmwAAALbAAI2BAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbIBwqBmA/U1RBVEwATBEICoIYgXcBNgIkAwwLDAAEIAWEJgcgDAcbKQUoPgzwZNi9yhABIw0lVKyw7fhBl1g9+16PIJojZy+X/wKTTiuJHBAqstUEqqwAwAgiiQ7IfT9/P6cvKaEaYFSJYUzZpb9DBeRIuAkPaByQmmThBjo4sEz26zHhmEupvEK87JPF33FpJq3dMn2UopKHOj//C8v+76Y2pvAaAPqxQfcO46gs7p0FlGACbbCAxyIMKNEAIO2WHulzMarOmWSSWkigDSAJIQuBVvrogU2emioBW4YaQCnDyOD1hFtXoSVoY2nTOfWleyVpb1oIzBqaYzlD+ECiJWgB3WZOBHDOLKXivznsb2IMEJCGpXcMwBBCCwld4BgC371hBmHAph2jC5gIQtYDDtGA35MWgvQdhZBCDBAgoUAXNIEu6MYBrbSQJLOkZZVqcA5d36/v1XfrmwIAIWragxK0QonZwHYAMiCEJNp2dyo2j8HDef2ta4u4fa3w3FE+fdb1649H52Jbb2Hqv5Dbd/opx6q9z2+iCKLW+6bptOfVq/k+lPhFq73P0t6ety65mABa5dQHWXAoaZdd3tx3NH6eH2wfjk/99vs+ff7opG992Dlls7HZanbsqho1UQtzplqgcrX6ZHTLyHpTNQHPRMvKHk+NTprs91KTN100VkQGKzT8CTWhpgAEUpV1Jm8Mt3f9a1HQPuFj50/Ax5/9XvOrfLRoEhokEPw8zDcZ6f/WCgFLR6rpk2ITo4GhjGvbnWsQAKCQ0Npehcgc4CmOFvq415IW3mmFyoeWDYsWrdQrXGqDIVHxYKBNbCAmbIswUcjvzxPjxqlJSMvWUWZNm4EQDHQNJpR8evIbJExCAiijZi1pIKSRlpAIORTSnEnjEIJfEzKDRGkgyMxAkGUNDlpa02YhM5rGaIwjLdKqiivIy8tPe94A0oIJBhoGenpOCQHOvb56leRqYOlKQmmYjRFBSC6iq/D4l4pDRi2YNa6AtGjUEhpQxwAEZB9G/c18AA==) format('woff2');
+      }
+    </style>
+  </defs>
+  <rect width="340" height="80" fill="#09090F"/>
+  <g transform="translate(11, 4) scale(0.58)">
+    <path d="M 10,16 L 90,16 L 59.1,72 M 10,16 L 40.9,72"
+      fill="none" stroke="#00EEFF" stroke-width="1.6"
+      stroke-linejoin="miter" stroke-linecap="square"/>
+    <path d="M 40.9,72 L 50,88 L 59.1,72"
+      fill="none" stroke="#FF2266" stroke-width="1.6"
+      stroke-linejoin="miter" stroke-linecap="square"
+      transform="translate(2,0)" opacity="0.35"/>
+    <path d="M 40.9,72 L 50,88 L 59.1,72"
+      fill="none" stroke="#FF2266" stroke-width="1.6"
+      stroke-linejoin="miter" stroke-linecap="square"
+      transform="translate(-2,0)" opacity="0.85"/>
+    <path d="M 40.9,72 L 50,88 L 59.1,72"
+      fill="none" stroke="#00EEFF" stroke-width="1.6"
+      stroke-linejoin="miter" stroke-linecap="square"/>
+  </g>
+  <text x="76" y="30"
+    font-family="'JetBrains Mono', monospace"
+    font-size="11" font-weight="300"
+    fill="#3A5060" letter-spacing="6">OPEN</text>
+  <text x="76" y="57"
+    font-family="'JetBrains Mono', monospace"
+    font-size="30" font-weight="700"
+    fill="#00EEFF" letter-spacing="-1">MOTOKO</text>
+  <text x="76" y="72"
+    font-family="'JetBrains Mono', monospace"
+    font-size="6.5" font-weight="300"
+    fill="#3A5060" letter-spacing="3">YOUR AGENT · YOUR DATA · YOUR RULES</text>
+</svg>

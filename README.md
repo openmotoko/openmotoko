@@ -1,11 +1,9 @@
-# OpenMotoko
-
-**Personal AI Agent. Self-hosted. Open Source.**
+![OpenMotoko](openmotoko-lockup-static.svg)
 
 > _"The Net is vast and infinite."_
 > Motoko Kusanagi
 
-[Quick Start](#quick-start) | [Features](#features) | [Architecture](#architecture) | [Skills](#skills) | [Channels](#channels) | [Deployment](#deployment) | [Writing a Skill](#writing-a-skill) | [API](#api) | [Environment Variables](#environment-variables)
+[Documentation](https://openmotoko.ai/docs/) | [Quick Start](#quick-start) | [Features](#features) | [Architecture](#architecture) | [Skills](#skills) | [Channels](#channels) | [Deployment](#deployment) | [Writing a Skill](#writing-a-skill) | [API](#api) | [Environment Variables](#environment-variables)
 
 ---
 
@@ -14,6 +12,8 @@ OpenMotoko is a self-hosted AI agent that lives on your machine or server. It ca
 It ships with a full UI: live activity feed, visual permission controls, cost tracking, a skill marketplace, and a Canvas workspace for artifacts. No YAML files. No terminal-only setup.
 
 Local-first. MIT licensed.
+
+**[openmotoko.ai](https://openmotoko.ai)** | **[Full Documentation](https://openmotoko.ai/docs/)**
 
 ## Features
 
