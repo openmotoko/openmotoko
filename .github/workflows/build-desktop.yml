@@ -46,6 +46,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Build web frontend
+        run: pnpm --filter @openmotoko/web build
+
       - name: Build desktop
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
