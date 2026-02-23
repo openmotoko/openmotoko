@@ -1,201 +1,184 @@
-import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
-import { eq } from 'drizzle-orm'
-import type { FastifyInstance } from 'fastify'
-import { nanoid } from 'nanoid'
-import { getRegistryDb } from '../db/client.js'
-import { registrySkills, securityScans } from '../db/schema.js'
-import { runSecurityScan } from '../services/security-scan.js'
+import { Hono } from 'hono'
+import type { Env } from '../types.js'
+import { generateId } from '../utils/id.js'
+import { parseTarGz } from '../utils/tar.js'
+import { scanFiles } from '../scanner/scanner.js'
 
-const STORAGE_DIR = join(homedir(), '.openmotoko', 'registry', 'packages')
+export const publishRoutes = new Hono<{ Bindings: Env }>()
 
-export default async function publishRoutes(fastify: FastifyInstance) {
-	fastify.post('/api/skills/publish', async (request, reply) => {
-		const apiKey = request.headers['x-api-key'] as string | undefined
-		const expectedKey = process.env.REGISTRY_API_KEY
-		if (!expectedKey) {
-			return reply.status(503).send({ error: 'Publishing is not configured', code: 'UNAVAILABLE' })
-		}
-		if (!apiKey || apiKey !== expectedKey) {
-			return reply.status(401).send({ error: 'Invalid or missing API key', code: 'UNAUTHORIZED' })
-		}
-
-		const file = await request.file()
-		if (!file) return reply.status(400).send({ error: 'No file uploaded' })
-
-		const chunks: Buffer[] = []
-		for await (const chunk of file.file) {
-			chunks.push(chunk)
-		}
-		const buffer = Buffer.concat(chunks)
-		const checksum = createHash('sha256').update(buffer).digest('hex')
-
-		const tmpDir = join(STORAGE_DIR, '_tmp_' + nanoid())
-		mkdirSync(tmpDir, { recursive: true })
-
-		try {
-			const archivePath = join(tmpDir, 'package.tar.gz')
-			writeFileSync(archivePath, buffer)
-
-			const { execSync } = await import('node:child_process')
-			execSync(
-				'tar -xzf package.tar.gz --strip-components=1 --no-same-owner --no-same-permissions 2>&1 | head -c 4096',
-				{ cwd: tmpDir, timeout: 30_000, maxBuffer: 5 * 1024 * 1024 },
-			)
-
-			const { readdirSync, lstatSync } = await import('node:fs')
-			const checkSymlinks = (dir: string, depth = 0): void => {
-				if (depth > 10) return
-				for (const entry of readdirSync(dir)) {
-					const fullPath = join(dir, entry)
-					const stat = lstatSync(fullPath)
-					if (stat.isSymbolicLink()) {
-						throw new Error(`Symlinks are not allowed in skill packages: ${entry}`)
-					}
-					if (stat.isDirectory()) {
-						checkSymlinks(fullPath, depth + 1)
-					}
-				}
-			}
-			checkSymlinks(tmpDir)
-
-			const manifestPath = join(tmpDir, 'manifest.json')
-			if (!existsSync(manifestPath)) {
-				return reply.status(400).send({ error: 'No manifest.json in package' })
-			}
-
-			const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
-			if (!manifest.id || !manifest.name || !manifest.version) {
-				return reply.status(400).send({ error: 'Invalid manifest: missing id, name, or version' })
-			}
-
-			const scanResult = await runSecurityScan(tmpDir, manifest)
-
-			if (scanResult.grade === 'F') {
-				return reply.status(422).send({
-					error: 'Security scan failed',
-					code: 'SCAN_REJECTED',
-					grade: scanResult.grade,
-					score: scanResult.score,
-					findings: scanResult.findings,
-				})
-			}
-
-			const db = getRegistryDb()
-			const skillId = manifest.id as string
-
-			if (!existsSync(STORAGE_DIR)) {
-				mkdirSync(STORAGE_DIR, { recursive: true })
-			}
-			const finalPath = join(STORAGE_DIR, `${skillId}-${manifest.version}.tar.gz`)
-			writeFileSync(finalPath, buffer)
-
-			const existing = db.select().from(registrySkills).where(eq(registrySkills.id, skillId)).all()
-
-			if (existing.length > 0) {
-				db.update(registrySkills)
-					.set({
-						name: manifest.name,
-						version: manifest.version,
-						description: manifest.description ?? '',
-						author: manifest.author ?? '',
-						checksumSha256: checksum,
-						downloadUrl: finalPath,
-						tags: JSON.stringify(manifest.tags ?? []),
-						publishedAt: Date.now(),
-					})
-					.where(eq(registrySkills.id, skillId))
-					.run()
-			} else {
-				db.insert(registrySkills)
-					.values({
-						id: skillId,
-						name: manifest.name,
-						version: manifest.version,
-						description: manifest.description ?? '',
-						author: manifest.author ?? '',
-						checksumSha256: checksum,
-						downloadUrl: finalPath,
-						tags: JSON.stringify(manifest.tags ?? []),
-						publishedAt: Date.now(),
-					})
-					.run()
-			}
-
-			db.insert(securityScans)
-				.values({
-					id: nanoid(),
-					skillId,
-					version: manifest.version,
-					passed: 1,
-					grade: scanResult.grade,
-					score: scanResult.score,
-					issues: JSON.stringify(scanResult.findings),
-					findings: JSON.stringify(scanResult.findings),
-					scannedFiles: scanResult.scannedFiles,
-					totalLines: scanResult.totalLines,
-					scanDuration: scanResult.scanDuration,
-					scannedAt: Date.now(),
-				})
-				.run()
-
-			return reply.status(201).send({
-				id: skillId,
-				name: manifest.name,
-				version: manifest.version,
-				checksum,
-				securityScan: {
-					grade: scanResult.grade,
-					score: scanResult.score,
-					findings: scanResult.findings,
-					scannedFiles: scanResult.scannedFiles,
-					totalLines: scanResult.totalLines,
-					scanDuration: scanResult.scanDuration,
-				},
-			})
-		} finally {
-			rmSync(tmpDir, { recursive: true, force: true })
-		}
-	})
-
-	fastify.delete('/api/skills/:id', async (request, reply) => {
-		const apiKey = request.headers['x-api-key'] as string | undefined
-		const expectedKey = process.env.REGISTRY_API_KEY
-		if (!expectedKey) {
-			return reply.status(503).send({ error: 'Not configured', code: 'UNAVAILABLE' })
-		}
-		if (!apiKey || apiKey !== expectedKey) {
-			return reply.status(401).send({ error: 'Invalid API key', code: 'UNAUTHORIZED' })
-		}
-		const { id } = request.params as { id: string }
-		const db = getRegistryDb()
-		const [skill] = db.select().from(registrySkills).where(eq(registrySkills.id, id)).all()
-		if (!skill) {
-			return reply.status(404).send({ error: 'Skill not found', code: 'NOT_FOUND' })
-		}
-		if (existsSync(skill.downloadUrl)) {
-			(await import('node:fs')).unlinkSync(skill.downloadUrl)
-		}
-		db.delete(registrySkills).where(eq(registrySkills.id, id)).run()
-		return reply.status(204).send()
-	})
-
-	fastify.get('/api/skills/:id/download', async (request, reply) => {
-		const { id } = request.params as { id: string }
-		const db = getRegistryDb()
-		const [skill] = db.select().from(registrySkills).where(eq(registrySkills.id, id)).all()
-		if (!skill) {
-			return reply.status(404).send({ error: 'Skill not found', code: 'NOT_FOUND' })
-		}
-		if (!existsSync(skill.downloadUrl)) {
-			return reply.status(404).send({ error: 'Package file not found', code: 'NOT_FOUND' })
-		}
-		const stream = (await import('node:fs')).createReadStream(skill.downloadUrl)
-		return reply
-			.header('Content-Type', 'application/gzip')
-			.header('Content-Disposition', `attachment; filename="${id}-${skill.version}.tar.gz"`)
-			.send(stream)
-	})
+async function sha256Hex(buffer: ArrayBuffer): Promise<string> {
+	const hash = await crypto.subtle.digest('SHA-256', buffer)
+	return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, '0')).join('')
 }
+
+publishRoutes.post('/api/skills/publish', async (c) => {
+	const apiKey = c.req.header('x-api-key')
+	const expectedKey = c.env.REGISTRY_API_KEY
+	if (!expectedKey) return c.json({ error: 'Publishing is not configured', code: 'UNAVAILABLE' }, 503)
+	if (!apiKey || apiKey !== expectedKey) return c.json({ error: 'Invalid or missing API key', code: 'UNAUTHORIZED' }, 401)
+
+	const formData = await c.req.formData()
+	const file = formData.get('file') as File | null
+	if (!file) return c.json({ error: 'No file uploaded' }, 400)
+
+	const buffer = await file.arrayBuffer()
+	const checksum = await sha256Hex(buffer)
+
+	let entries
+	try {
+		entries = await parseTarGz(buffer)
+	} catch {
+		return c.json({ error: 'Failed to parse tar.gz archive' }, 400)
+	}
+
+	const manifestEntry = entries.find((e) => e.path === 'manifest.json' || e.path.endsWith('/manifest.json'))
+	if (!manifestEntry) return c.json({ error: 'No manifest.json in package' }, 400)
+
+	let manifest: Record<string, unknown>
+	try {
+		manifest = JSON.parse(manifestEntry.content)
+	} catch {
+		return c.json({ error: 'Invalid manifest.json' }, 400)
+	}
+
+	if (!manifest.id || !manifest.name || !manifest.version) {
+		return c.json({ error: 'Invalid manifest: missing id, name, or version' }, 400)
+	}
+
+	const fileMap = new Map<string, string>()
+	for (const entry of entries) {
+		fileMap.set(entry.path, entry.content)
+	}
+
+	const scanResult = scanFiles(fileMap)
+
+	if (scanResult.grade === 'F') {
+		return c.json({
+			error: 'Security scan failed',
+			code: 'SCAN_REJECTED',
+			grade: scanResult.grade,
+			score: scanResult.score,
+			findings: scanResult.findings,
+		}, 422)
+	}
+
+	const skillId = manifest.id as string
+	const version = manifest.version as string
+	const r2Key = `${skillId}-${version}.tar.gz`
+
+	await c.env.PACKAGES.put(r2Key, buffer, {
+		customMetadata: { checksum, skillId, version },
+	})
+
+	const db = c.env.DB
+	const existing = await db.prepare('SELECT id FROM registry_skills WHERE id = ?').bind(skillId).first()
+
+	if (existing) {
+		await db.prepare(
+			`UPDATE registry_skills SET name = ?, version = ?, description = ?, author = ?,
+			 checksum_sha256 = ?, download_url = ?, tags = ?, published_at = ? WHERE id = ?`
+		).bind(
+			manifest.name as string,
+			version,
+			(manifest.description as string) || '',
+			(manifest.author as string) || '',
+			checksum,
+			r2Key,
+			JSON.stringify(manifest.tags || []),
+			Date.now(),
+			skillId,
+		).run()
+	} else {
+		await db.prepare(
+			`INSERT INTO registry_skills (id, name, version, description, author, checksum_sha256, download_url, tags, published_at)
+			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		).bind(
+			skillId,
+			manifest.name as string,
+			version,
+			(manifest.description as string) || '',
+			(manifest.author as string) || '',
+			checksum,
+			r2Key,
+			JSON.stringify(manifest.tags || []),
+			Date.now(),
+		).run()
+	}
+
+	const scanId = generateId()
+	await db.prepare(
+		`INSERT INTO security_scans (id, skill_id, version, passed, grade, score, issues, findings, scanned_files, total_lines, scan_duration, scanned_at)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	).bind(
+		scanId,
+		skillId,
+		version,
+		1,
+		scanResult.grade,
+		scanResult.score,
+		JSON.stringify(scanResult.findings),
+		JSON.stringify(scanResult.findings),
+		scanResult.scannedFiles,
+		scanResult.totalLines,
+		scanResult.scanDuration,
+		Date.now(),
+	).run()
+
+	return c.json({
+		id: skillId,
+		name: manifest.name,
+		version,
+		checksum,
+		securityScan: {
+			grade: scanResult.grade,
+			score: scanResult.score,
+			findings: scanResult.findings,
+			scannedFiles: scanResult.scannedFiles,
+			totalLines: scanResult.totalLines,
+			scanDuration: scanResult.scanDuration,
+		},
+	}, 201)
+})
+
+publishRoutes.delete('/api/skills/:id', async (c) => {
+	const apiKey = c.req.header('x-api-key')
+	const expectedKey = c.env.REGISTRY_API_KEY
+	if (!expectedKey) return c.json({ error: 'Not configured', code: 'UNAVAILABLE' }, 503)
+	if (!apiKey || apiKey !== expectedKey) return c.json({ error: 'Invalid API key', code: 'UNAUTHORIZED' }, 401)
+
+	const id = c.req.param('id')
+	const db = c.env.DB
+
+	const skill = await db.prepare('SELECT id, download_url FROM registry_skills WHERE id = ?').bind(id).first<{ id: string; download_url: string }>()
+	if (!skill) return c.json({ error: 'Skill not found', code: 'NOT_FOUND' }, 404)
+
+	if (skill.download_url) {
+		await c.env.PACKAGES.delete(skill.download_url)
+	}
+
+	await db.prepare('DELETE FROM security_scans WHERE skill_id = ?').bind(id).run()
+	await db.prepare('DELETE FROM skill_ratings WHERE skill_id = ?').bind(id).run()
+	await db.prepare('DELETE FROM registry_skills WHERE id = ?').bind(id).run()
+
+	return new Response(null, { status: 204 })
+})
+
+publishRoutes.get('/api/skills/:id/download', async (c) => {
+	const id = c.req.param('id')
+	const db = c.env.DB
+
+	const skill = await db.prepare('SELECT download_url, version FROM registry_skills WHERE id = ?').bind(id).first<{ download_url: string; version: string }>()
+	if (!skill) return c.json({ error: 'Skill not found', code: 'NOT_FOUND' }, 404)
+
+	const object = await c.env.PACKAGES.get(skill.download_url)
+	if (!object) return c.json({ error: 'Package file not found', code: 'NOT_FOUND' }, 404)
+
+	await db.prepare('UPDATE registry_skills SET downloads = downloads + 1 WHERE id = ?').bind(id).run()
+
+	return new Response(object.body, {
+		headers: {
+			'Content-Type': 'application/gzip',
+			'Content-Disposition': `attachment; filename="${id}-${skill.version}.tar.gz"`,
+		},
+	})
+})

@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import type { RegistryConfig, RegistryEntry, RegistrySearchParams, SkillDetail } from './types.js'
 
 const DEFAULT_CONFIG: RegistryConfig = {
-	registryUrl: 'https://raw.githubusercontent.com/openmotoko/skill-registry/main/index.json',
+	registryUrl: process.env.REGISTRY_URL || 'https://registry.openmotoko.ai',
 	cacheDir: join(homedir(), '.openmotoko', 'registry-cache'),
 	cacheTtlMs: 3600_000,
 }
@@ -83,7 +83,7 @@ export class RegistryClient {
 	}
 
 	private async fetchRemote(): Promise<RegistryEntry[]> {
-		const res = await fetch(this.config.registryUrl)
+		const res = await fetch(`${this.config.registryUrl}/api/skills`)
 		if (!res.ok) throw new Error(`Registry fetch failed: ${res.status}`)
 		const data = await res.json()
 		return (data as { skills: RegistryEntry[] }).skills ?? []
@@ -103,16 +103,13 @@ export class RegistryClient {
 	}
 
 	async getSkillDetail(id: string): Promise<SkillDetail> {
-		const res = await fetch(
-			`${this.config.registryUrl.replace('/index.json', '')}/api/skills/${id}`,
-		)
+		const res = await fetch(`${this.config.registryUrl}/api/skills/${id}`)
 		if (!res.ok) throw new Error(`Failed to fetch skill detail: ${res.status}`)
 		return (await res.json()) as SkillDetail
 	}
 
 	async rate(skillId: string, userId: string, stars: number, comment?: string): Promise<void> {
-		const baseUrl = this.config.registryUrl.replace('/index.json', '')
-		const res = await fetch(`${baseUrl}/api/skills/${skillId}/rate`, {
+		const res = await fetch(`${this.config.registryUrl}/api/skills/${skillId}/rate`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ userId, stars, comment: comment ?? '' }),

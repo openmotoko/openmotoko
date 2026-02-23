@@ -1,5 +1,3 @@
-import { readFileSync, readdirSync } from 'node:fs'
-import { join, extname } from 'node:path'
 import { VULN_PATTERNS } from './patterns.js'
 import type { VulnPattern } from './patterns.js'
 
@@ -26,18 +24,9 @@ export interface ScanResult {
 
 const SCANNABLE_EXTENSIONS = new Set(['.js', '.ts', '.mjs', '.cjs', '.jsx', '.tsx'])
 
-function collectFiles(dir: string, files: string[] = []): string[] {
-	const entries = readdirSync(dir, { withFileTypes: true })
-	for (const entry of entries) {
-		const fullPath = join(dir, entry.name)
-		if (entry.isDirectory()) {
-			if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue
-			collectFiles(fullPath, files)
-		} else if (SCANNABLE_EXTENSIONS.has(extname(entry.name))) {
-			files.push(fullPath)
-		}
-	}
-	return files
+function getExtension(path: string): string {
+	const dot = path.lastIndexOf('.')
+	return dot >= 0 ? path.slice(dot) : ''
 }
 
 function calculateGrade(findings: ScanFinding[]): { grade: SecurityGrade; score: number } {
@@ -50,9 +39,7 @@ function calculateGrade(findings: ScanFinding[]): { grade: SecurityGrade; score:
 			case 'low': penalty += 1; break
 		}
 	}
-
 	const score = Math.max(0, 100 - penalty)
-
 	if (score >= 90) return { grade: 'A', score }
 	if (score >= 75) return { grade: 'B', score }
 	if (score >= 60) return { grade: 'C', score }
@@ -60,17 +47,19 @@ function calculateGrade(findings: ScanFinding[]): { grade: SecurityGrade; score:
 	return { grade: 'F', score }
 }
 
-export function scanDirectory(dir: string): ScanResult {
+export function scanFiles(files: Map<string, string>): ScanResult {
 	const start = Date.now()
-	const files = collectFiles(dir)
 	const findings: ScanFinding[] = []
 	let totalLines = 0
+	let scannedFiles = 0
 
-	for (const file of files) {
-		const content = readFileSync(file, 'utf-8')
+	for (const [filePath, content] of files) {
+		if (filePath.includes('node_modules/') || filePath.startsWith('.')) continue
+		if (!SCANNABLE_EXTENSIONS.has(getExtension(filePath))) continue
+
+		scannedFiles++
 		const lines = content.split('\n')
 		totalLines += lines.length
-		const relativePath = file.replace(dir, '').replace(/^\//, '')
 
 		for (const pattern of VULN_PATTERNS) {
 			for (let i = 0; i < lines.length; i++) {
@@ -80,7 +69,7 @@ export function scanDirectory(dir: string): ScanResult {
 						severity: pattern.severity,
 						category: pattern.category,
 						description: pattern.description,
-						file: relativePath,
+						file: filePath,
 						line: i + 1,
 						snippet: lines[i].trim().slice(0, 200),
 					})
@@ -90,13 +79,5 @@ export function scanDirectory(dir: string): ScanResult {
 	}
 
 	const { grade, score } = calculateGrade(findings)
-
-	return {
-		grade,
-		score,
-		findings,
-		scannedFiles: files.length,
-		totalLines,
-		scanDuration: Date.now() - start,
-	}
+	return { grade, score, findings, scannedFiles, totalLines, scanDuration: Date.now() - start }
 }

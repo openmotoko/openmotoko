@@ -1,69 +1,48 @@
-import { desc, eq, sql } from 'drizzle-orm'
-import type { FastifyInstance } from 'fastify'
-import { nanoid } from 'nanoid'
-import { z } from 'zod'
-import { getRegistryDb } from '../db/client.js'
-import { registrySkills, skillRatings } from '../db/schema.js'
+import { Hono } from 'hono'
+import type { Env } from '../types.js'
+import { generateId } from '../utils/id.js'
 
-const rateBody = z.object({
-	userId: z.string().min(1),
-	stars: z.number().int().min(1).max(5),
-	comment: z.string().optional(),
+export const ratingsRoutes = new Hono<{ Bindings: Env }>()
+
+ratingsRoutes.post('/api/skills/:id/rate', async (c) => {
+	const id = c.req.param('id')
+	const body = await c.req.json<{ userId?: string; stars?: number; comment?: string }>()
+
+	if (!body.userId || typeof body.stars !== 'number' || body.stars < 1 || body.stars > 5) {
+		return c.json({ error: 'userId (string) and stars (1-5) are required' }, 400)
+	}
+
+	const db = c.env.DB
+
+	const skill = await db.prepare('SELECT id FROM registry_skills WHERE id = ?').bind(id).first()
+	if (!skill) return c.json({ error: 'Skill not found' }, 404)
+
+	await db.prepare(
+		`INSERT OR REPLACE INTO skill_ratings (id, skill_id, user_id, stars, comment, created_at)
+		 VALUES (?, ?, ?, ?, ?, ?)`
+	).bind(generateId(), id, body.userId, body.stars, body.comment || '', Date.now()).run()
+
+	const stats = await db.prepare(
+		'SELECT avg(stars) as avg_stars, count(*) as cnt FROM skill_ratings WHERE skill_id = ?'
+	).bind(id).first<{ avg_stars: number; cnt: number }>()
+
+	const avgRating = Math.round((stats?.avg_stars ?? 0) * 10) / 10
+	const ratingCount = stats?.cnt ?? 0
+
+	await db.prepare(
+		'UPDATE registry_skills SET rating = ?, rating_count = ? WHERE id = ?'
+	).bind(avgRating, ratingCount, id).run()
+
+	return c.json({ success: true, rating: avgRating, ratingCount })
 })
 
-export default async function ratingsRoutes(fastify: FastifyInstance) {
-	fastify.post('/api/skills/:id/rate', async (request, reply) => {
-		const { id } = request.params as { id: string }
-		const raw = rateBody.safeParse(request.body)
-		if (!raw.success) return reply.status(400).send({ error: raw.error.message })
+ratingsRoutes.get('/api/skills/:id/ratings', async (c) => {
+	const id = c.req.param('id')
+	const db = c.env.DB
 
-		const db = getRegistryDb()
-		const [skill] = db.select().from(registrySkills).where(eq(registrySkills.id, id)).all()
-		if (!skill) return reply.status(404).send({ error: 'Skill not found' })
+	const { results: ratings } = await db.prepare(
+		'SELECT * FROM skill_ratings WHERE skill_id = ? ORDER BY created_at DESC LIMIT 50'
+	).bind(id).all()
 
-		db.insert(skillRatings)
-			.values({
-				id: nanoid(),
-				skillId: id,
-				userId: raw.data.userId,
-				stars: raw.data.stars,
-				comment: raw.data.comment ?? '',
-				createdAt: Date.now(),
-			})
-			.run()
-
-		const [stats] = db
-			.select({
-				avg: sql<number>`avg(stars)`,
-				count: sql<number>`count(*)`,
-			})
-			.from(skillRatings)
-			.where(eq(skillRatings.skillId, id))
-			.all()
-
-		db.update(registrySkills)
-			.set({
-				rating: Math.round((stats?.avg ?? 0) * 10) / 10,
-				ratingCount: stats?.count ?? 0,
-			})
-			.where(eq(registrySkills.id, id))
-			.run()
-
-		return reply.send({ success: true, rating: stats?.avg ?? 0, ratingCount: stats?.count ?? 0 })
-	})
-
-	fastify.get('/api/skills/:id/ratings', async (request, reply) => {
-		const { id } = request.params as { id: string }
-		const db = getRegistryDb()
-
-		const ratings = db
-			.select()
-			.from(skillRatings)
-			.where(eq(skillRatings.skillId, id))
-			.orderBy(desc(skillRatings.createdAt))
-			.limit(50)
-			.all()
-
-		return reply.send({ ratings })
-	})
-}
+	return c.json({ ratings: ratings || [] })
+})

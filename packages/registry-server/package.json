@@ -3,28 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "main": "dist/server.js",
   "scripts": {
-    "build": "tsc -b",
-    "dev": "node --import tsx --watch src/index.ts",
-    "start": "node dist/index.js"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply openmotoko-registry"
   },
   "dependencies": {
-    "@fastify/cors": "^11.2.0",
-    "@fastify/helmet": "^13.0.2",
-    "@fastify/multipart": "^9.4.0",
-    "@fastify/rate-limit": "^10.3.0",
-    "better-sqlite3": "^12.6.2",
-    "drizzle-orm": "^0.45.1",
-    "fastify": "^5.7.4",
-    "fastify-plugin": "^5.1.0",
-    "nanoid": "^5.1.6",
-    "zod": "^4.3.6"
+    "hono": "^4.12.2"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^24",
-    "tsx": "^4.21.0",
+    "@cloudflare/workers-types": "^4",
+    "wrangler": "^4.67.0",
     "typescript": "^5.8.3"
   }
 }

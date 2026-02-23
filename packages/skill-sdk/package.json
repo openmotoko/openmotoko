@@ -1,18 +1,41 @@
 {
-	"name": "@openmotoko/skill-sdk",
-	"version": "0.1.0",
-	"private": true,
-	"type": "module",
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"scripts": {
-		"build": "tsc -b"
-	},
-	"dependencies": {
-		"zod": "^4.3.6"
-	},
-	"devDependencies": {
-		"@types/node": "^24",
-		"typescript": "^5.8.3"
-	}
+  "name": "@openmotoko/skill-sdk",
+  "version": "0.1.0",
+  "description": "SDK for building OpenMotoko skills",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openmotoko/openmotoko.git",
+    "directory": "packages/skill-sdk"
+  },
+  "keywords": [
+    "openmotoko",
+    "ai-agent",
+    "skill",
+    "sdk",
+    "plugin"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "^5.8.3"
+  }
 }

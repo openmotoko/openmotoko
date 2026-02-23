@@ -1,178 +1,128 @@
-import { and, desc, eq, like, or, sql } from 'drizzle-orm'
-import type { FastifyInstance } from 'fastify'
-import { z } from 'zod'
-import { getRegistryDb } from '../db/client.js'
-import { registrySkills, securityScans, skillRatings } from '../db/schema.js'
+import { Hono } from 'hono'
+import type { Env } from '../types.js'
 
-const searchQuery = z.object({
-	q: z.string().optional(),
-	tags: z.string().optional(),
-	verified: z.enum(['true', 'false']).optional(),
-	limit: z.coerce.number().int().min(1).max(100).optional(),
-	offset: z.coerce.number().int().min(0).optional(),
-	sort: z.enum(['downloads', 'rating', 'recent']).optional(),
+export const skillsRoutes = new Hono<{ Bindings: Env }>()
+
+skillsRoutes.get('/api/skills', async (c) => {
+	const db = c.env.DB
+	const q = c.req.query('q')
+	const tags = c.req.query('tags')
+	const verified = c.req.query('verified')
+	const sort = c.req.query('sort') || 'recent'
+	const limit = Math.min(Math.max(parseInt(c.req.query('limit') || '50'), 1), 100)
+	const offset = Math.max(parseInt(c.req.query('offset') || '0'), 0)
+
+	let sql = 'SELECT * FROM registry_skills'
+	const conditions: string[] = []
+	const params: unknown[] = []
+
+	if (q) {
+		conditions.push('(name LIKE ? OR description LIKE ?)')
+		params.push(`%${q}%`, `%${q}%`)
+	}
+	if (verified === 'true') {
+		conditions.push('verified = 1')
+	} else if (verified === 'false') {
+		conditions.push('verified = 0')
+	}
+
+	if (conditions.length > 0) {
+		sql += ' WHERE ' + conditions.join(' AND ')
+	}
+
+	switch (sort) {
+		case 'downloads': sql += ' ORDER BY downloads DESC'; break
+		case 'rating': sql += ' ORDER BY rating DESC'; break
+		default: sql += ' ORDER BY published_at DESC'
+	}
+
+	sql += ' LIMIT ? OFFSET ?'
+	params.push(limit, offset)
+
+	const { results } = await db.prepare(sql).bind(...params).all()
+
+	let skills = (results || []).map((r: Record<string, unknown>) => ({
+		...r,
+		tags: JSON.parse(r.tags as string),
+		verified: r.verified === 1,
+	}))
+
+	if (tags) {
+		const tagList = tags.split(',').map((t: string) => t.trim())
+		skills = skills.filter((s) => tagList.some((t: string) => (s.tags as string[]).includes(t)))
+	}
+
+	let countSql = 'SELECT count(*) as cnt FROM registry_skills'
+	const countParams: unknown[] = []
+	if (q) {
+		countSql += ' WHERE (name LIKE ? OR description LIKE ?)'
+		countParams.push(`%${q}%`, `%${q}%`)
+	}
+	const countResult = await db.prepare(countSql).bind(...countParams).first<{ cnt: number }>()
+	const total = countResult?.cnt ?? 0
+
+	return c.json({ skills, total })
 })
 
-export default async function skillsRoutes(fastify: FastifyInstance) {
-	fastify.get('/api/skills', async (request, reply) => {
-		const raw = searchQuery.safeParse(request.query)
-		if (!raw.success) return reply.status(400).send({ error: raw.error.message })
-		const params = raw.data
+skillsRoutes.get('/api/skills/:id', async (c) => {
+	const id = c.req.param('id')
+	const db = c.env.DB
 
-		const db = getRegistryDb()
-		const conditions = []
+	const skill = await db.prepare('SELECT * FROM registry_skills WHERE id = ?').bind(id).first()
+	if (!skill) return c.json({ error: 'Skill not found' }, 404)
 
-		if (params.q) {
-			const pattern = `%${params.q}%`
-			conditions.push(or(like(registrySkills.name, pattern), like(registrySkills.description, pattern)))
-		}
-		if (params.verified === 'true') {
-			conditions.push(eq(registrySkills.verified, 1))
-		} else if (params.verified === 'false') {
-			conditions.push(eq(registrySkills.verified, 0))
-		}
+	const { results: ratings } = await db.prepare(
+		'SELECT * FROM skill_ratings WHERE skill_id = ? ORDER BY created_at DESC LIMIT 20'
+	).bind(id).all()
 
-		const where = conditions.length > 0 ? and(...conditions) : undefined
+	const latestScan = await db.prepare(
+		'SELECT * FROM security_scans WHERE skill_id = ? ORDER BY scanned_at DESC LIMIT 1'
+	).bind(id).first()
 
-		let orderBy
-		switch (params.sort) {
-			case 'downloads':
-				orderBy = desc(registrySkills.downloads)
-				break
-			case 'rating':
-				orderBy = desc(registrySkills.rating)
-				break
-			default:
-				orderBy = desc(registrySkills.publishedAt)
-		}
-
-		const limit = params.limit ?? 50
-		const offset = params.offset ?? 0
-
-		const rows = db
-			.select()
-			.from(registrySkills)
-			.where(where)
-			.orderBy(orderBy)
-			.limit(limit)
-			.offset(offset)
-			.all()
-
-		const filtered = params.tags
-			? rows.filter((r) => {
-					const rowTags = JSON.parse(r.tags) as string[]
-					return params.tags!.split(',').some((t) => rowTags.includes(t.trim()))
-				})
-			: rows
-
-		let total: number
-		if (params.tags) {
-			const allRows = db.select().from(registrySkills).where(where).all()
-			total = allRows.filter((r) => {
-				const rowTags = JSON.parse(r.tags) as string[]
-				return params.tags!.split(',').some((t) => rowTags.includes(t.trim()))
-			}).length
-		} else {
-			const result = db
-				.select({ count: sql<number>`count(*)` })
-				.from(registrySkills)
-				.where(where)
-				.all()
-			total = result[0]?.count ?? 0
-		}
-
-		return reply.send({
-			skills: filtered.map((r) => ({ ...r, tags: JSON.parse(r.tags), verified: r.verified === 1 })),
-			total,
-		})
+	return c.json({
+		...skill,
+		tags: JSON.parse(skill.tags as string),
+		verified: skill.verified === 1,
+		ratings: ratings || [],
+		securityScan: latestScan ? {
+			...latestScan,
+			passed: latestScan.passed === 1,
+			findings: JSON.parse(latestScan.findings as string),
+		} : null,
 	})
+})
 
-	fastify.get('/api/skills/:id', async (request, reply) => {
-		const { id } = request.params as { id: string }
-		const db = getRegistryDb()
+skillsRoutes.get('/api/skills/:id/scan', async (c) => {
+	const id = c.req.param('id')
+	const db = c.env.DB
 
-		const [skill] = db.select().from(registrySkills).where(eq(registrySkills.id, id)).limit(1).all()
-		if (!skill) return reply.status(404).send({ error: 'Skill not found' })
+	const skill = await db.prepare('SELECT id FROM registry_skills WHERE id = ?').bind(id).first()
+	if (!skill) return c.json({ error: 'Skill not found', code: 'NOT_FOUND' }, 404)
 
-		const ratings = db
-			.select()
-			.from(skillRatings)
-			.where(eq(skillRatings.skillId, id))
-			.orderBy(desc(skillRatings.createdAt))
-			.limit(20)
-			.all()
+	const { results: scans } = await db.prepare(
+		'SELECT * FROM security_scans WHERE skill_id = ? ORDER BY scanned_at DESC LIMIT 10'
+	).bind(id).all()
 
-		const [latestScan] = db
-			.select()
-			.from(securityScans)
-			.where(eq(securityScans.skillId, id))
-			.orderBy(desc(securityScans.scannedAt))
-			.limit(1)
-			.all()
+	if (!scans || scans.length === 0) {
+		return c.json({ error: 'No scan results found', code: 'NO_SCANS' }, 404)
+	}
 
-		return reply.send({
-			...skill,
-			tags: JSON.parse(skill.tags),
-			verified: skill.verified === 1,
-			ratings,
-			securityScan: latestScan
-				? {
-						...latestScan,
-						passed: latestScan.passed === 1,
-						grade: latestScan.grade,
-						score: latestScan.score,
-						findings: JSON.parse(latestScan.findings),
-						scannedFiles: latestScan.scannedFiles,
-						totalLines: latestScan.totalLines,
-						scanDuration: latestScan.scanDuration,
-					}
-				: null,
-		})
+	const latest = scans[0]
+	return c.json({
+		skillId: id,
+		latest: {
+			...latest,
+			passed: latest.passed === 1,
+			findings: JSON.parse(latest.findings as string),
+		},
+		history: scans.map((s: Record<string, unknown>) => ({
+			id: s.id,
+			version: s.version,
+			passed: s.passed === 1,
+			grade: s.grade,
+			score: s.score,
+			findingCount: JSON.parse(s.findings as string).length,
+			scannedAt: s.scanned_at,
+		})),
 	})
-
-	fastify.get('/api/skills/:id/scan', async (request, reply) => {
-		const { id } = request.params as { id: string }
-		const db = getRegistryDb()
-
-		const [skill] = db.select().from(registrySkills).where(eq(registrySkills.id, id)).limit(1).all()
-		if (!skill) return reply.status(404).send({ error: 'Skill not found', code: 'NOT_FOUND' })
-
-		const scans = db
-			.select()
-			.from(securityScans)
-			.where(eq(securityScans.skillId, id))
-			.orderBy(desc(securityScans.scannedAt))
-			.limit(10)
-			.all()
-
-		if (scans.length === 0) {
-			return reply.status(404).send({ error: 'No scan results found', code: 'NO_SCANS' })
-		}
-
-		const latest = scans[0]
-		return reply.send({
-			skillId: id,
-			latest: {
-				id: latest.id,
-				version: latest.version,
-				passed: latest.passed === 1,
-				grade: latest.grade,
-				score: latest.score,
-				findings: JSON.parse(latest.findings),
-				scannedFiles: latest.scannedFiles,
-				totalLines: latest.totalLines,
-				scanDuration: latest.scanDuration,
-				scannedAt: latest.scannedAt,
-			},
-			history: scans.map((s) => ({
-				id: s.id,
-				version: s.version,
-				passed: s.passed === 1,
-				grade: s.grade,
-				score: s.score,
-				findingCount: JSON.parse(s.findings).length,
-				scannedAt: s.scannedAt,
-			})),
-		})
-	})
-}
+})

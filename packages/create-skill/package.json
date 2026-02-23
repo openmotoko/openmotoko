@@ -1,19 +1,39 @@
 {
-	"name": "create-openmotoko-skill",
-	"version": "0.1.0",
-	"type": "module",
-	"bin": {
-		"create-openmotoko-skill": "dist/index.js"
-	},
-	"scripts": {
-		"build": "tsc -b"
-	},
-	"dependencies": {
-		"@inquirer/prompts": "^8.2.1",
-		"chalk": "^5.6.2"
-	},
-	"devDependencies": {
-		"@types/node": "^24",
-		"typescript": "^5.8.3"
-	}
+  "name": "create-openmotoko-skill",
+  "version": "0.1.0",
+  "description": "Scaffold a new OpenMotoko skill project",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "create-openmotoko-skill": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openmotoko/openmotoko.git",
+    "directory": "packages/create-skill"
+  },
+  "keywords": [
+    "openmotoko",
+    "ai-agent",
+    "skill",
+    "scaffolding",
+    "create",
+    "cli"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.2.1",
+    "chalk": "^5.6.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "typescript": "^5.8.3"
+  }
 }
