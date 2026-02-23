@@ -1,0 +1,49 @@
+{
+	"id": "translator",
+	"name": "Translator",
+	"version": "0.1.0",
+	"description": "Translate text between languages using LibreTranslate",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true
+	},
+	"tools": [
+		{
+			"name": "translate_text",
+			"description": "Translate text from one language to another",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"text": {
+						"type": "string",
+						"description": "Text to translate"
+					},
+					"source": {
+						"type": "string",
+						"description": "Source language code (e.g. en, de, fr, es, ja, zh). Use 'auto' for auto-detection.",
+						"default": "auto"
+					},
+					"target": {
+						"type": "string",
+						"description": "Target language code (e.g. en, de, fr, es, ja, zh, ar, pt, ru, ko, it, nl)"
+					}
+				},
+				"required": ["text", "target"]
+			}
+		},
+		{
+			"name": "detect_language",
+			"description": "Detect the language of a text",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"text": {
+						"type": "string",
+						"description": "Text to analyze for language detection"
+					}
+				},
+				"required": ["text"]
+			}
+		}
+	]
+}

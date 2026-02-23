@@ -1,0 +1,74 @@
+{
+	"id": "memory",
+	"name": "Memory",
+	"version": "0.1.0",
+	"description": "Persistent knowledge store for notes, facts, and preferences across conversations",
+	"author": "openmotoko",
+	"capabilities": {
+		"filesystem": {
+			"enabled": true,
+			"paths": ["~/.openmotoko/"]
+		}
+	},
+	"tools": [
+		{
+			"name": "memory_save",
+			"description": "Save a note with a key and content",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"key": {
+						"type": "string",
+						"description": "Unique key for the note"
+					},
+					"content": {
+						"type": "string",
+						"description": "Content of the note"
+					},
+					"tags": {
+						"type": "array",
+						"items": { "type": "string" },
+						"description": "Optional tags for categorization"
+					}
+				},
+				"required": ["key", "content"]
+			}
+		},
+		{
+			"name": "memory_search",
+			"description": "Search notes by keyword",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"description": "Keyword to search for in keys, content, and tags"
+					}
+				},
+				"required": ["query"]
+			}
+		},
+		{
+			"name": "memory_list",
+			"description": "List all saved notes",
+			"inputSchema": {
+				"type": "object",
+				"properties": {}
+			}
+		},
+		{
+			"name": "memory_delete",
+			"description": "Delete a note by key",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"key": {
+						"type": "string",
+						"description": "Key of the note to delete"
+					}
+				},
+				"required": ["key"]
+			}
+		}
+	]
+}

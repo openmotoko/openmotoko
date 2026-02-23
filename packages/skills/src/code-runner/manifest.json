@@ -1,0 +1,50 @@
+{
+	"id": "code-runner",
+	"name": "Code Runner",
+	"version": "0.1.0",
+	"description": "Execute JavaScript and TypeScript code snippets in a sandboxed environment",
+	"author": "openmotoko",
+	"capabilities": {
+		"shell": true
+	},
+	"tools": [
+		{
+			"name": "run_javascript",
+			"description": "Execute a JavaScript code snippet",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "JavaScript code to execute"
+					},
+					"timeout": {
+						"type": "number",
+						"description": "Execution timeout in milliseconds",
+						"default": 10000
+					}
+				},
+				"required": ["code"]
+			}
+		},
+		{
+			"name": "run_typescript",
+			"description": "Execute a TypeScript code snippet",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"description": "TypeScript code to execute"
+					},
+					"timeout": {
+						"type": "number",
+						"description": "Execution timeout in milliseconds",
+						"default": 10000
+					}
+				},
+				"required": ["code"]
+			}
+		}
+	]
+}

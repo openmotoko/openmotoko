@@ -32,7 +32,7 @@ src-tauri/gen/
 .cursor/
 .agent/
 .agents/
-skills/
+/skills/
 skills-lock.json
 .cline/
 .claude/

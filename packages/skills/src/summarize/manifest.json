@@ -1,0 +1,50 @@
+{
+	"id": "summarize",
+	"name": "Summarize",
+	"version": "0.1.0",
+	"description": "Summarize text content or web pages into concise overviews",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true
+	},
+	"tools": [
+		{
+			"name": "summarize_text",
+			"description": "Summarize provided text into a concise overview",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"text": {
+						"type": "string",
+						"description": "The text to summarize"
+					},
+					"max_length": {
+						"type": "number",
+						"description": "Maximum length of summary in characters",
+						"default": 500
+					}
+				},
+				"required": ["text"]
+			}
+		},
+		{
+			"name": "summarize_url",
+			"description": "Fetch a URL and summarize its content",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"url": {
+						"type": "string",
+						"description": "The URL to fetch and summarize"
+					},
+					"max_length": {
+						"type": "number",
+						"description": "Maximum length of summary in characters",
+						"default": 500
+					}
+				},
+				"required": ["url"]
+			}
+		}
+	]
+}
