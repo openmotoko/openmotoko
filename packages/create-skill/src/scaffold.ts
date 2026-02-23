@@ -107,7 +107,7 @@ function writePackageJson(targetDir: string, options: ScaffoldOptions): void {
 		},
 		devDependencies: {
 			typescript: "^5.8.3",
-			"@types/node": "^22.13.4",
+			"@types/node": "^24",
 		},
 	};
 	writeFileSync(

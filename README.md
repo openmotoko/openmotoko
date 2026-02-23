@@ -2,21 +2,19 @@
   <img src="packages/landing/public/favicon.svg" width="80" alt="OpenMotoko">
 </p>
 
-<h1 align="center">OpenMotoko</h1>
-<p align="center"><strong>Personal AI Agent -- Built for Humans</strong></p>
-<p align="center">
-  <em>"The Net is vast and infinite."</em> -- Major Motoko Kusanagi
-</p>
+# OpenMotoko
+**Personal AI Agent - Built for Humans**
 
-<p align="center">
-  <a href="#quick-start">Quick Start</a> --
-  <a href="#what-can-it-do">Features</a> --
-  <a href="#architecture">Architecture</a> --
-  <a href="#skills">Skills</a> --
-  <a href="#channels">Channels</a> --
-  <a href="#deployment">Deployment</a> --
-  <a href="#writing-a-skill">Write a Skill</a>
-</p>
+> *"The Net is vast and infinite."*  
+> — Major Motoko Kusanagi
+
+[Quick Start](#quick-start) •
+[Features](#what-can-it-do) •
+[Architecture](#architecture) •
+[Skills](#skills) •
+[Channels](#channels) •
+[Deployment](#deployment) •
+[Write a Skill](#writing-a-skill)
 
 ---
 
@@ -45,11 +43,11 @@ Local-first. Open source. MIT licensed.
 
 | Tool | Version | How to check | How to install |
 |------|---------|-------------|----------------|
-| Node.js | **22+** | `node -v` | [nodejs.org](https://nodejs.org) or `nvm install 22` |
-| pnpm | **9+** | `pnpm -v` | `corepack enable && corepack prepare pnpm@9 --activate` |
+| Node.js | **24+** | `node -v` | [nodejs.org](https://nodejs.org) or `nvm install 24` |
+| pnpm | **10+** | `pnpm -v` | `corepack enable && corepack prepare pnpm@10 --activate` |
 | Git | any | `git --version` | [git-scm.com](https://git-scm.com) |
 
-> **Important:** Node.js 22 is required. Versions below 22 will cause build errors.
+> **Important:** Node.js 24 is required. Versions below 24 will cause build errors.
 
 ### Step-by-step Setup
 
@@ -125,7 +123,7 @@ docker compose -f docker/docker-compose.yml up -d
 | Problem | Solution |
 |---------|----------|
 | `pnpm: command not found` | Run `corepack enable` first (comes with Node.js) |
-| `Unsupported engine: wanted node >=22.0.0` | Upgrade Node.js to v22+ (`nvm install 22`) |
+| `Unsupported engine: wanted node >=24.0.0` | Upgrade Node.js to v24+ (`nvm install 24`) |
 | Build fails with TypeScript errors | Run `pnpm install` again, then `pnpm -r build` |
 | `ANTHROPIC_API_KEY` not working | Make sure the `.env` file is in the project root, not inside `docker/` |
 | Port 3457 already in use | Change `OPENMOTOKO_PORT` in your `.env` |
@@ -178,9 +176,9 @@ openmotoko/
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Runtime | Node.js | 22 LTS |
+| Runtime | Node.js | 24 |
 | Language | TypeScript | 5.8 |
-| Package Manager | pnpm | 9.15 |
+| Package Manager | pnpm | 10 |
 | Backend | Fastify | 5.7 |
 | Database | SQLite via better-sqlite3 + Drizzle ORM | 0.45 |
 | Validation | Zod | 4.3 |

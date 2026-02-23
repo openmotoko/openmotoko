@@ -1,6 +1,6 @@
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 
-RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 WORKDIR /app
 
@@ -39,7 +39,7 @@ RUN pnpm -r build
 RUN pnpm --filter @openmotoko/web build
 
 
-FROM node:22-alpine AS production
+FROM node:24-alpine AS production
 
 RUN addgroup -g 1001 openmotoko && \
     adduser -u 1001 -G openmotoko -s /bin/sh -D openmotoko

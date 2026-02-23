@@ -6,14 +6,14 @@ cd "$ROOT_DIR"
 
 check_node() {
   if ! command -v node &>/dev/null; then
-    echo "[error] Node.js not found. Install Node.js 22 LTS"
+    echo "[error] Node.js not found. Install Node.js 24"
     exit 1
   fi
 
   local version
   version=$(node -v | sed 's/v//' | cut -d. -f1)
-  if [[ "$version" -lt 22 ]]; then
-    echo "[error] Node.js $version found, need >= 22"
+  if [[ "$version" -lt 24 ]]; then
+    echo "[error] Node.js $version found, need >= 24"
     exit 1
   fi
   echo "[ok] Node.js $(node -v)"
@@ -23,7 +23,7 @@ check_pnpm() {
   if ! command -v pnpm &>/dev/null; then
     echo "Installing pnpm via corepack..."
     corepack enable
-    corepack prepare pnpm@9.15.4 --activate
+    corepack prepare pnpm@10 --activate
   fi
   echo "[ok] pnpm $(pnpm -v)"
 }

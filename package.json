@@ -1,31 +1,31 @@
 {
-	"name": "openmotoko",
-	"version": "0.1.0",
-	"private": true,
-	"type": "module",
-	"description": "Personal AI Agent for Humans",
-	"license": "MIT",
-	"engines": {
-		"node": ">=22.0.0"
-	},
-	"packageManager": "pnpm@9.15.4",
-	"scripts": {
-		"build": "pnpm -r build",
-		"dev": "pnpm --filter @openmotoko/api dev & pnpm --filter @openmotoko/web dev",
-		"dev:api": "pnpm --filter @openmotoko/api dev",
-		"dev:web": "pnpm --filter @openmotoko/web dev",
-		"test": "vitest run",
-		"test:watch": "vitest",
-		"test:coverage": "vitest run --coverage",
-		"check": "biome check .",
-		"check:fix": "biome check --write .",
-		"db:generate": "pnpm --filter @openmotoko/core db:generate",
-		"db:migrate": "pnpm --filter @openmotoko/core db:migrate"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^2.4.4",
-		"@vitest/coverage-v8": "^4.0.18",
-		"typescript": "^5.8.3",
-		"vitest": "^4.0.18"
-	}
+  "name": "openmotoko",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Personal AI Agent for Humans",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@10.29.3",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm --filter @openmotoko/api dev & pnpm --filter @openmotoko/web dev",
+    "dev:api": "pnpm --filter @openmotoko/api dev",
+    "dev:web": "pnpm --filter @openmotoko/web dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "db:generate": "pnpm --filter @openmotoko/core db:generate",
+    "db:migrate": "pnpm --filter @openmotoko/core db:migrate"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.4",
+    "@vitest/coverage-v8": "^4.0.18",
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.18"
+  }
 }

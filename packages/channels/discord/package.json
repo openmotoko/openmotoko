@@ -12,7 +12,7 @@
     "discord.js": "^14.25.1"
   },
   "devDependencies": {
-    "@types/node": "^22.13.4",
+    "@types/node": "^24",
     "typescript": "^5.8.3"
   }
 }

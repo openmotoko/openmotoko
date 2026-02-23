@@ -9,7 +9,7 @@
 		"@openmotoko/core": "workspace:*"
 	},
 	"devDependencies": {
-		"@types/node": "^22.13.4",
+		"@types/node": "^24",
 		"typescript": "^5.8.3"
 	}
 }
