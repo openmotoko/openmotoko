@@ -7,6 +7,9 @@ export async function collectStream(
 ): Promise<LLMResponse> {
 	const textParts: string[] = []
 	const toolCalls: ToolCall[] = []
+	let inputTokens = 0
+	let outputTokens = 0
+	let cost = 0
 
 	for await (const chunk of stream) {
 		if (chunk.content) {
@@ -15,12 +18,17 @@ export async function collectStream(
 		if (chunk.toolCall) {
 			toolCalls.push(chunk.toolCall)
 		}
+		if (chunk.usage) {
+			inputTokens = chunk.usage.inputTokens ?? inputTokens
+			outputTokens = chunk.usage.outputTokens ?? outputTokens
+			cost = chunk.usage.cost ?? cost
+		}
 	}
 
 	return {
 		content: textParts.join(''),
 		toolCalls,
-		usage: { inputTokens: 0, outputTokens: 0, cost: 0 },
+		usage: { inputTokens, outputTokens, cost },
 		model,
 		provider,
 	}

@@ -1,0 +1,129 @@
+---
+title: Fly.io
+description: Deploy OpenMotoko to Fly.io with persistent storage.
+---
+
+Fly.io provides a simple deployment path with automatic HTTPS, global regions, and persistent volumes.
+
+## fly.toml
+
+```toml
+app = "openmotoko"
+primary_region = "fra"
+
+[build]
+  dockerfile = "docker/Dockerfile"
+
+[http_service]
+  internal_port = 3457
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+
+[env]
+  NODE_ENV = "production"
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+```
+
+## Initial deployment
+
+### Create the app
+
+```bash
+fly launch --no-deploy
+```
+
+This creates the app on Fly.io without deploying. Review the generated `fly.toml` and adjust the region and VM size as needed.
+
+### Create a persistent volume
+
+```bash
+fly volumes create openmotoko_data --size 1 --region fra
+```
+
+Add the volume mount to `fly.toml`:
+
+```toml
+[mounts]
+  source = "openmotoko_data"
+  destination = "/app/data"
+```
+
+### Set secrets
+
+```bash
+fly secrets set OPENMOTOKO_PASSWORD="your-secure-password"
+fly secrets set ANTHROPIC_API_KEY="sk-ant-..."
+```
+
+Add any additional provider keys or channel tokens:
+
+```bash
+fly secrets set OPENAI_API_KEY="sk-..."
+fly secrets set TELEGRAM_BOT_TOKEN="123:ABC..."
+```
+
+### Deploy
+
+```bash
+fly deploy
+```
+
+## Custom domain
+
+```bash
+fly certs add openmotoko.example.com
+```
+
+Then point your DNS CNAME to `openmotoko.fly.dev`.
+
+## Scaling
+
+### Vertical (VM size)
+
+Edit `fly.toml`:
+
+```toml
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 2
+```
+
+### Horizontal
+
+OpenMotoko uses SQLite, so horizontal scaling requires a shared volume or switching to a networked database. For personal use, a single instance is recommended.
+
+## Monitoring
+
+```bash
+fly logs
+fly status
+fly ssh console
+```
+
+## Updating
+
+```bash
+fly deploy
+```
+
+Fly.io performs a rolling update with zero downtime.
+
+## Regions
+
+Change `primary_region` in `fly.toml` to deploy closer to you:
+
+| Region | Code |
+|---|---|
+| Frankfurt | `fra` |
+| Amsterdam | `ams` |
+| London | `lhr` |
+| New York | `ewr` |
+| San Francisco | `sjc` |
+| Tokyo | `nrt` |
+| Sydney | `syd` |

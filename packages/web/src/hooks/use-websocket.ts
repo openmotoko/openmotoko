@@ -13,6 +13,7 @@ function getSnapshot() {
 
 export function useWebSocket() {
 	const {
+		onboardingComplete,
 		addMessage,
 		updateStreamingContent,
 		clearStreaming,
@@ -31,6 +32,8 @@ export function useWebSocket() {
 	}, [isConnected, setWsConnected])
 
 	useEffect(() => {
+		if (!onboardingComplete) return
+
 		wsClient.connect()
 
 		const unsubscribe = wsClient.onEvent((event: AgentEvent) => {
@@ -102,6 +105,7 @@ export function useWebSocket() {
 			wsClient.disconnect()
 		}
 	}, [
+		onboardingComplete,
 		addMessage,
 		updateStreamingContent,
 		clearStreaming,

@@ -1,0 +1,108 @@
+---
+title: MCP
+description: Model Context Protocol support as both client and server.
+---
+
+OpenMotoko supports the [Model Context Protocol](https://modelcontextprotocol.io) in both directions: as a client connecting to external MCP servers, and as a server exposing its own tools.
+
+## MCP client
+
+Connect OpenMotoko to external MCP servers to give the agent access to third-party tools.
+
+### Configuration
+
+Add servers to `openmotoko.json` under the `mcp` key:
+
+```json
+{
+  "mcp": {
+    "servers": [
+      {
+        "id": "filesystem",
+        "name": "Local Files",
+        "transport": "stdio",
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/home/user/docs"]
+      },
+      {
+        "id": "weather",
+        "name": "Weather API",
+        "transport": "http",
+        "url": "https://mcp.example.com/weather"
+      }
+    ]
+  }
+}
+```
+
+### Transport types
+
+| Transport | Field | Description |
+|---|---|---|
+| `stdio` | `command`, `args` | Spawns a local process, communicates over stdin/stdout |
+| `http` | `url` | Connects to a remote StreamableHTTP endpoint |
+
+### Environment variables
+
+Pass environment variables to stdio servers:
+
+```json
+{
+  "id": "github",
+  "transport": "stdio",
+  "command": "npx",
+  "args": ["-y", "@modelcontextprotocol/server-github"],
+  "env": {
+    "GITHUB_TOKEN": "ghp_..."
+  }
+}
+```
+
+### Tool namespacing
+
+External tools are namespaced as `mcp_{serverId}_{toolName}` to avoid conflicts. For example, a tool called `search` from a server with ID `docs` becomes `mcp_docs_search`.
+
+## MCP server
+
+Expose OpenMotoko's tools to other MCP clients.
+
+### Enable
+
+Set `expose: true` in the MCP config:
+
+```json
+{
+  "mcp": {
+    "expose": true
+  }
+}
+```
+
+This starts an MCP server over stdio transport using the `@modelcontextprotocol/sdk`. All enabled skill tools are registered and available to connecting clients.
+
+### Use cases
+
+- Connect Claude Desktop or other MCP clients to OpenMotoko
+- Chain multiple AI agents, each accessing the other's tools
+- Build workflows where one system delegates tasks to OpenMotoko
+
+## Full config reference
+
+```json
+{
+  "mcp": {
+    "servers": [
+      {
+        "id": "string (required)",
+        "name": "string (optional display name)",
+        "transport": "stdio | http",
+        "command": "string (stdio only)",
+        "args": ["string[]", "(stdio only)"],
+        "url": "string (http only)",
+        "env": { "KEY": "VALUE" }
+      }
+    ],
+    "expose": false
+  }
+}
+```

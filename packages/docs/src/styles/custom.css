@@ -1,0 +1,56 @@
+:root {
+  --sl-color-accent-low: #061a1f;
+  --sl-color-accent: #00f0ff;
+  --sl-color-accent-high: #b3faff;
+  --sl-color-white: #e0e6ed;
+  --sl-color-gray-1: #c0c8d4;
+  --sl-color-gray-2: #8892a0;
+  --sl-color-gray-3: #4a5568;
+  --sl-color-gray-4: #2a3042;
+  --sl-color-gray-5: #1a1f30;
+  --sl-color-gray-6: #0f1320;
+  --sl-color-black: #0a0e1a;
+  --sl-font: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
+  --sl-font-system: var(--sl-font);
+  --sl-color-text-accent: #00f0ff;
+}
+
+[data-theme='dark'] {
+  --sl-color-bg-nav: #0a0e1a;
+  --sl-color-bg-sidebar: #0d1224;
+  --sl-color-bg: #0f1320;
+  --sl-color-hairline-light: #1a2540;
+  --sl-color-hairline-shade: #0a0e1a;
+}
+
+::selection {
+  background: rgba(0, 240, 255, 0.25);
+  color: #e0e6ed;
+}
+
+starlight-toc a[aria-current='true'],
+starlight-toc a:hover {
+  color: #00f0ff;
+  border-color: #00f0ff;
+}
+
+.sidebar-content a[aria-current='page'] {
+  background: rgba(0, 240, 255, 0.08);
+  color: #00f0ff;
+  border-color: #00f0ff;
+}
+
+code {
+  background: rgba(0, 240, 255, 0.06);
+  border: 1px solid rgba(0, 240, 255, 0.12);
+  color: #b3faff;
+}
+
+a {
+  text-decoration-color: rgba(0, 240, 255, 0.3);
+}
+
+a:hover {
+  text-decoration-color: #00f0ff;
+}

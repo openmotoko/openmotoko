@@ -1,0 +1,101 @@
+---
+title: Desktop App
+description: Tauri 2 native desktop application with tray, shortcuts, and auto-update.
+---
+
+OpenMotoko ships a native desktop app built with Tauri 2. It wraps the web UI in a native window with system integration features.
+
+## Features
+
+| Feature | Plugin | Description |
+|---|---|---|
+| Auto-update | `tauri-plugin-updater` | Updates via GitHub Releases |
+| Notifications | `tauri-plugin-notification` | Native OS notifications |
+| Global shortcuts | `tauri-plugin-global-shortcut` | System-wide keyboard shortcuts |
+| Deep links | `tauri-plugin-deep-link` | `openmotoko://` URL scheme |
+| Autostart | `tauri-plugin-autostart` | Launch at login |
+| System tray | Built-in | Tray icon with Show/Quit menu |
+| Shell access | `tauri-plugin-shell` | Local command execution |
+| Dialogs | `tauri-plugin-dialog` | Native file/save dialogs |
+
+## Window configuration
+
+| Property | Value |
+|---|---|
+| Default size | 1200 x 800 |
+| Minimum size | 800 x 600 |
+| Frameless | Yes (custom title bar) |
+| Position | Centered |
+
+## App identifier
+
+```
+ai.openmotoko.desktop
+```
+
+## Building from source
+
+### Prerequisites
+
+- Rust toolchain (rustup)
+- Node.js 24+
+- pnpm 10+
+- Platform-specific deps (see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/))
+
+### Build
+
+```bash
+cd packages/desktop
+pnpm install
+pnpm tauri build
+```
+
+The built app appears in `packages/desktop/src-tauri/target/release/bundle/`.
+
+### Development
+
+```bash
+pnpm tauri dev
+```
+
+This starts both the Vite dev server and the Tauri window with hot reload.
+
+## Platform notes
+
+### macOS
+
+- Bundle format: `.dmg` and `.app`
+- Minimum version: macOS 10.15 (Catalina)
+- Autostart via LaunchAgent
+- Notarization supported
+
+### Windows
+
+- Bundle format: NSIS installer (per-machine)
+- Deep link registration in the Windows registry
+
+### Linux
+
+- Bundle format: `.deb`, `.AppImage`
+- Tray icon via system tray protocol
+
+## Auto-update
+
+Updates are distributed via GitHub Releases. The app checks for updates on startup and notifies the user when a new version is available.
+
+The update flow:
+
+1. App queries the GitHub Releases API
+2. If a newer version exists, a notification appears
+3. User confirms the update
+4. The app downloads and installs the update
+5. Restart to apply
+
+## Deep links
+
+The `openmotoko://` URL scheme allows other apps to open OpenMotoko directly:
+
+```
+openmotoko://chat?message=Hello
+openmotoko://settings
+```

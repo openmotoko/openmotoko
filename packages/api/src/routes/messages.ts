@@ -147,8 +147,8 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 				eventBus.emit('llm:complete', {
 					type: 'llm:complete',
 					conversationId,
-					tokens: response.usage.inputTokens + response.usage.outputTokens,
-					cost: response.usage.cost,
+					tokens: (response.usage?.inputTokens ?? 0) + (response.usage?.outputTokens ?? 0),
+					cost: response.usage?.cost ?? 0,
 				})
 
 				if (response.usage) {
@@ -230,7 +230,7 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 					llmMessages.push({
 						role: 'tool',
 						content: toolOutput,
-						toolResults: [{ callId: toolCall.id, output: toolOutput }],
+						toolResults: [{ callId: toolCall.id, toolName: toolCall.name, output: toolOutput }],
 					})
 
 					await db.insert(messages).values({
@@ -239,7 +239,9 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 						role: 'tool',
 						content: toolOutput,
 						toolCalls: null,
-						toolResults: JSON.stringify([{ callId: toolCall.id, output: toolOutput }]),
+						toolResults: JSON.stringify([
+							{ callId: toolCall.id, toolName: toolCall.name, output: toolOutput },
+						]),
 						tokens: 0,
 						cost: 0,
 						model: null,
@@ -256,20 +258,24 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 				})
 			}
 
+			const finalHadToolCalls = response.toolCalls && response.toolCalls.length > 0
 			const assistantMessageId = nanoid()
-			await db.insert(messages).values({
-				id: assistantMessageId,
-				conversationId,
-				role: 'assistant',
-				content: response.content,
-				toolCalls: null,
-				toolResults: null,
-				tokens: response.usage.inputTokens + response.usage.outputTokens,
-				cost: response.usage.cost,
-				model: response.model,
-				provider: response.provider,
-				createdAt: Date.now(),
-			})
+
+			if (!finalHadToolCalls) {
+				await db.insert(messages).values({
+					id: assistantMessageId,
+					conversationId,
+					role: 'assistant',
+					content: response.content,
+					toolCalls: null,
+					toolResults: null,
+					tokens: response.usage.inputTokens + response.usage.outputTokens,
+					cost: response.usage.cost,
+					model: response.model,
+					provider: response.provider,
+					createdAt: Date.now(),
+				})
+			}
 
 			await db
 				.update(conversations)

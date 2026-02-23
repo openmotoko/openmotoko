@@ -1,0 +1,43 @@
+name: Deploy Landing + Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/landing/**"
+      - "packages/docs/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build landing page
+        run: pnpm --filter @openmotoko/landing build
+
+      - name: Build docs
+        run: pnpm --filter @openmotoko/docs build
+
+      - name: Copy docs into landing dist
+        run: cp -r packages/docs/dist packages/landing/dist/docs
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/landing/dist --project-name=openmotoko

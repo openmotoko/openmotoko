@@ -1,0 +1,145 @@
+---
+title: Proactive Agent
+description: Pulse scheduler, intent system, autonomy dial, and action logging.
+---
+
+The proactive agent system lets OpenMotoko take initiative instead of only responding to messages. It combines a task scheduler, an approval workflow, and an auditable action log.
+
+## Pulse scheduler
+
+Pulse is the proactive task engine. It runs background tasks on schedules you define.
+
+### Configuration
+
+```json
+{
+  "pulse": {
+    "enabled": true,
+    "budget": {
+      "daily": 200000,
+      "model": "fast"
+    },
+    "activeHours": {
+      "start": "08:00",
+      "end": "22:00",
+      "timezone": "Europe/Berlin"
+    },
+    "tasks": [
+      {
+        "id": "morning-briefing",
+        "trigger": { "type": "cron", "schedule": "0 8 * * *" },
+        "prompt": "Summarize my unread emails and calendar for today",
+        "priority": "high",
+        "model": "balanced"
+      },
+      {
+        "id": "repo-check",
+        "trigger": { "type": "interval", "every": "2h" },
+        "condition": "only during weekdays",
+        "prompt": "Check my GitHub repos for new issues",
+        "priority": "medium",
+        "model": "fast"
+      }
+    ]
+  }
+}
+```
+
+### Trigger types
+
+| Type | Field | Example |
+|---|---|---|
+| `cron` | `schedule` | `0 8 * * *` (daily at 8am) |
+| `interval` | `every` | `30m`, `2h`, `1d` |
+| `event` | `event` | System event name |
+
+### Budget
+
+Pulse tracks daily token usage and resets at midnight:
+
+| Field | Default | Description |
+|---|---|---|
+| `daily` | `200000` | Max tokens per day |
+| `model` | `fast` | Default model for pulse tasks |
+
+Critical-priority tasks can exceed the daily budget. All other tasks are skipped once the budget is exhausted.
+
+### Active hours
+
+Tasks only run within the configured time window. The timezone setting ensures correct behavior regardless of server location.
+
+### Run results
+
+| Result | Meaning |
+|---|---|
+| `ok` | Task ran, no action needed |
+| `action-taken` | Task produced an action (sent message, created artifact) |
+| `error` | Task failed |
+| `skipped` | Budget exhausted or outside active hours |
+
+## Intent system
+
+When the agent wants to take a significant action, it creates an **intent** that may require approval.
+
+### Intent flow
+
+1. Agent determines an action is needed
+2. An intent is created with a human-readable summary
+3. If approval is required (based on autonomy level), the intent is sent to the user
+4. User can **approve**, **edit**, or **reject**
+5. Approved intents are executed; rejected intents are logged and discarded
+
+### WebSocket events
+
+| Event | Description |
+|---|---|
+| `intent:created` | New intent pending approval |
+| `intent:resolved` | Intent was approved, edited, or rejected |
+
+## Autonomy dial
+
+The autonomy dial controls how much independence the agent has. Four trust levels:
+
+| Level | Name | Behavior |
+|---|---|---|
+| 0 | Always ask | Every action requires approval |
+| 1 | Ask for writes | Read-only actions are auto-approved; writes need approval |
+| 2 | Rule-based | Pattern-matching rules determine what needs approval |
+| 3 | Full autonomy | Only irreversible actions need approval |
+
+### Auto-promotion
+
+After **10 consecutive approvals** at a given level, the system suggests promoting to the next level. This builds trust incrementally.
+
+### Rule patterns
+
+At level 2, you can define rules with wildcard matching:
+
+```json
+{
+  "pattern": "filesystem:write:~/Documents/*",
+  "action": "allow"
+}
+```
+
+Rules are stored in the `autonomy_rules` database table.
+
+## Action log
+
+Every action the agent takes is recorded in a tamper-evident log.
+
+### HMAC integrity
+
+Each log entry is signed with an HMAC using `OPENMOTOKO_HMAC_SECRET`. This allows verification that no entries have been modified or deleted after the fact.
+
+### Undo system
+
+Actions that support undo (file writes, message sends) include rollback metadata. The user can undo recent actions from the activity feed.
+
+### API endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/activity` | List activity with filters |
+
+Query parameters: `limit`, `offset`, `channel`, `skillId`, `type`.

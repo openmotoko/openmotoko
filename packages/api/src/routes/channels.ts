@@ -19,11 +19,13 @@ export default async function channelRoutes(fastify: FastifyInstance) {
 		const rows = await db.select().from(channels)
 
 		return reply.send(
-			rows.map((row) => ({
-				...row,
-				config: row.config ? JSON.parse(row.config) : null,
-				enabled: Boolean(row.enabled),
-			})),
+			rows.map((row) => {
+				let config = null
+				try {
+					config = row.config ? JSON.parse(row.config) : null
+				} catch {}
+				return { ...row, config, enabled: Boolean(row.enabled) }
+			}),
 		)
 	})
 
@@ -59,9 +61,13 @@ export default async function channelRoutes(fastify: FastifyInstance) {
 
 			const [updated] = await db.select().from(channels).where(eq(channels.id, params.id)).limit(1)
 
+			let config = null
+			try {
+				config = updated.config ? JSON.parse(updated.config) : null
+			} catch {}
 			return reply.send({
 				...updated,
-				config: updated.config ? JSON.parse(updated.config) : null,
+				config,
 				enabled: Boolean(updated.enabled),
 			})
 		},

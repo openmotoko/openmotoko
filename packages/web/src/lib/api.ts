@@ -118,6 +118,25 @@ export interface BudgetSettings {
 	alertThresholds: number[]
 }
 
+export interface ProviderModelInfo {
+	id: string
+	name: string
+	contextWindow: number
+	supportsTools: boolean
+	costPer1kInput: number
+	costPer1kOutput: number
+}
+
+export interface ProviderModels {
+	id: string
+	name: string
+	models: ProviderModelInfo[]
+}
+
+export interface ModelsResponse {
+	providers: ProviderModels[]
+}
+
 export interface ScheduledTaskItem {
 	id: string
 	name: string
@@ -450,6 +469,10 @@ class ApiClient {
 
 	async uninstallChannelPlugin(pluginId: string): Promise<void> {
 		return this.request(`/channel-plugins/${pluginId}`, { method: 'DELETE' })
+	}
+
+	async getModels(): Promise<ModelsResponse> {
+		return this.request('/models')
 	}
 }
 

@@ -1,5 +1,8 @@
 import { motion } from 'framer-motion'
 import { Gauge, Sparkles, Zap } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import type { ProviderModelInfo } from '../../../lib/api'
+import { api } from '../../../lib/api'
 import type { StepProps } from '../types'
 
 interface ModelOption {
@@ -13,11 +16,11 @@ interface ModelOption {
 	quality: number
 }
 
-const MODELS: Record<string, ModelOption[]> = {
+const FALLBACK_MODELS: Record<string, ModelOption[]> = {
 	anthropic: [
 		{
-			id: 'claude-4-haiku-20260514',
-			name: 'Claude 4 Haiku',
+			id: 'claude-haiku-4-5',
+			name: 'Claude Haiku 4.5',
 			tag: 'Fast',
 			tagIcon: Zap,
 			tagColor: 'text-alive',
@@ -26,8 +29,8 @@ const MODELS: Record<string, ModelOption[]> = {
 			quality: 3,
 		},
 		{
-			id: 'claude-4-sonnet-20260514',
-			name: 'Claude 4 Sonnet',
+			id: 'claude-sonnet-4-6',
+			name: 'Claude Sonnet 4.6',
 			tag: 'Smart',
 			tagIcon: Sparkles,
 			tagColor: 'text-ghost',
@@ -36,8 +39,8 @@ const MODELS: Record<string, ModelOption[]> = {
 			quality: 4,
 		},
 		{
-			id: 'claude-4-opus-20260514',
-			name: 'Claude 4 Opus',
+			id: 'claude-opus-4-6',
+			name: 'Claude Opus 4.6',
 			tag: 'Powerful',
 			tagIcon: Gauge,
 			tagColor: 'text-pulse',
@@ -48,8 +51,8 @@ const MODELS: Record<string, ModelOption[]> = {
 	],
 	openai: [
 		{
-			id: 'gpt-4o-mini',
-			name: 'GPT-4o Mini',
+			id: 'gpt-5-mini',
+			name: 'GPT-5 Mini',
 			tag: 'Fast',
 			tagIcon: Zap,
 			tagColor: 'text-alive',
@@ -58,24 +61,24 @@ const MODELS: Record<string, ModelOption[]> = {
 			quality: 3,
 		},
 		{
-			id: 'gpt-4o',
-			name: 'GPT-4o',
-			tag: 'Balanced',
+			id: 'gpt-5.2',
+			name: 'GPT-5.2',
+			tag: 'Smart',
 			tagIcon: Sparkles,
 			tagColor: 'text-ghost',
-			desc: 'Versatile flagship model',
+			desc: 'Latest flagship model',
 			speed: 4,
-			quality: 4,
+			quality: 5,
 		},
 		{
-			id: 'o3',
-			name: 'o3',
+			id: 'o4-mini',
+			name: 'o4 Mini',
 			tag: 'Reasoning',
 			tagIcon: Gauge,
 			tagColor: 'text-pulse',
 			desc: 'Advanced reasoning and analysis',
-			speed: 2,
-			quality: 5,
+			speed: 3,
+			quality: 4,
 		},
 	],
 	google: [
@@ -112,8 +115,8 @@ const MODELS: Record<string, ModelOption[]> = {
 			quality: 4,
 		},
 		{
-			id: 'llama3.2:8b',
-			name: 'Llama 3.2 8B',
+			id: 'qwen3:8b',
+			name: 'Qwen 3 8B',
 			tag: 'Fast',
 			tagIcon: Zap,
 			tagColor: 'text-alive',
@@ -121,17 +124,45 @@ const MODELS: Record<string, ModelOption[]> = {
 			speed: 5,
 			quality: 2,
 		},
-		{
-			id: 'mistral:7b',
-			name: 'Mistral 7B',
-			tag: 'Balanced',
+	],
+}
+
+function apiModelToOption(m: ProviderModelInfo): ModelOption {
+	const cost = m.costPer1kOutput
+	if (cost >= 0.01) {
+		return {
+			id: m.id,
+			name: m.name,
+			tag: 'Powerful',
+			tagIcon: Gauge,
+			tagColor: 'text-pulse',
+			desc: `${m.contextWindow >= 200_000 ? '200k' : `${Math.round(m.contextWindow / 1000)}k`} context`,
+			speed: 2,
+			quality: 5,
+		}
+	}
+	if (cost >= 0.003) {
+		return {
+			id: m.id,
+			name: m.name,
+			tag: 'Smart',
 			tagIcon: Sparkles,
 			tagColor: 'text-ghost',
-			desc: 'Efficient and capable',
+			desc: `${m.contextWindow >= 200_000 ? '200k' : `${Math.round(m.contextWindow / 1000)}k`} context`,
 			speed: 4,
-			quality: 3,
-		},
-	],
+			quality: 4,
+		}
+	}
+	return {
+		id: m.id,
+		name: m.name,
+		tag: 'Fast',
+		tagIcon: Zap,
+		tagColor: 'text-alive',
+		desc: `${m.contextWindow >= 200_000 ? '200k' : `${Math.round(m.contextWindow / 1000)}k`} context`,
+		speed: 5,
+		quality: 3,
+	}
 }
 
 function QualityBar({ value, max = 5 }: { value: number; max?: number }) {
@@ -146,7 +177,28 @@ function QualityBar({ value, max = 5 }: { value: number; max?: number }) {
 }
 
 export function ModelStep({ data, onChange }: StepProps) {
-	const models = MODELS[data.provider ?? 'anthropic'] ?? []
+	const provider = data.provider ?? 'anthropic'
+	const [models, setModels] = useState<ModelOption[]>(FALLBACK_MODELS[provider] ?? [])
+
+	useEffect(() => {
+		setModels(FALLBACK_MODELS[provider] ?? [])
+
+		let cancelled = false
+		api
+			.getModels()
+			.then((res) => {
+				if (cancelled) return
+				const match = res.providers.find((p) => p.id === provider)
+				if (match && match.models.length > 0) {
+					setModels(match.models.slice(0, 6).map(apiModelToOption))
+				}
+			})
+			.catch(() => {})
+
+		return () => {
+			cancelled = true
+		}
+	}, [provider])
 
 	return (
 		<div className="space-y-6">
@@ -168,8 +220,8 @@ export function ModelStep({ data, onChange }: StepProps) {
 							onClick={() => onChange({ model: m.id })}
 							className={`w-full text-left p-4 border transition-all cut-tr cut-border ${
 								active
-									? 'bg-ghost-muted border-[var(--ghost-border)] shadow-[0_0_12px_rgba(0,240,255,0.15)]'
-									: 'bg-shell border-[var(--border-default)] hover:border-static'
+									? 'bg-ghost-muted border-(--ghost-border) shadow-[0_0_12px_rgba(0,240,255,0.15)]'
+									: 'bg-shell border-(--border-default) hover:border-static'
 							}`}
 							style={{ '--cut-md': '10px' } as React.CSSProperties}
 						>

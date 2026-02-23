@@ -1,0 +1,154 @@
+---
+title: OpenAI Compatible API
+description: Use OpenMotoko as a drop-in replacement for the OpenAI API.
+---
+
+OpenMotoko exposes OpenAI-compatible endpoints so you can use it with any tool or library that supports the OpenAI API format.
+
+## Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/v1/chat/completions` | Chat completions (streaming supported) |
+| `GET` | `/v1/models` | List available models |
+
+These endpoints live at the root path (not under `/api/`).
+
+## Chat completions
+
+### Request
+
+```bash
+curl http://localhost:3457/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-session-token" \
+  -d '{
+    "model": "balanced",
+    "messages": [
+      { "role": "system", "content": "You are a helpful assistant" },
+      { "role": "user", "content": "What is OpenMotoko?" }
+    ],
+    "stream": false
+  }'
+```
+
+### Response
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "object": "chat.completion",
+  "created": 1700000000,
+  "model": "claude-sonnet-4-6",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "OpenMotoko is a personal AI agent..."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 25,
+    "completion_tokens": 150,
+    "total_tokens": 175
+  }
+}
+```
+
+### Streaming
+
+Set `"stream": true` to receive Server-Sent Events:
+
+```bash
+curl http://localhost:3457/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer your-session-token" \
+  -d '{
+    "model": "fast",
+    "messages": [
+      { "role": "user", "content": "Hello" }
+    ],
+    "stream": true
+  }'
+```
+
+Each SSE chunk:
+
+```
+data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}
+
+data: [DONE]
+```
+
+## List models
+
+```bash
+curl http://localhost:3457/v1/models \
+  -H "Authorization: Bearer your-session-token"
+```
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "claude-sonnet-4-6",
+      "object": "model",
+      "owned_by": "anthropic"
+    },
+    {
+      "id": "gpt-4o",
+      "object": "model",
+      "owned_by": "openai"
+    }
+  ]
+}
+```
+
+## Model aliases
+
+You can use OpenMotoko's model aliases (`fast`, `balanced`, `smart`) in the `model` field. The router resolves them to the configured provider and model.
+
+## Using with third-party tools
+
+### Python (openai library)
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:3457/v1",
+    api_key="your-session-token",
+)
+
+response = client.chat.completions.create(
+    model="balanced",
+    messages=[{"role": "user", "content": "Hello"}],
+)
+print(response.choices[0].message.content)
+```
+
+### Continue.dev
+
+In your Continue config:
+
+```json
+{
+  "models": [
+    {
+      "title": "OpenMotoko",
+      "provider": "openai",
+      "model": "balanced",
+      "apiBase": "http://localhost:3457/v1",
+      "apiKey": "your-session-token"
+    }
+  ]
+}
+```
+
+### Any OpenAI-compatible client
+
+Point the base URL to `http://localhost:3457/v1` and use your session token as the API key. OpenMotoko handles routing to the configured LLM provider transparently.

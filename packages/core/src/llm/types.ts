@@ -35,6 +35,7 @@ export interface LLMChunk {
 	done: boolean
 	toolCall?: ToolCall
 	toolCalls?: ToolCall[]
+	usage?: { inputTokens?: number; outputTokens?: number; cost?: number }
 }
 
 export interface ToolCall {
@@ -45,6 +46,7 @@ export interface ToolCall {
 
 export interface ToolResult {
 	callId: string
+	toolName?: string
 	output: unknown
 	isError?: boolean
 }

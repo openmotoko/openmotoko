@@ -11,17 +11,29 @@ import type {
 } from '../types.js'
 
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
+	'claude-opus-4-6': { input: 0.005, output: 0.025 },
+	'claude-sonnet-4-6': { input: 0.003, output: 0.015 },
+	'claude-haiku-4-5': { input: 0.001, output: 0.005 },
 	'claude-sonnet-4-20250514': { input: 0.003, output: 0.015 },
 	'claude-3-5-haiku-20241022': { input: 0.0008, output: 0.004 },
 	'claude-3-5-sonnet-20241022': { input: 0.003, output: 0.015 },
 	'claude-3-opus-20240229': { input: 0.015, output: 0.075 },
-	'claude-3-haiku-20240307': { input: 0.00025, output: 0.00125 },
 }
 
 const KNOWN_MODELS: ModelInfo[] = [
 	{
-		id: 'claude-sonnet-4-20250514',
-		name: 'Claude Sonnet 4',
+		id: 'claude-opus-4-6',
+		name: 'Claude Opus 4.6',
+		provider: 'anthropic',
+		contextWindow: 200_000,
+		supportsTools: true,
+		supportsStreaming: true,
+		costPer1kInput: 0.005,
+		costPer1kOutput: 0.025,
+	},
+	{
+		id: 'claude-sonnet-4-6',
+		name: 'Claude Sonnet 4.6',
 		provider: 'anthropic',
 		contextWindow: 200_000,
 		supportsTools: true,
@@ -30,46 +42,24 @@ const KNOWN_MODELS: ModelInfo[] = [
 		costPer1kOutput: 0.015,
 	},
 	{
-		id: 'claude-3-5-haiku-20241022',
-		name: 'Claude 3.5 Haiku',
+		id: 'claude-haiku-4-5',
+		name: 'Claude Haiku 4.5',
 		provider: 'anthropic',
 		contextWindow: 200_000,
 		supportsTools: true,
 		supportsStreaming: true,
-		costPer1kInput: 0.0008,
-		costPer1kOutput: 0.004,
-	},
-	{
-		id: 'claude-3-5-sonnet-20241022',
-		name: 'Claude 3.5 Sonnet',
-		provider: 'anthropic',
-		contextWindow: 200_000,
-		supportsTools: true,
-		supportsStreaming: true,
-		costPer1kInput: 0.003,
-		costPer1kOutput: 0.015,
-	},
-	{
-		id: 'claude-3-opus-20240229',
-		name: 'Claude 3 Opus',
-		provider: 'anthropic',
-		contextWindow: 200_000,
-		supportsTools: true,
-		supportsStreaming: true,
-		costPer1kInput: 0.015,
-		costPer1kOutput: 0.075,
-	},
-	{
-		id: 'claude-3-haiku-20240307',
-		name: 'Claude 3 Haiku',
-		provider: 'anthropic',
-		contextWindow: 200_000,
-		supportsTools: true,
-		supportsStreaming: true,
-		costPer1kInput: 0.00025,
-		costPer1kOutput: 0.00125,
+		costPer1kInput: 0.001,
+		costPer1kOutput: 0.005,
 	},
 ]
+
+function lookupPricing(modelId: string): { input: number; output: number } | undefined {
+	if (MODEL_PRICING[modelId]) return MODEL_PRICING[modelId]
+	for (const key of Object.keys(MODEL_PRICING)) {
+		if (modelId.startsWith(key)) return MODEL_PRICING[key]
+	}
+	return undefined
+}
 
 function toAnthropicMessages(messages: LLMMessage[]): Anthropic.MessageCreateParams['messages'] {
 	const result: Anthropic.MessageCreateParams['messages'] = []
@@ -146,7 +136,7 @@ function extractText(message: Anthropic.Message): string {
 }
 
 function calculateCost(model: string, inputTokens: number, outputTokens: number): number {
-	const pricing = MODEL_PRICING[model]
+	const pricing = lookupPricing(model)
 	if (!pricing) return 0
 	return (inputTokens / 1000) * pricing.input + (outputTokens / 1000) * pricing.output
 }
@@ -155,6 +145,8 @@ export class AnthropicProvider implements LLMProvider {
 	readonly id = 'anthropic'
 	readonly name = 'Anthropic'
 	private client: Anthropic
+	private modelCache: ModelInfo[] | null = null
+	private modelCacheExpiry = 0
 
 	constructor(apiKey: string) {
 		this.client = new Anthropic({ apiKey })
@@ -246,6 +238,30 @@ export class AnthropicProvider implements LLMProvider {
 	}
 
 	async listModels(): Promise<ModelInfo[]> {
+		if (this.modelCache && Date.now() < this.modelCacheExpiry) return this.modelCache
+
+		try {
+			const models: ModelInfo[] = []
+			for await (const m of this.client.models.list({ limit: 100 })) {
+				const pricing = lookupPricing(m.id)
+				models.push({
+					id: m.id,
+					name: m.display_name,
+					provider: 'anthropic',
+					contextWindow: 200_000,
+					supportsTools: true,
+					supportsStreaming: true,
+					costPer1kInput: pricing?.input ?? 0,
+					costPer1kOutput: pricing?.output ?? 0,
+				})
+			}
+			if (models.length > 0) {
+				this.modelCache = models
+				this.modelCacheExpiry = Date.now() + 3_600_000
+				return models
+			}
+		} catch {}
+
 		return KNOWN_MODELS
 	}
 }

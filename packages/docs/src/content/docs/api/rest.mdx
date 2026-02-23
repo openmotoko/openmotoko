@@ -1,0 +1,261 @@
+---
+title: REST API
+description: Complete reference for all REST API endpoints.
+---
+
+All endpoints are prefixed with `/api/` unless noted otherwise. Authenticated endpoints require a session cookie or token.
+
+## Authentication
+
+### Login
+
+```
+POST /api/auth/login
+```
+
+```json
+{ "password": "your-password" }
+```
+
+Returns a `Set-Cookie` header with the session token.
+
+### Logout
+
+```
+POST /api/auth/logout
+```
+
+Destroys the current session.
+
+## Health
+
+```
+GET /api/health
+```
+
+Public endpoint. Returns `200 OK` when the server is running.
+
+## Conversations
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/conversations` | List all conversations |
+| `POST` | `/api/conversations` | Create a conversation |
+| `GET` | `/api/conversations/:id` | Get conversation with messages |
+
+### Create conversation
+
+```json
+{
+  "title": "Project planning",
+  "model": "balanced",
+  "systemPrompt": "You are a project manager"
+}
+```
+
+All fields are optional.
+
+## Messages
+
+### Send message
+
+```
+POST /api/conversations/:id/messages
+```
+
+```json
+{
+  "content": "What files are in the current directory?",
+  "model": "fast"
+}
+```
+
+The `model` field is optional and overrides the conversation default.
+
+## Settings
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/settings` | Get all settings |
+| `PUT` | `/api/settings` | Update settings |
+
+### Allowed setting keys
+
+`defaultModel`, `onboardingComplete`, `anthropicApiKey`, `openaiApiKey`, `googleAiApiKey`, `ollamaHost`, `systemPrompt`, `budget`, `theme`, `llm.defaultProvider`, `llm.defaultModel`, `app.port`, `app.host`
+
+## Budget
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/settings/budget` | Get budget limits |
+| `PUT` | `/api/settings/budget` | Set budget |
+
+### Set budget
+
+```json
+{
+  "daily": 5.00,
+  "monthly": 100.00,
+  "alertThresholds": [0.5, 0.8, 0.95]
+}
+```
+
+## Skills
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/skills` | List all skills |
+| `POST` | `/api/skills/:id/toggle` | Toggle skill on/off |
+
+## Channels
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/channels` | List all channels |
+| `PUT` | `/api/channels/:id` | Update channel config |
+
+## Channel Plugins
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/channel-plugins` | List installed plugins |
+| `POST` | `/api/channel-plugins/install` | Install plugin |
+| `DELETE` | `/api/channel-plugins/:id` | Remove plugin |
+
+### Install plugin
+
+```json
+{ "packageName": "@openmotoko/channel-rocketchat" }
+```
+
+## Activity
+
+```
+GET /api/activity?limit=20&offset=0&channel=telegram&type=tool:called
+```
+
+| Parameter | Description |
+|---|---|
+| `limit` | Items per page (default 20) |
+| `offset` | Pagination offset |
+| `channel` | Filter by channel |
+| `skillId` | Filter by skill |
+| `type` | Filter by event type |
+
+## Costs
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/costs/today` | Today's cost breakdown |
+| `GET` | `/api/costs/history?days=30` | Historical costs |
+| `GET` | `/api/costs/breakdown?period=week` | Provider/model breakdown |
+
+## Scheduler
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/scheduler/tasks?limit=20&offset=0` | List tasks |
+| `POST` | `/api/scheduler/tasks` | Create task |
+| `PUT` | `/api/scheduler/tasks/:id` | Update task |
+| `DELETE` | `/api/scheduler/tasks/:id` | Delete task |
+| `POST` | `/api/scheduler/tasks/:id/toggle` | Toggle task |
+| `POST` | `/api/scheduler/tasks/:id/run` | Run task manually |
+| `GET` | `/api/scheduler/tasks/:id/runs` | Task run history |
+
+### Create task
+
+```json
+{
+  "name": "Daily backup",
+  "description": "Back up the database",
+  "cron": "0 2 * * *",
+  "handler": "backup",
+  "payload": {},
+  "maxRetries": 3
+}
+```
+
+## Artifacts
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/artifacts?conversationId=...` | List artifacts |
+| `GET` | `/api/artifacts/:id` | Get artifact |
+| `POST` | `/api/artifacts` | Create artifact |
+| `PATCH` | `/api/artifacts/:id` | Update artifact |
+| `DELETE` | `/api/artifacts/:id` | Delete artifact |
+| `GET` | `/api/artifacts/:id/versions` | List versions |
+| `GET` | `/api/artifacts/:id/versions/:version` | Get version |
+
+## Agents
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/agents` | List all agents |
+| `GET` | `/api/agents/:id` | Get agent |
+| `DELETE` | `/api/agents/:id` | Kill running agent |
+
+## Models
+
+```
+GET /api/models
+```
+
+Returns all available LLM providers and their models.
+
+## Webhooks
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/webhooks` | List webhooks |
+| `POST` | `/api/webhooks` | Create webhook |
+| `DELETE` | `/api/webhooks/:id` | Delete webhook |
+| `POST` | `/api/webhooks/:id/toggle` | Toggle webhook |
+| `POST` | `/api/webhooks/:id/trigger` | Trigger webhook |
+| `POST` | `/api/webhooks/gmail` | Gmail Pub/Sub push |
+
+Trigger requests require the `x-webhook-secret` header.
+
+## Registry
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/registry/search?q=...&tags=...&verified=true` | Search skills |
+| `GET` | `/api/registry/entries` | List all entries |
+| `POST` | `/api/registry/install` | Install skill |
+| `DELETE` | `/api/registry/uninstall/:id` | Uninstall skill |
+| `POST` | `/api/registry/refresh` | Refresh cache |
+| `GET` | `/api/registry/:id` | Skill detail |
+| `POST` | `/api/registry/rate` | Rate a skill |
+
+### Rate a skill
+
+```json
+{
+  "skillId": "skill_abc",
+  "userId": "user_123",
+  "stars": 5,
+  "comment": "Works great"
+}
+```
+
+## Tailscale
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/tailscale/status` | Tailscale + serve status |
+| `GET` | `/api/tailscale/nodes` | List tailnet peers |
+| `POST` | `/api/tailscale/serve/start` | Start Tailscale Serve |
+| `POST` | `/api/tailscale/serve/stop` | Stop Tailscale Serve |
+
+## Error format
+
+All errors follow this structure:
+
+```json
+{
+  "error": "Human-readable message",
+  "code": "ERROR_CODE",
+  "details": {}
+}
+```

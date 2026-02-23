@@ -65,20 +65,30 @@ export class LLMRouter {
 			return this.resolveModel(model as ModelAlias)
 		}
 
+		const providerByPrefix = (id: string): string | null => {
+			if (id.startsWith('claude') || id.startsWith('anthropic')) return 'anthropic'
+			if (
+				id.startsWith('gpt') ||
+				id.startsWith('o1') ||
+				id.startsWith('o3') ||
+				id.startsWith('o4') ||
+				id.startsWith('chatgpt')
+			)
+				return 'openai'
+			if (id.startsWith('gemini')) return 'google'
+			return null
+		}
+
+		const targetProvider = providerByPrefix(model)
+		if (targetProvider) {
+			const provider = this.providers.get(targetProvider)
+			if (provider) return { provider, model }
+		}
+
 		for (const providerId of this.providerOrder) {
 			const provider = this.providers.get(providerId)
 			if (!provider) continue
-			if (
-				model.startsWith('claude') || model.startsWith('anthropic')
-					? provider.id === 'anthropic'
-					: model.startsWith('gpt') || model.startsWith('o1') || model.startsWith('o3')
-						? provider.id === 'openai'
-						: model.startsWith('gemini')
-							? provider.id === 'google'
-							: provider.id === 'ollama'
-			) {
-				return { provider, model }
-			}
+			if (provider.id === 'ollama') return { provider, model }
 		}
 
 		const fallback = this.providers.get(this.providerOrder[0])
@@ -86,6 +96,22 @@ export class LLMRouter {
 			throw new Error(`No provider available for model "${model}"`)
 		}
 		return { provider: fallback, model }
+	}
+
+	private pickFallbackModel(fallback: LLMProvider, originalAlias: string): string {
+		const FALLBACK_DEFAULTS: Record<string, Record<string, string>> = {
+			openai: { fast: 'gpt-5-mini', smart: 'gpt-5.2', balanced: 'gpt-5-mini' },
+			google: { fast: 'gemini-2.5-flash', smart: 'gemini-2.5-pro', balanced: 'gemini-2.5-flash' },
+			anthropic: {
+				fast: 'claude-haiku-4-5',
+				smart: 'claude-opus-4-6',
+				balanced: 'claude-sonnet-4-6',
+			},
+		}
+		const providerDefaults = FALLBACK_DEFAULTS[fallback.id]
+		if (providerDefaults?.[originalAlias]) return providerDefaults[originalAlias]
+		if (providerDefaults) return Object.values(providerDefaults)[1]
+		return originalAlias
 	}
 
 	private getFallbackProviders(excludeId: string): LLMProvider[] {
@@ -104,7 +130,8 @@ export class LLMRouter {
 		} catch (error) {
 			for (const fallback of this.getFallbackProviders(provider.id)) {
 				try {
-					return await this.chatWithRetry(fallback, messages, resolvedConfig)
+					const fallbackModel = this.pickFallbackModel(fallback, config.model)
+					return await this.chatWithRetry(fallback, messages, { ...config, model: fallbackModel })
 				} catch {}
 			}
 			throw error
@@ -145,7 +172,8 @@ export class LLMRouter {
 		} catch (error) {
 			for (const fallback of this.getFallbackProviders(provider.id)) {
 				try {
-					yield* this.streamWithRetry(fallback, messages, resolvedConfig)
+					const fallbackModel = this.pickFallbackModel(fallback, config.model)
+					yield* this.streamWithRetry(fallback, messages, { ...config, model: fallbackModel })
 					return
 				} catch {}
 			}

@@ -1,0 +1,89 @@
+---
+title: Skills
+description: Built-in skills, IPC isolation, and the capability manifest system.
+---
+
+Skills are isolated tool bundles that extend what the agent can do. Each skill declares its capabilities in a manifest, communicates over IPC, and can be toggled on or off at runtime.
+
+## Built-in skills
+
+| Skill | Tools | Description |
+|---|---|---|
+| `filesystem` | `read_file`, `write_file`, `list_directory` | File I/O with path allowlists, symlink resolution, sensitive path blocking |
+| `shell-executor` | `execute_command` | Shell commands with blocklist, 60s timeout, 2 MB output buffer |
+| `web-fetch` | `fetch_url`, `extract_content` | HTTP requests and HTML-to-text extraction |
+| `web-search` | `search_web` | Web search via DuckDuckGo HTML scraping |
+| `browser-control` | `navigate`, `click`, `type`, `screenshot` | Browser automation via Playwright (headless Chromium) |
+| `email` | `read_inbox`, `send_email` | IMAP inbox reading and SMTP sending via nodemailer/imapflow |
+| `github` | `list_issues`, `create_pr`, `get_file` | GitHub API via Octokit |
+| `calendar` | `list_events`, `create_event` | Calendar event management with ISO 8601 dates |
+| `timer-cron` | `set_timer`, `create_schedule` | One-shot timers and recurring cron schedules |
+
+## IPC isolation
+
+Skills run in a separate process and communicate with the runtime over a structured IPC protocol. The message flow:
+
+1. Runtime sends `init` with the skill manifest and allowed environment variables
+2. Skill responds with `ready`
+3. Runtime sends `execute` with `{toolName, input}`
+4. Skill responds with `result` or `error`
+5. On shutdown, runtime sends `shutdown`
+
+This isolation means a misbehaving skill cannot crash the main process, access other skills' state, or read environment variables it was not granted.
+
+## Capability manifest
+
+Every skill declares a `manifest.json`:
+
+```json
+{
+  "id": "my-skill",
+  "name": "My Skill",
+  "version": "1.0.0",
+  "description": "What this skill does",
+  "author": "you",
+  "capabilities": {
+    "network": true,
+    "filesystem": {
+      "enabled": true,
+      "paths": ["~/Documents"]
+    },
+    "shell": false,
+    "env": ["MY_API_KEY"]
+  },
+  "tools": [
+    {
+      "name": "do_thing",
+      "description": "Does the thing",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "input": { "type": "string" }
+        },
+        "required": ["input"]
+      }
+    }
+  ]
+}
+```
+
+### Capability fields
+
+| Field | Type | Description |
+|---|---|---|
+| `network` | `boolean` | Whether the skill can make outbound HTTP requests |
+| `filesystem.enabled` | `boolean` | Whether file access is allowed |
+| `filesystem.paths` | `string[]` | Allowed directory paths |
+| `shell` | `boolean` | Whether shell execution is allowed |
+| `env` | `string[]` | Environment variable names the skill can read |
+
+## Managing skills
+
+Toggle skills via the REST API:
+
+```bash
+curl -X POST http://localhost:3457/api/skills/filesystem/toggle \
+  -H "Cookie: session=..."
+```
+
+Or use the Settings UI in the web app to enable and disable individual skills.

@@ -63,25 +63,30 @@ export class DockerSandbox {
 
 		await this.ensureImage(image)
 
-		const networkMode = networkPolicy === 'none' ? 'none' : 'bridge'
+		const disableNetwork = networkPolicy !== 'full'
+		const networkMode = disableNetwork ? 'none' : 'bridge'
 
 		const container = await this.docker.createContainer({
 			Image: image,
 			Cmd: command,
 			Env: Object.entries(env).map(([k, v]) => `${k}=${v}`),
 			WorkingDir: workDir,
-			NetworkDisabled: networkPolicy === 'none',
+			NetworkDisabled: disableNetwork,
 			HostConfig: {
 				NetworkMode: networkMode,
 				Memory: memoryLimit,
 				CpuQuota: cpuQuota,
 				CpuPeriod: 100_000,
-				ReadonlyRootfs: false,
+				ReadonlyRootfs: true,
+				Tmpfs: { [workDir]: 'rw,noexec,nosuid,size=64m' },
 				SecurityOpt: ['no-new-privileges:true'],
 				CapDrop: ['ALL'],
-				CapAdd: ['NET_BIND_SERVICE'],
 				PidsLimit: 256,
 				AutoRemove: true,
+				Ulimits: [
+					{ Name: 'nofile', Soft: 1024, Hard: 2048 },
+					{ Name: 'nproc', Soft: 128, Hard: 256 },
+				],
 			},
 			AttachStdout: true,
 			AttachStderr: true,

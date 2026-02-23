@@ -1,0 +1,60 @@
+---
+title: OpenMotoko
+description: Personal AI agent for humans. Own your intelligence.
+---
+
+OpenMotoko is a self-hosted personal AI agent that connects to your messaging channels, runs skills on your behalf, and keeps a layered memory of your interactions. It is built as a TypeScript monorepo, ships as Docker, Fly.io, or a native desktop app, and puts you in full control of your data.
+
+## What you get
+
+- **14 messaging channels** including Telegram, Discord, WhatsApp, Slack, Signal, iMessage, Matrix, and more
+- **9 built-in skills** for file system access, shell commands, web search, browser control, email, GitHub, calendar, and cron scheduling
+- **Layered memory** with working, semantic, episodic, and procedural stores
+- **RAG pipeline** with hybrid vector + BM25 search
+- **MCP support** as both client and server
+- **Proactive agent** via the Pulse scheduler with intent approval workflow
+- **Multi-agent orchestration** for parallel task execution
+- **Canvas artifacts** for structured output (code, markdown, HTML, Mermaid)
+- **OpenAI-compatible API** so you can use OpenMotoko as a drop-in replacement
+- **Security-first design** with Docker sandbox, capability isolation, rate limiting, HMAC action logs, and sensitive data redaction
+
+## Quick start
+
+```bash
+git clone https://github.com/openmotoko/openmotoko.git
+cd openmotoko
+```
+
+Create your environment file:
+
+```bash
+cp docker/.env.example .env
+```
+
+Edit `.env` and set at minimum:
+
+```
+OPENMOTOKO_PASSWORD=your-secure-password
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Install dependencies and build:
+
+```bash
+pnpm install
+pnpm build
+```
+
+Start the dev servers:
+
+```bash
+pnpm dev
+```
+
+The web UI opens at `http://localhost:5173` and the API runs on port `3457`.
+
+## Next steps
+
+- [Installation](/docs/setup/installation) for detailed prerequisites and setup
+- [Configuration](/docs/setup/configuration) for `openmotoko.json` and model aliases
+- [Environment Variables](/docs/setup/environment) for the full env var reference

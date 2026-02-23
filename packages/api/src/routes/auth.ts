@@ -12,7 +12,7 @@ const loginAttempts = new Map<string, { count: number; resetAt: number }>()
 const MAX_LOGIN_ATTEMPTS = 5
 const LOGIN_LOCKOUT_MS = 15 * 60 * 1000
 
-setInterval(
+const cleanupTimer = setInterval(
 	() => {
 		const now = Date.now()
 		for (const [ip, entry] of loginAttempts) {
@@ -21,6 +21,7 @@ setInterval(
 	},
 	60 * 60 * 1000,
 )
+cleanupTimer.unref()
 
 function getClientIp(request: { ip: string }): string {
 	return request.ip

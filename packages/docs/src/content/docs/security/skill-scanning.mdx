@@ -1,0 +1,82 @@
+---
+title: Skill Scanning
+description: Registry security scanning, vulnerability patterns, and grading system.
+---
+
+When skills are published to the OpenMotoko registry, they undergo automated security scanning. This protects users from installing malicious or vulnerable skills.
+
+## Scanning pipeline
+
+1. **Manifest validation**: the skill manifest is checked against the Zod schema for required fields, valid capability declarations, and proper tool definitions
+2. **Source analysis**: the skill source code is scanned for known vulnerability patterns
+3. **Capability audit**: declared capabilities are checked against actual usage in the code
+4. **Grade assignment**: a security grade is computed based on findings
+
+## Vulnerability patterns
+
+The scanner checks for these categories:
+
+### Code execution
+
+| Pattern | Risk | Description |
+|---|---|---|
+| `eval()` / `new Function()` | Critical | Dynamic code execution |
+| `child_process` imports | High | Shell spawning outside declared capabilities |
+| `vm` module usage | High | Sandbox escape potential |
+
+### Network access
+
+| Pattern | Risk | Description |
+|---|---|---|
+| Undeclared `fetch` / `http` | High | Network access not in manifest |
+| Hardcoded URLs to suspicious domains | Medium | Potential data exfiltration |
+| DNS lookups | Low | May indicate undeclared network use |
+
+### Filesystem access
+
+| Pattern | Risk | Description |
+|---|---|---|
+| `fs` access outside declared paths | High | Path traversal |
+| Symlink creation | Medium | Potential escape from allowed paths |
+| Access to sensitive paths (`.ssh`, `.env`) | Critical | Credential theft |
+
+### Data handling
+
+| Pattern | Risk | Description |
+|---|---|---|
+| Environment variable access beyond declared | High | Secret leakage |
+| Base64 encoding of file contents | Medium | Potential exfiltration prep |
+| Clipboard access | Medium | Data theft |
+
+## Grading system
+
+| Grade | Meaning | Criteria |
+|---|---|---|
+| A | Excellent | No findings, minimal capabilities |
+| B | Good | Low-risk findings only |
+| C | Acceptable | Medium-risk findings, all explained |
+| D | Warning | High-risk findings present |
+| F | Rejected | Critical findings, not published |
+
+## Rejection criteria
+
+A skill is rejected (grade F) if any of the following are true:
+
+- Contains `eval()` or `new Function()` calls
+- Accesses filesystem paths not declared in the manifest
+- Uses network without declaring `network: true`
+- Reads environment variables not listed in `capabilities.env`
+- Contains obfuscated code
+- Attempts to modify the skill runtime or IPC bridge
+
+## Manual review
+
+Skills with grade C or D are flagged for manual review by registry maintainers before being listed as "verified."
+
+## API endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/registry/search` | Search with `verified` filter |
+| `GET` | `/api/registry/:id` | Includes security grade |
+| `POST` | `/api/registry/rate` | Community ratings supplement scanning |

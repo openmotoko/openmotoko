@@ -1,0 +1,149 @@
+---
+title: Contributing
+description: Development setup, code style, testing, and pull request process.
+---
+
+OpenMotoko is open source and welcomes contributions. This guide covers the development workflow.
+
+## Development setup
+
+```bash
+git clone https://github.com/openmotoko/openmotoko.git
+cd openmotoko
+corepack enable
+pnpm install
+pnpm build
+```
+
+Start the dev servers:
+
+```bash
+pnpm dev
+```
+
+This runs the API (port 3457) and web UI (port 5173) in parallel with hot reload.
+
+## Monorepo structure
+
+```
+openmotoko/
+  packages/
+    core/           Agent runtime, LLM, DB, memory, RAG, security
+    api/            Fastify REST + WebSocket server
+    web/            React PWA (Vite + Tailwind + Radix)
+    desktop/        Tauri 2 native wrapper
+    skill-sdk/      Manifest schema, IPC bridge, test harness
+    skills/         Built-in skills
+    channels/       Channel adapters (14 platforms)
+    cli/            CLI tool
+    landing/        Marketing site
+    registry-server/ Skill registry
+    create-skill/   Skill scaffolder
+    docs/           Documentation (Starlight)
+  docker/
+  scripts/
+```
+
+## Code style
+
+OpenMotoko uses [Biome](https://biomejs.dev) for linting and formatting.
+
+### Key rules
+
+| Rule | Value |
+|---|---|
+| Indent | Tabs |
+| Quotes | Single |
+| Semicolons | None (ASI) |
+| Trailing commas | Always |
+| Line width | 100 characters |
+
+### Run checks
+
+```bash
+pnpm check
+```
+
+### Auto-fix
+
+```bash
+pnpm check:fix
+```
+
+### TypeScript conventions
+
+- Strict mode always on
+- Use `type` imports: `import type { X } from './y'`
+- Prefer interfaces over type aliases for object shapes
+- Use Zod for runtime validation at API boundaries
+- IDs: nanoid (not UUID)
+- Timestamps: Unix milliseconds as numbers
+
+## Testing
+
+Tests use [Vitest](https://vitest.dev).
+
+### Run tests
+
+```bash
+pnpm test
+```
+
+### Watch mode
+
+```bash
+pnpm test:watch
+```
+
+### Coverage
+
+```bash
+pnpm test:coverage
+```
+
+### Test organization
+
+Tests live next to their source files:
+
+```
+src/
+  memory/
+    working.ts
+    working.test.ts
+    semantic.ts
+    semantic.test.ts
+```
+
+## Database changes
+
+1. Edit the schema in `packages/core/src/db/schema.ts`
+2. Generate a migration: `pnpm db:generate`
+3. Apply the migration: `pnpm db:migrate`
+4. Update affected API routes and types
+
+## Pull request process
+
+1. Create a feature branch from `main`
+2. Make your changes following the code style
+3. Add or update tests
+4. Run `pnpm check` and `pnpm test`
+5. Open a PR with a clear description of the change
+6. CI runs Biome checks and Vitest
+
+### PR checklist
+
+- [ ] Code passes `pnpm check`
+- [ ] Tests pass with `pnpm test`
+- [ ] New features include tests
+- [ ] No `console.log` left in production code
+- [ ] Types are properly exported where needed
+- [ ] Breaking changes are noted in the PR description
+
+## Architecture decisions
+
+- **SQLite with Drizzle ORM**: single-file database, no external DB service needed
+- **Fastify**: performance-focused HTTP framework with schema validation
+- **Zod**: runtime type validation at API boundaries
+- **nanoid**: compact, URL-safe IDs
+- **Biome**: fast Rust-based linter/formatter (replaces ESLint + Prettier)
+- **Vitest**: Vite-native test runner with Jest-compatible API

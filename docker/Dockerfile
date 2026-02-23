@@ -1,6 +1,6 @@
 FROM node:24-alpine AS build
 
-RUN corepack enable && corepack prepare pnpm@10 --activate
+RUN corepack enable && corepack prepare pnpm@10.29.3 --activate
 
 WORKDIR /app
 
@@ -20,8 +20,15 @@ COPY packages/channels/imessage/package.json packages/channels/imessage/
 COPY packages/channels/google-chat/package.json packages/channels/google-chat/
 COPY packages/channels/teams/package.json packages/channels/teams/
 COPY packages/channels/webchat/package.json packages/channels/webchat/
+COPY packages/channels/matrix/package.json packages/channels/matrix/
+COPY packages/channels/mattermost/package.json packages/channels/mattermost/
+COPY packages/channels/feishu/package.json packages/channels/feishu/
+COPY packages/channels/line/package.json packages/channels/line/
+COPY packages/channels/irc/package.json packages/channels/irc/
 COPY packages/registry-server/package.json packages/registry-server/
 COPY packages/create-skill/package.json packages/create-skill/
+COPY packages/landing/package.json packages/landing/
+COPY packages/desktop/package.json packages/desktop/
 
 RUN pnpm install --frozen-lockfile
 
@@ -36,7 +43,6 @@ COPY packages/registry-server/ packages/registry-server/
 COPY packages/create-skill/ packages/create-skill/
 
 RUN pnpm -r build
-RUN pnpm --filter @openmotoko/web build
 
 
 FROM node:24-alpine AS production

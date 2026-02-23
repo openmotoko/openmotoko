@@ -54,7 +54,8 @@ class WebSocketClient {
 	}
 
 	private createConnection(): void {
-		if (this.ws?.readyState === WebSocket.OPEN) return
+		if (this.ws?.readyState === WebSocket.OPEN || this.ws?.readyState === WebSocket.CONNECTING)
+			return
 
 		const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
 		const url = `${protocol}//${window.location.host}/ws`
@@ -77,9 +78,12 @@ class WebSocketClient {
 			}
 		}
 
-		this.ws.onclose = () => {
+		this.ws.onclose = (event) => {
 			this._isConnected = false
 			this.ws = null
+			if (event.code === 4001) {
+				this.reconnectAttempts = Math.max(this.reconnectAttempts, 5)
+			}
 			if (this.shouldReconnect) {
 				this.scheduleReconnect()
 			}

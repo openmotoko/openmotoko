@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { api } from '../../lib/api.js'
 
 const LEVELS = [
 	{ level: 0, name: 'Ask Everything', description: 'Every action requires explicit approval' },
@@ -24,10 +25,11 @@ export function AutonomyPanel() {
 	const [loading, setLoading] = useState(true)
 
 	useEffect(() => {
-		fetch('/api/settings/autonomy_level')
-			.then((r) => r.json())
-			.then((data) => {
-				setCurrentLevel(data.value ? parseInt(data.value, 10) : 0)
+		api
+			.getSettings()
+			.then((settings) => {
+				const val = settings.autonomy_level
+				setCurrentLevel(typeof val === 'string' ? Number.parseInt(val, 10) : 0)
 				setLoading(false)
 			})
 			.catch(() => setLoading(false))
@@ -35,11 +37,7 @@ export function AutonomyPanel() {
 
 	const handleChange = async (level: number) => {
 		setCurrentLevel(level)
-		await fetch('/api/settings', {
-			method: 'PUT',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ autonomy_level: String(level) }),
-		})
+		await api.updateSettings({ autonomy_level: String(level) })
 	}
 
 	if (loading) {

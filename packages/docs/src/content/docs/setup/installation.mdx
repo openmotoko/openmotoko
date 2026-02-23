@@ -1,0 +1,83 @@
+---
+title: Installation
+description: Prerequisites and step-by-step setup for OpenMotoko.
+---
+
+## Prerequisites
+
+| Requirement | Version | Notes |
+|---|---|---|
+| Node.js | 24+ | Required for native fetch, WebSocket, and module features |
+| pnpm | 10+ | Workspace manager. Install via `corepack enable` |
+| Git | 2.30+ | For cloning the repo |
+| Docker | 24+ | Optional. Required only for sandbox execution |
+
+## Clone and install
+
+```bash
+git clone https://github.com/openmotoko/openmotoko.git
+cd openmotoko
+corepack enable
+pnpm install
+```
+
+## Configure environment
+
+Copy the example env file and fill in your API keys:
+
+```bash
+cp docker/.env.example .env
+```
+
+Required variables:
+
+| Variable | Purpose |
+|---|---|
+| `OPENMOTOKO_PASSWORD` | Login password for the web UI |
+| At least one LLM key | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `GOOGLE_AI_API_KEY` |
+
+See [Environment Variables](/docs/setup/environment) for the full reference.
+
+## Build all packages
+
+```bash
+pnpm build
+```
+
+This compiles every package in the monorepo in dependency order.
+
+## Start development
+
+```bash
+pnpm dev
+```
+
+This starts both the API server (port 3457) and the web UI (port 5173) in parallel.
+
+You can also start them individually:
+
+```bash
+pnpm dev:api
+pnpm dev:web
+```
+
+## Verify the installation
+
+Open `http://localhost:5173` in your browser. Log in with the password you set in `OPENMOTOKO_PASSWORD`.
+
+Check the API health endpoint:
+
+```bash
+curl http://localhost:3457/api/health
+```
+
+## Common problems
+
+| Problem | Cause | Fix |
+|---|---|---|
+| `EACCES` on install | Permissions issue | Run `corepack enable` as admin, or use `volta` |
+| Port 3457 in use | Another process on that port | Set `OPENMOTOKO_PORT` to a different port |
+| No models available | Missing API keys | Add at least one LLM provider key to `.env` |
+| Docker sandbox fails | Docker not running | Start Docker Desktop or the Docker daemon |
+| `sharp` build error | Missing native deps | Run `pnpm approve-builds` then `pnpm install` again |
+| WebSocket disconnects | CORS mismatch | Set `OPENMOTOKO_CORS_ORIGIN` to your frontend URL |

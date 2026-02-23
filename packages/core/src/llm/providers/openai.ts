@@ -11,43 +11,51 @@ import type {
 } from '../types.js'
 
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
+	'gpt-5.2': { input: 0.00175, output: 0.014 },
+	'gpt-5.1': { input: 0.00125, output: 0.01 },
+	'gpt-5': { input: 0.001, output: 0.008 },
+	'gpt-5-mini': { input: 0.00025, output: 0.002 },
+	'gpt-5-nano': { input: 0.00005, output: 0.0004 },
+	'o4-mini': { input: 0.0011, output: 0.0044 },
+	'o3-mini': { input: 0.0011, output: 0.0044 },
+	o3: { input: 0.01, output: 0.04 },
 	'gpt-4o': { input: 0.0025, output: 0.01 },
 	'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
-	o1: { input: 0.015, output: 0.06 },
-	'o3-mini': { input: 0.00115, output: 0.0044 },
-	'gpt-4-turbo': { input: 0.01, output: 0.03 },
 }
+
+const CHAT_MODEL_PREFIXES = ['gpt-5', 'gpt-4o', 'gpt-4-', 'o1', 'o3', 'o4', 'chatgpt-']
+const EXCLUDED_PREFIXES = ['gpt-image', 'gpt-5.1-codex']
 
 const KNOWN_MODELS: ModelInfo[] = [
 	{
-		id: 'gpt-4o',
-		name: 'GPT-4o',
-		provider: 'openai',
-		contextWindow: 128_000,
-		supportsTools: true,
-		supportsStreaming: true,
-		costPer1kInput: 0.0025,
-		costPer1kOutput: 0.01,
-	},
-	{
-		id: 'gpt-4o-mini',
-		name: 'GPT-4o Mini',
-		provider: 'openai',
-		contextWindow: 128_000,
-		supportsTools: true,
-		supportsStreaming: true,
-		costPer1kInput: 0.00015,
-		costPer1kOutput: 0.0006,
-	},
-	{
-		id: 'o1',
-		name: 'o1',
+		id: 'gpt-5.2',
+		name: 'GPT-5.2',
 		provider: 'openai',
 		contextWindow: 200_000,
 		supportsTools: true,
 		supportsStreaming: true,
-		costPer1kInput: 0.015,
-		costPer1kOutput: 0.06,
+		costPer1kInput: 0.00175,
+		costPer1kOutput: 0.014,
+	},
+	{
+		id: 'gpt-5-mini',
+		name: 'GPT-5 Mini',
+		provider: 'openai',
+		contextWindow: 128_000,
+		supportsTools: true,
+		supportsStreaming: true,
+		costPer1kInput: 0.00025,
+		costPer1kOutput: 0.002,
+	},
+	{
+		id: 'o4-mini',
+		name: 'o4 Mini',
+		provider: 'openai',
+		contextWindow: 200_000,
+		supportsTools: true,
+		supportsStreaming: true,
+		costPer1kInput: 0.0011,
+		costPer1kOutput: 0.0044,
 	},
 	{
 		id: 'o3-mini',
@@ -56,10 +64,23 @@ const KNOWN_MODELS: ModelInfo[] = [
 		contextWindow: 200_000,
 		supportsTools: true,
 		supportsStreaming: true,
-		costPer1kInput: 0.00115,
+		costPer1kInput: 0.0011,
 		costPer1kOutput: 0.0044,
 	},
 ]
+
+function isChatModel(id: string): boolean {
+	if (EXCLUDED_PREFIXES.some((p) => id.startsWith(p))) return false
+	return CHAT_MODEL_PREFIXES.some((p) => id.startsWith(p))
+}
+
+function lookupPricing(modelId: string): { input: number; output: number } | undefined {
+	if (MODEL_PRICING[modelId]) return MODEL_PRICING[modelId]
+	for (const key of Object.keys(MODEL_PRICING)) {
+		if (modelId.startsWith(key)) return MODEL_PRICING[key]
+	}
+	return undefined
+}
 
 function toOpenAIMessages(
 	messages: LLMMessage[],
@@ -150,7 +171,7 @@ function parseJSON(str: string): unknown {
 }
 
 function calculateCost(model: string, inputTokens: number, outputTokens: number): number {
-	const pricing = MODEL_PRICING[model]
+	const pricing = lookupPricing(model)
 	if (!pricing) return 0
 	return (inputTokens / 1000) * pricing.input + (outputTokens / 1000) * pricing.output
 }
@@ -159,6 +180,8 @@ export class OpenAIProvider implements LLMProvider {
 	readonly id = 'openai'
 	readonly name = 'OpenAI'
 	private client: OpenAI
+	private modelCache: ModelInfo[] | null = null
+	private modelCacheExpiry = 0
 
 	constructor(apiKey: string) {
 		this.client = new OpenAI({ apiKey })
@@ -251,6 +274,36 @@ export class OpenAIProvider implements LLMProvider {
 	}
 
 	async listModels(): Promise<ModelInfo[]> {
+		if (this.modelCache && Date.now() < this.modelCacheExpiry) return this.modelCache
+
+		try {
+			const models: ModelInfo[] = []
+			for await (const m of this.client.models.list()) {
+				if (!isChatModel(m.id)) continue
+				const pricing = lookupPricing(m.id)
+				models.push({
+					id: m.id,
+					name: m.id,
+					provider: 'openai',
+					contextWindow: m.id.startsWith('o') ? 200_000 : 128_000,
+					supportsTools: true,
+					supportsStreaming: true,
+					costPer1kInput: pricing?.input ?? 0,
+					costPer1kOutput: pricing?.output ?? 0,
+				})
+			}
+			if (models.length > 0) {
+				models.sort((a, b) => {
+					const aPrice = a.costPer1kOutput || 0
+					const bPrice = b.costPer1kOutput || 0
+					return bPrice - aPrice
+				})
+				this.modelCache = models
+				this.modelCacheExpiry = Date.now() + 3_600_000
+				return models
+			}
+		} catch {}
+
 		return KNOWN_MODELS
 	}
 }

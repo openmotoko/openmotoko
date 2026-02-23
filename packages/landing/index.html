@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>OpenMotoko - Personal AI Agent for Humans</title>
-	<meta name="description" content="Open source AI agent with a real UI. See what your agent does. Control what it can access. Set up in 5 minutes, no terminal needed.">
+	<meta name="description"
+		content="Open source AI agent with a real UI. See what your agent does. Control what it can access. Set up in 5 minutes, no terminal needed.">
 	<meta property="og:title" content="OpenMotoko - Your Agent. Your Data. Your Rules.">
-	<meta property="og:description" content="Personal AI Agent with live activity feed, visual permissions, and zero-terminal setup. Open source, local-first.">
+	<meta property="og:description"
+		content="Personal AI Agent with live activity feed, visual permissions, and zero-terminal setup. Open source, local-first.">
 	<meta property="og:image" content="https://openmotoko.ai/og-image.png">
 	<meta property="og:url" content="https://openmotoko.ai">
 	<meta property="og:type" content="website">
@@ -14,9 +17,12 @@
 	<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=JetBrains+Mono:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+	<link
+		href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=JetBrains+Mono:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap"
+		rel="stylesheet">
 	<link rel="stylesheet" href="/src/styles.css">
 </head>
+
 <body>
 
 	<div id="noise"></div>
@@ -34,10 +40,14 @@
 		<div class="hero-inner">
 			<div class="hero-mark">
 				<svg viewBox="0 0 100 100" width="96" height="96" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-					<path d="M 10,16 L 90,16 L 59.1,72 M 10,16 L 40.9,72" fill="none" stroke="var(--ghost)" stroke-width="1.6" stroke-linejoin="miter" stroke-linecap="square"/>
-					<path class="tip-mag-r" d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--pulse)" stroke-width="1.6" stroke-linejoin="miter" stroke-linecap="square"/>
-					<path class="tip-mag-l" d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--pulse)" stroke-width="1.6" stroke-linejoin="miter" stroke-linecap="square"/>
-					<path class="tip-cyan" d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--ghost)" stroke-width="1.6" stroke-linejoin="miter" stroke-linecap="square"/>
+					<path d="M 10,16 L 90,16 L 59.1,72 M 10,16 L 40.9,72" fill="none" stroke="var(--ghost)" stroke-width="1.6"
+						stroke-linejoin="miter" stroke-linecap="square" />
+					<path class="tip-mag-r" d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--pulse)" stroke-width="1.6"
+						stroke-linejoin="miter" stroke-linecap="square" />
+					<path class="tip-mag-l" d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--pulse)" stroke-width="1.6"
+						stroke-linejoin="miter" stroke-linecap="square" />
+					<path class="tip-cyan" d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--ghost)" stroke-width="1.6"
+						stroke-linejoin="miter" stroke-linecap="square" />
 				</svg>
 			</div>
 			<div class="hero-lockup-text">
@@ -45,10 +55,12 @@
 				<span class="hero-motoko">MOTOKO</span>
 			</div>
 			<h1 class="hero-tagline">Your Agent. Your Data. Your Rules.</h1>
-			<p class="hero-sub">Personal AI Agent with live transparency, visual permissions, and zero-terminal setup. Open source, local-first.</p>
+			<p class="hero-sub">Personal AI Agent with live transparency, visual permissions, and zero-terminal setup. Open
+				source, local-first.</p>
 			<div class="hero-ctas">
-				<a href="#waitlist" class="btn btn-primary">Request Access</a>
-				<a href="https://github.com/openmotoko/openmotoko" target="_blank" rel="noopener" class="btn btn-secondary">View Source</a>
+				<a href="/docs" class="btn btn-primary">Get Started</a>
+				<a href="https://github.com/openmotoko/openmotoko" target="_blank" rel="noopener" class="btn btn-secondary">View
+					Source</a>
 			</div>
 		</div>
 	</section>
@@ -62,9 +74,9 @@
 				<div class="problem-card reveal reveal-d2">
 					<span class="card-num">01</span>
 					<svg viewBox="0 0 24 24">
-						<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-						<path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-						<line x1="1" y1="1" x2="23" y2="23"/>
+						<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+						<path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+						<line x1="1" y1="1" x2="23" y2="23" />
 					</svg>
 					<h3>Blackbox</h3>
 					<p>You can't see what your agent does, why it decides, or what it costs. It's a daemon running blind.</p>
@@ -72,8 +84,8 @@
 				<div class="problem-card reveal reveal-d3">
 					<span class="card-num">02</span>
 					<svg viewBox="0 0 24 24">
-						<polyline points="4 17 10 11 4 5"/>
-						<line x1="12" y1="19" x2="20" y2="19"/>
+						<polyline points="4 17 10 11 4 5" />
+						<line x1="12" y1="19" x2="20" y2="19" />
 					</svg>
 					<h3>Terminal-only</h3>
 					<p>Setup requires CLI knowledge. Configuration lives in YAML files and environment variables.</p>
@@ -81,9 +93,9 @@
 				<div class="problem-card reveal reveal-d4">
 					<span class="card-num">03</span>
 					<svg viewBox="0 0 24 24">
-						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-						<line x1="12" y1="8" x2="12" y2="12"/>
-						<line x1="12" y1="16" x2="12.01" y2="16"/>
+						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+						<line x1="12" y1="8" x2="12" y2="12" />
+						<line x1="12" y1="16" x2="12.01" y2="16" />
 					</svg>
 					<h3>Unsafe Skills</h3>
 					<p>Community plugins run with full system access. No sandboxing, no manifest, no approval flow.</p>
@@ -103,7 +115,7 @@
 				<div class="feature-card reveal reveal-d1">
 					<span class="card-num">A1</span>
 					<svg viewBox="0 0 24 24">
-						<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+						<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
 					</svg>
 					<h3>Live Activity Feed</h3>
 					<p>See every action in real-time. Tool calls, decisions, costs. No more guessing.</p>
@@ -111,7 +123,7 @@
 				<div class="feature-card reveal reveal-d2">
 					<span class="card-num">A2</span>
 					<svg viewBox="0 0 24 24">
-						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
 					</svg>
 					<h3>Visual Permissions</h3>
 					<p>iOS-style approval for every skill capability. See what each skill can access before granting.</p>
@@ -119,9 +131,15 @@
 				<div class="feature-card reveal reveal-d3">
 					<span class="card-num">A3</span>
 					<svg viewBox="0 0 24 24">
-						<path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/>
-						<path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/>
-						<path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/>
+						<path d="M15 4V2" />
+						<path d="M15 16v-2" />
+						<path d="M8 9h2" />
+						<path d="M20 9h2" />
+						<path d="M17.8 11.8 19 13" />
+						<path d="M15 9h.01" />
+						<path d="M17.8 6.2 19 5" />
+						<path d="m3 21 9-9" />
+						<path d="M12.2 6.2 11 5" />
 					</svg>
 					<h3>Zero-Terminal Setup</h3>
 					<p>Running in under 5 minutes. Visual onboarding, no CLI required.</p>
@@ -129,7 +147,7 @@
 				<div class="feature-card reveal reveal-d4">
 					<span class="card-num">B1</span>
 					<svg viewBox="0 0 24 24">
-						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
 					</svg>
 					<h3>All Your Channels</h3>
 					<p>WhatsApp, Telegram, Discord, Signal, Slack, iMessage. One agent, every platform.</p>
@@ -137,8 +155,8 @@
 				<div class="feature-card reveal reveal-d5">
 					<span class="card-num">B2</span>
 					<svg viewBox="0 0 24 24">
-						<line x1="12" y1="1" x2="12" y2="23"/>
-						<path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+						<line x1="12" y1="1" x2="12" y2="23" />
+						<path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
 					</svg>
 					<h3>Cost Transparency</h3>
 					<p>Budget limits, per-request tracking, real-time cost dashboard. No surprise bills.</p>
@@ -146,8 +164,9 @@
 				<div class="feature-card reveal reveal-d6">
 					<span class="card-num">B3</span>
 					<svg viewBox="0 0 24 24">
-						<line x1="22" y1="12" x2="2" y2="12"/>
-						<path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+						<line x1="22" y1="12" x2="2" y2="12" />
+						<path
+							d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
 					</svg>
 					<h3>Local-First</h3>
 					<p>Your data stays on your machine. SQLite, no cloud lock-in, always yours.</p>
@@ -230,36 +249,433 @@
 
 	<div class="divider"></div>
 
-	<!-- ═══ WAITLIST ═══ -->
-	<section class="section waitlist" id="waitlist">
+	<section class="section channels">
 		<div class="container">
-			<span class="section-label reveal" style="justify-content:center">005 // Access</span>
-			<h2 class="section-title reveal reveal-d1">Get <span>early access</span></h2>
-			<p class="waitlist-sub reveal reveal-d2">OpenMotoko launches Q2 2026. Join the waitlist for updates and alpha access.</p>
-			<div class="waitlist-terminal reveal reveal-d3">
-				<div class="waitlist-terminal-inner">
-					<div class="waitlist-terminal-bar">
-						<span class="waitlist-terminal-dot"></span>
-						<span>WAITLIST_TERMINAL</span>
-					</div>
-					<form class="waitlist-form" id="waitlist-form">
-						<input
-							type="email"
-							class="waitlist-input"
-							placeholder="you@example.com"
-							required
-							autocomplete="email"
-							aria-label="Email address"
-						>
-						<button type="submit" class="waitlist-submit">ENTER</button>
-					</form>
+			<span class="section-label reveal">005 // Channels</span>
+			<h2 class="section-title reveal reveal-d1">Talk to your agent <span>anywhere</span></h2>
+			<div class="channel-grid">
+				<div class="channel-card reveal reveal-d1">
+					<span class="card-num">C1</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M22 2L11 13" />
+						<polygon points="22 2 15 22 11 13 2 9 22 2" />
+					</svg>
+					<h3>Telegram</h3>
+					<p>Bot API with rich messages and inline keyboards</p>
+				</div>
+				<div class="channel-card reveal reveal-d2">
+					<span class="card-num">C2</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
+					</svg>
+					<h3>WhatsApp</h3>
+					<p>Encrypted messaging via Baileys library</p>
+				</div>
+				<div class="channel-card reveal reveal-d3">
+					<span class="card-num">C3</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+						<path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z" />
+						<path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+					</svg>
+					<h3>Discord</h3>
+					<p>Full bot with slash commands and threads</p>
+				</div>
+				<div class="channel-card reveal reveal-d4">
+					<span class="card-num">C4</span>
+					<svg viewBox="0 0 24 24">
+						<line x1="4" y1="9" x2="20" y2="9" />
+						<line x1="4" y1="15" x2="20" y2="15" />
+						<line x1="10" y1="3" x2="8" y2="21" />
+						<line x1="16" y1="3" x2="14" y2="21" />
+					</svg>
+					<h3>Slack</h3>
+					<p>Bolt SDK with workspace distribution</p>
+				</div>
+				<div class="channel-card reveal reveal-d5">
+					<span class="card-num">C5</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+					</svg>
+					<h3>Signal</h3>
+					<p>Privacy first via signal-cli bridge</p>
+				</div>
+				<div class="channel-card reveal reveal-d6">
+					<span class="card-num">C6</span>
+					<svg viewBox="0 0 24 24">
+						<path
+							d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+					</svg>
+					<h3>iMessage</h3>
+					<p>macOS native through BlueBubbles</p>
+				</div>
+				<div class="channel-card reveal reveal-d1">
+					<span class="card-num">C7</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+					</svg>
+					<h3>Google Chat</h3>
+					<p>Workspace integration with card UI</p>
+				</div>
+				<div class="channel-card reveal reveal-d2">
+					<span class="card-num">C8</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+						<circle cx="9" cy="7" r="4" />
+						<path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+						<path d="M16 3.13a4 4 0 0 1 0 7.75" />
+					</svg>
+					<h3>Microsoft Teams</h3>
+					<p>Enterprise bot with adaptive cards</p>
+				</div>
+				<div class="channel-card reveal reveal-d3">
+					<span class="card-num">C9</span>
+					<svg viewBox="0 0 24 24">
+						<polyline points="16 18 22 12 16 6" />
+						<polyline points="8 6 2 12 8 18" />
+					</svg>
+					<h3>Matrix</h3>
+					<p>Federated protocol with E2E encryption</p>
+				</div>
+				<div class="channel-card reveal reveal-d4">
+					<span class="card-num">C10</span>
+					<svg viewBox="0 0 24 24">
+						<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+					</svg>
+					<h3>Feishu / Lark</h3>
+					<p>ByteDance ecosystem bot framework</p>
+				</div>
+				<div class="channel-card reveal reveal-d5">
+					<span class="card-num">C11</span>
+					<svg viewBox="0 0 24 24">
+						<circle cx="12" cy="12" r="10" />
+						<line x1="8" y1="12" x2="16" y2="12" />
+					</svg>
+					<h3>LINE</h3>
+					<p>Messaging API with rich menu support</p>
+				</div>
+				<div class="channel-card reveal reveal-d6">
+					<span class="card-num">C12</span>
+					<svg viewBox="0 0 24 24">
+						<polyline points="4 17 10 11 4 5" />
+						<line x1="12" y1="19" x2="20" y2="19" />
+					</svg>
+					<h3>IRC</h3>
+					<p>Classic protocol with bridge support</p>
+				</div>
+				<div class="channel-card reveal reveal-d1">
+					<span class="card-num">C13</span>
+					<svg viewBox="0 0 24 24">
+						<line x1="22" y1="12" x2="2" y2="12" />
+						<path
+							d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+					</svg>
+					<h3>Mattermost</h3>
+					<p>Self-hosted team chat integration</p>
+				</div>
+				<div class="channel-card reveal reveal-d2">
+					<span class="card-num">C14</span>
+					<svg viewBox="0 0 24 24">
+						<circle cx="12" cy="12" r="10" />
+						<line x1="2" y1="12" x2="22" y2="12" />
+						<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+					</svg>
+					<h3>WebChat</h3>
+					<p>Embeddable widget for any website</p>
 				</div>
 			</div>
-			<div class="waitlist-success" id="waitlist-success">
-				<span class="waitlist-badge">ACCESS GRANTED</span>
+		</div>
+	</section>
+
+	<div class="divider"></div>
+
+	<section class="section skills-section">
+		<div class="container">
+			<span class="section-label reveal">006 // Skills</span>
+			<h2 class="section-title reveal reveal-d1">9 built-in skills. <span>Infinite possibilities.</span></h2>
+			<div class="skill-grid">
+				<div class="feature-card reveal reveal-d1">
+					<span class="card-num">S1</span>
+					<svg viewBox="0 0 24 24">
+						<polyline points="4 17 10 11 4 5" />
+						<line x1="12" y1="19" x2="20" y2="19" />
+					</svg>
+					<h3>Shell</h3>
+					<p>Execute commands in isolated Docker containers</p>
+				</div>
+				<div class="feature-card reveal reveal-d2">
+					<span class="card-num">S2</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+					</svg>
+					<h3>Filesystem</h3>
+					<p>Read, write, and search with permission gates</p>
+				</div>
+				<div class="feature-card reveal reveal-d3">
+					<span class="card-num">S3</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+						<polyline points="7 10 12 15 17 10" />
+						<line x1="12" y1="15" x2="12" y2="3" />
+					</svg>
+					<h3>Web Fetch</h3>
+					<p>HTTP requests with response parsing</p>
+				</div>
+				<div class="feature-card reveal reveal-d4">
+					<span class="card-num">S4</span>
+					<svg viewBox="0 0 24 24">
+						<circle cx="11" cy="11" r="8" />
+						<line x1="21" y1="21" x2="16.65" y2="16.65" />
+					</svg>
+					<h3>Web Search</h3>
+					<p>Multi-engine search with result extraction</p>
+				</div>
+				<div class="feature-card reveal reveal-d5">
+					<span class="card-num">S5</span>
+					<svg viewBox="0 0 24 24">
+						<rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+						<line x1="8" y1="21" x2="16" y2="21" />
+						<line x1="12" y1="17" x2="12" y2="21" />
+					</svg>
+					<h3>Browser Control</h3>
+					<p>Playwright automation for any website</p>
+				</div>
+				<div class="feature-card reveal reveal-d6">
+					<span class="card-num">S6</span>
+					<svg viewBox="0 0 24 24">
+						<rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+						<line x1="16" y1="2" x2="16" y2="6" />
+						<line x1="8" y1="2" x2="8" y2="6" />
+						<line x1="3" y1="10" x2="21" y2="10" />
+					</svg>
+					<h3>Calendar</h3>
+					<p>Read and manage calendar events</p>
+				</div>
+				<div class="feature-card reveal reveal-d1">
+					<span class="card-num">S7</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+						<polyline points="22,6 12,13 2,6" />
+					</svg>
+					<h3>Email</h3>
+					<p>Send, read, and organize messages</p>
+				</div>
+				<div class="feature-card reveal reveal-d2">
+					<span class="card-num">S8</span>
+					<svg viewBox="0 0 24 24">
+						<line x1="6" y1="3" x2="6" y2="15" />
+						<circle cx="18" cy="6" r="3" />
+						<circle cx="6" cy="18" r="3" />
+						<path d="M18 9a9 9 0 0 1-9 9" />
+					</svg>
+					<h3>GitHub</h3>
+					<p>Issues, PRs, and repos via API</p>
+				</div>
+				<div class="feature-card reveal reveal-d3">
+					<span class="card-num">S9</span>
+					<svg viewBox="0 0 24 24">
+						<circle cx="12" cy="12" r="10" />
+						<polyline points="12 6 12 12 16 14" />
+					</svg>
+					<h3>Timer / Cron</h3>
+					<p>Scheduled tasks and recurring automations</p>
+				</div>
 			</div>
-			<div class="waitlist-error" id="waitlist-error"></div>
-			<p class="waitlist-privacy reveal reveal-d4">No spam. Unsubscribe anytime.</p>
+			<p class="info-note reveal reveal-d4">Browse the <strong>skill marketplace</strong> for community contributions.
+				Every published skill is security scanned and graded before it reaches the registry.</p>
+		</div>
+	</section>
+
+	<div class="divider"></div>
+
+	<section class="section intelligence">
+		<div class="container">
+			<span class="section-label reveal">007 // Intelligence</span>
+			<h2 class="section-title reveal reveal-d1">Memory that <span>learns</span></h2>
+			<div class="intel-grid">
+				<div class="feature-card reveal reveal-d1">
+					<span class="card-num">I1</span>
+					<svg viewBox="0 0 24 24">
+						<polygon points="12 2 2 7 12 12 22 7 12 2" />
+						<polyline points="2 17 12 22 22 17" />
+						<polyline points="2 12 12 17 22 12" />
+					</svg>
+					<h3>Layered Memory</h3>
+					<p>Four memory tiers: working for active context, semantic for facts, episodic for experiences, procedural for
+						learned routines.</p>
+				</div>
+				<div class="feature-card reveal reveal-d2">
+					<span class="card-num">I2</span>
+					<svg viewBox="0 0 24 24">
+						<ellipse cx="12" cy="5" rx="9" ry="3" />
+						<path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+						<path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+					</svg>
+					<h3>RAG Pipeline</h3>
+					<p>Hybrid retrieval combining vector similarity and BM25 keyword search across your personal knowledge base.
+					</p>
+				</div>
+				<div class="feature-card reveal reveal-d3">
+					<span class="card-num">I3</span>
+					<svg viewBox="0 0 24 24">
+						<circle cx="18" cy="18" r="3" />
+						<circle cx="6" cy="6" r="3" />
+						<path d="M13 6h3a2 2 0 0 1 2 2v7" />
+						<path d="M11 18H8a2 2 0 0 1-2-2V9" />
+					</svg>
+					<h3>Multi-Agent Orchestration</h3>
+					<p>Spawn specialized sub-agents that work in parallel, share context, and report results back.</p>
+				</div>
+				<div class="feature-card reveal reveal-d4">
+					<span class="card-num">I4</span>
+					<svg viewBox="0 0 24 24">
+						<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+					</svg>
+					<h3>Proactive Agent</h3>
+					<p>Pulse scheduler triggers autonomous actions. Intent system predicts needs. Autonomy dial controls the
+						leash.</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<div class="divider"></div>
+
+	<section class="section security-section">
+		<div class="container">
+			<span class="section-label reveal">008 // Security</span>
+			<h2 class="section-title reveal reveal-d1">Hardened by <span>design</span></h2>
+			<div class="features-grid">
+				<div class="feature-card reveal reveal-d1">
+					<span class="card-num">X1</span>
+					<svg viewBox="0 0 24 24">
+						<path
+							d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+					</svg>
+					<h3>Docker Sandbox</h3>
+					<p>Every command and script runs inside an isolated container. Nothing touches your host.</p>
+				</div>
+				<div class="feature-card reveal reveal-d2">
+					<span class="card-num">X2</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+						<polyline points="9 12 11 14 15 10" />
+					</svg>
+					<h3>Skill Scanning</h3>
+					<p>Automated static analysis grades every skill. The registry rejects anything graded F.</p>
+				</div>
+				<div class="feature-card reveal reveal-d3">
+					<span class="card-num">X3</span>
+					<svg viewBox="0 0 24 24">
+						<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+						<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+					</svg>
+					<h3>Tamper Detection</h3>
+					<p>Every action is logged with HMAC-SHA256 signatures. Tampering is cryptographically detectable.</p>
+				</div>
+				<div class="feature-card reveal reveal-d4">
+					<span class="card-num">X4</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+						<path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+						<line x1="1" y1="1" x2="23" y2="23" />
+					</svg>
+					<h3>Environment Isolation</h3>
+					<p>Skills can only access environment variables you explicitly grant. Zero implicit access.</p>
+				</div>
+				<div class="feature-card reveal reveal-d5">
+					<span class="card-num">X5</span>
+					<svg viewBox="0 0 24 24">
+						<line x1="4" y1="21" x2="4" y2="14" />
+						<line x1="4" y1="10" x2="4" y2="3" />
+						<line x1="12" y1="21" x2="12" y2="12" />
+						<line x1="12" y1="8" x2="12" y2="3" />
+						<line x1="20" y1="21" x2="20" y2="16" />
+						<line x1="20" y1="12" x2="20" y2="3" />
+						<line x1="1" y1="14" x2="7" y2="14" />
+						<line x1="9" y1="8" x2="15" y2="8" />
+						<line x1="17" y1="16" x2="23" y2="16" />
+					</svg>
+					<h3>Rate Limiting + CSP</h3>
+					<p>Built-in request throttling and Content Security Policy headers on every endpoint.</p>
+				</div>
+				<div class="feature-card reveal reveal-d6">
+					<span class="card-num">X6</span>
+					<svg viewBox="0 0 24 24">
+						<path
+							d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+					</svg>
+					<h3>Session Management</h3>
+					<p>Configurable expiry windows and timing-safe token comparison prevent session attacks.</p>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<div class="divider"></div>
+
+	<section class="section deploy">
+		<div class="container">
+			<span class="section-label reveal">009 // Deploy</span>
+			<h2 class="section-title reveal reveal-d1">Run it <span>your way</span></h2>
+			<div class="features-grid">
+				<div class="feature-card reveal reveal-d1">
+					<span class="card-num">D1</span>
+					<svg viewBox="0 0 24 24">
+						<circle cx="12" cy="12" r="10" />
+						<polygon points="10 8 16 12 10 16 10 8" />
+					</svg>
+					<h3>Local Dev</h3>
+					<p>Clone, pnpm install, pnpm dev. Running in under two minutes.</p>
+				</div>
+				<div class="feature-card reveal reveal-d2">
+					<span class="card-num">D2</span>
+					<svg viewBox="0 0 24 24">
+						<rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+						<rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+						<line x1="6" y1="6" x2="6.01" y2="6" />
+						<line x1="6" y1="18" x2="6.01" y2="18" />
+					</svg>
+					<h3>Docker + Caddy</h3>
+					<p>Single docker compose command. Caddy handles HTTPS certificates automatically.</p>
+				</div>
+				<div class="feature-card reveal reveal-d3">
+					<span class="card-num">D3</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+					</svg>
+					<h3>Fly.io</h3>
+					<p>fly launch and you are live globally. Zero config deployment.</p>
+				</div>
+				<div class="feature-card reveal reveal-d4">
+					<span class="card-num">D4</span>
+					<svg viewBox="0 0 24 24">
+						<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+						<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+					</svg>
+					<h3>Tailscale</h3>
+					<p>Expose your local agent securely over a mesh VPN. No port forwarding needed.</p>
+				</div>
+				<div class="feature-card reveal reveal-d5">
+					<span class="card-num">D5</span>
+					<svg viewBox="0 0 24 24">
+						<rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+						<line x1="8" y1="21" x2="16" y2="21" />
+						<line x1="12" y1="17" x2="12" y2="21" />
+					</svg>
+					<h3>Desktop App</h3>
+					<p>Native Tauri 2 wrapper at just 8MB. Auto-updates built in.</p>
+				</div>
+				<div class="feature-card reveal reveal-d6">
+					<span class="card-num">D6</span>
+					<svg viewBox="0 0 24 24">
+						<rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+						<line x1="12" y1="18" x2="12.01" y2="18" />
+					</svg>
+					<h3>PWA</h3>
+					<p>Progressive web app. Install on any device from the browser.</p>
+				</div>
+			</div>
 		</div>
 	</section>
 
@@ -269,9 +685,12 @@
 			<div class="footer-inner">
 				<div class="footer-lockup">
 					<svg viewBox="0 0 100 100" width="28" height="28" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-						<path d="M 10,16 L 90,16 L 59.1,72 M 10,16 L 40.9,72" fill="none" stroke="var(--ghost)" stroke-width="2" stroke-linejoin="miter" stroke-linecap="square"/>
-						<path d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--pulse)" stroke-width="2" stroke-linejoin="miter" stroke-linecap="square" opacity="0.85" transform="translate(-1.5, 0)"/>
-						<path d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--ghost)" stroke-width="2" stroke-linejoin="miter" stroke-linecap="square"/>
+						<path d="M 10,16 L 90,16 L 59.1,72 M 10,16 L 40.9,72" fill="none" stroke="var(--ghost)" stroke-width="2"
+							stroke-linejoin="miter" stroke-linecap="square" />
+						<path d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--pulse)" stroke-width="2"
+							stroke-linejoin="miter" stroke-linecap="square" opacity="0.85" transform="translate(-1.5, 0)" />
+						<path d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--ghost)" stroke-width="2"
+							stroke-linejoin="miter" stroke-linecap="square" />
 					</svg>
 					<div class="footer-text">
 						<span class="footer-open">OPEN</span>
@@ -279,12 +698,13 @@
 					</div>
 				</div>
 				<div class="footer-links">
+					<a href="/docs">Docs</a>
 					<a href="https://github.com/openmotoko/openmotoko" target="_blank" rel="noopener">GitHub</a>
 					<a href="https://x.com/openmotoko" target="_blank" rel="noopener">X / Twitter</a>
 				</div>
 			</div>
 			<div class="footer-bottom">
-				<span class="footer-copy">2026 OpenMotoko. MIT License.</span>
+				<span class="footer-copy">2026 OpenMotoko - Marcel Baklouti & contributors. MIT License.</span>
 				<span class="footer-closer">BUILT FOR HUMANS, NOT TERMINALS.</span>
 			</div>
 		</div>
@@ -292,4 +712,5 @@
 
 	<script type="module" src="/src/main.ts"></script>
 </body>
+
 </html>

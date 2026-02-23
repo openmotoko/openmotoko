@@ -1,0 +1,108 @@
+---
+title: Tailscale
+description: Tailscale Serve for secure access, hybrid deployment, and auth integration.
+---
+
+Tailscale provides zero-config VPN access to your OpenMotoko instance. No port forwarding, no public IP, no TLS certificates to manage.
+
+## Tailscale Serve
+
+Tailscale Serve proxies your local OpenMotoko port over HTTPS on your tailnet.
+
+### Enable via environment
+
+```
+TAILSCALE_SERVE_ENABLED=true
+```
+
+### Enable via API
+
+```bash
+curl -X POST http://localhost:3457/api/tailscale/serve/start \
+  -H "Cookie: session=..."
+```
+
+Once started, OpenMotoko is accessible at `https://your-machine.tailnet-name.ts.net` from any device on your tailnet.
+
+### Check status
+
+```bash
+curl http://localhost:3457/api/tailscale/status
+```
+
+Returns Tailscale connection status, hostname, MagicDNS name, IP addresses, tailnet name, and Serve status.
+
+### List tailnet peers
+
+```bash
+curl http://localhost:3457/api/tailscale/nodes
+```
+
+## Tailscale auth
+
+Use Tailscale identity instead of password authentication. When a request comes through the Tailscale proxy, the user's identity is extracted from Tailscale headers.
+
+### Enable
+
+```
+TAILSCALE_AUTH_ENABLED=true
+TAILSCALE_ENABLED=true
+TAILSCALE_TRUSTED_PROXIES=127.0.0.1,::1
+```
+
+### How it works
+
+1. Requests arriving via Tailscale Serve include identity headers
+2. OpenMotoko calls `tailscale whois` to verify the source IP
+3. User identity (`tailscale-user-login`, `tailscale-user-name`) is attached to the request
+4. Password auth is bypassed for authenticated Tailscale users
+
+### Configuration in openmotoko.json
+
+```json
+{
+  "gateway": {
+    "tailscale": {
+      "enabled": true,
+      "trustedProxies": ["127.0.0.1", "::1"]
+    }
+  }
+}
+```
+
+## Hybrid deployment
+
+A common pattern is running the API on a cloud VPS (Fly.io, VPS) while connecting back to your desktop machine for tools that need local access (filesystem, browser, desktop apps).
+
+### Setup
+
+1. Install Tailscale on both the VPS and your desktop
+2. Deploy OpenMotoko API on the VPS
+3. Run local skill workers on your desktop
+4. Both machines see each other over the tailnet
+5. The API routes tool calls to the local machine over Tailscale
+
+### Benefits
+
+- API is always online (cloud VPS)
+- Tools that need your local machine work seamlessly
+- No port forwarding or dynamic DNS needed
+- All traffic is encrypted end-to-end
+
+## API endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/tailscale/status` | Connection and serve status |
+| `GET` | `/api/tailscale/nodes` | Tailnet peers |
+| `POST` | `/api/tailscale/serve/start` | Start Tailscale Serve |
+| `POST` | `/api/tailscale/serve/stop` | Stop Tailscale Serve |
+
+## Detection
+
+OpenMotoko auto-detects Tailscale on startup:
+
+- Checks if Tailscale is installed
+- Reads the current connection status
+- Detects hostname, MagicDNS name, IPv4/IPv6, tailnet name
+- Reports online/offline status

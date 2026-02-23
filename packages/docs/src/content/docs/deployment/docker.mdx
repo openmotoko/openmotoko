@@ -1,0 +1,104 @@
+---
+title: Docker
+description: Docker Compose setup with health checks and persistent volumes.
+---
+
+The recommended way to run OpenMotoko in production is with Docker Compose.
+
+## docker-compose.yml
+
+```yaml
+services:
+  openmotoko:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "${PORT:-3457}:3457"
+    volumes:
+      - openmotoko-data:/app/data
+    environment:
+      - OPENMOTOKO_PASSWORD=${OPENMOTOKO_PASSWORD}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY:-}
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3457/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  openmotoko-data:
+```
+
+## Environment
+
+Create a `.env` file next to `docker-compose.yml`:
+
+```
+OPENMOTOKO_PASSWORD=your-secure-password
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+See [Environment Variables](/docs/setup/environment) for all options.
+
+## Build and run
+
+```bash
+docker compose up -d
+```
+
+The image uses a multi-stage build on `node:24-alpine`:
+
+1. **Build stage**: installs all dependencies, compiles TypeScript
+2. **Production stage**: copies only built artifacts, runs as non-root user (`openmotoko`, UID 1001)
+
+The production image includes `curl` (for health checks), `tini` (PID 1 init), and `tailscale`.
+
+## Persistent data
+
+The `openmotoko-data` volume is mounted at `/app/data` inside the container. This stores:
+
+- SQLite database (`openmotoko.db`)
+- WhatsApp session data
+- Any other runtime state
+
+## Health checks
+
+The health check hits `GET /api/health` every 30 seconds. Docker marks the container as unhealthy after 3 consecutive failures.
+
+## Caddy reverse proxy
+
+For production with HTTPS, use Caddy as a reverse proxy:
+
+```
+openmotoko.example.com {
+    reverse_proxy localhost:3457
+}
+```
+
+Caddy automatically provisions and renews TLS certificates via Let's Encrypt.
+
+## Updating
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Or rebuild from source:
+
+```bash
+docker compose build
+docker compose up -d
+```
+
+## Resource recommendations
+
+| Deployment | RAM | CPU | Disk |
+|---|---|---|---|
+| Personal use | 512 MB | 1 shared vCPU | 1 GB |
+| With sandbox | 1 GB | 1 vCPU | 2 GB |
+| Heavy use | 2 GB | 2 vCPUs | 5 GB |

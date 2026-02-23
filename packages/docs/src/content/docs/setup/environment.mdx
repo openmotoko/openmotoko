@@ -1,0 +1,178 @@
+---
+title: Environment Variables
+description: Complete reference of all environment variables used by OpenMotoko.
+---
+
+All variables can be set in a `.env` file at the repository root or passed directly to the process.
+
+## Server
+
+| Variable | Default | Description |
+|---|---|---|
+| `OPENMOTOKO_PASSWORD` | (required) | Login password |
+| `OPENMOTOKO_PORT` | `3457` | API server port |
+| `OPENMOTOKO_HOST` | `0.0.0.0` | Server bind address |
+| `OPENMOTOKO_DB_PATH` | `./data/openmotoko.db` | SQLite database file path |
+| `OPENMOTOKO_SESSION_SECRET` | (auto) | Session encryption key |
+| `OPENMOTOKO_CORS_ORIGIN` | `http://localhost:5173` | Allowed CORS origin |
+| `OPENMOTOKO_BIND` | (gateway default) | Override gateway bind |
+| `OPENMOTOKO_HMAC_SECRET` | `openmotoko-default-hmac-key` | HMAC key for action log integrity |
+| `OPENMOTOKO_API_URL` | `http://localhost:3457` | CLI base URL |
+| `NODE_ENV` | `development` | `development` or `production` |
+| `LOG_LEVEL` | `info` | Fastify log level |
+| `DOMAIN` | (none) | Public domain for the instance |
+
+## LLM Providers
+
+| Variable | Description |
+|---|---|
+| `ANTHROPIC_API_KEY` | Anthropic (Claude) API key |
+| `OPENAI_API_KEY` | OpenAI API key |
+| `GOOGLE_AI_API_KEY` | Google AI (Gemini) API key |
+| `OLLAMA_HOST` | Ollama server URL (default `http://localhost:11434`) |
+| `GENERIC_LLM_BASE_URL` | Base URL for a generic OpenAI-compatible provider |
+| `GENERIC_LLM_API_KEY` | API key for the generic provider |
+| `GENERIC_LLM_NAME` | Display name for the generic provider |
+| `GENERIC_LLM_PROVIDER_ID` | Provider identifier for routing |
+
+## Channels
+
+### Telegram
+
+| Variable | Description |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` | Bot token from @BotFather |
+
+### Discord
+
+| Variable | Description |
+|---|---|
+| `DISCORD_BOT_TOKEN` | Bot token from Discord Developer Portal |
+
+### WhatsApp
+
+| Variable | Description |
+|---|---|
+| `WHATSAPP_SESSION_PATH` | Session data directory (default `./data/whatsapp`) |
+
+### Slack
+
+| Variable | Description |
+|---|---|
+| `SLACK_BOT_TOKEN` | Bot token (`xoxb-...`) |
+| `SLACK_APP_TOKEN` | App token (`xapp-...`) |
+
+### Signal
+
+| Variable | Description |
+|---|---|
+| `SIGNAL_CLI_PATH` | Path to `signal-cli` binary |
+| `SIGNAL_PHONE_NUMBER` | Registered phone number |
+
+### iMessage
+
+| Variable | Description |
+|---|---|
+| `BLUEBUBBLES_URL` | BlueBubbles server URL |
+| `BLUEBUBBLES_PASSWORD` | BlueBubbles server password |
+
+### Google Chat
+
+| Variable | Description |
+|---|---|
+| `GOOGLE_CHAT_CREDENTIALS_PATH` | Path to service account JSON |
+
+### Microsoft Teams
+
+| Variable | Description |
+|---|---|
+| `TEAMS_APP_ID` | Teams app ID |
+| `TEAMS_APP_PASSWORD` | Teams app password |
+
+### Matrix
+
+| Variable | Description |
+|---|---|
+| `MATRIX_HOMESERVER` | Homeserver URL |
+| `MATRIX_USER` | Bot user ID |
+| `MATRIX_PASSWORD` | Bot password |
+
+### Mattermost
+
+| Variable | Description |
+|---|---|
+| `MATTERMOST_URL` | Server URL |
+| `MATTERMOST_TOKEN` | Bot access token |
+
+### Feishu / Lark
+
+| Variable | Description |
+|---|---|
+| `FEISHU_APP_ID` | App ID |
+| `FEISHU_APP_SECRET` | App secret |
+
+### LINE
+
+| Variable | Description |
+|---|---|
+| `LINE_CHANNEL_TOKEN` | Channel access token |
+| `LINE_CHANNEL_SECRET` | Channel secret |
+
+### IRC
+
+| Variable | Description |
+|---|---|
+| `IRC_SERVER` | Server hostname |
+| `IRC_PORT` | Server port (default `6697`) |
+| `IRC_NICK` | Bot nickname |
+| `IRC_CHANNEL` | Channel to join |
+
+### Gmail Webhook
+
+| Variable | Description |
+|---|---|
+| `GMAIL_SERVICE_ACCOUNT_KEY` | Google service account JSON key |
+| `GMAIL_PUBSUB_TOPIC` | Pub/Sub topic name |
+| `GMAIL_PUBSUB_SUBSCRIPTION` | Pub/Sub subscription name |
+| `GMAIL_TARGET_CONVERSATION_ID` | Target conversation for incoming mail |
+
+## Email Skill
+
+| Variable | Description |
+|---|---|
+| `SMTP_HOST` | SMTP server hostname |
+| `SMTP_PORT` | SMTP port |
+| `SMTP_SECURE` | Use TLS (`true`/`false`) |
+| `SMTP_USER` | SMTP username |
+| `SMTP_PASS` | SMTP password |
+| `SMTP_FROM` | From address |
+| `IMAP_HOST` | IMAP server hostname |
+| `IMAP_PORT` | IMAP port |
+| `IMAP_SECURE` | Use TLS |
+| `IMAP_USER` | IMAP username |
+| `IMAP_PASS` | IMAP password |
+
+## GitHub Skill
+
+| Variable | Description |
+|---|---|
+| `GITHUB_TOKEN` | Personal access token |
+
+## Tailscale
+
+| Variable | Default | Description |
+|---|---|---|
+| `TAILSCALE_SERVE_ENABLED` | `false` | Enable Tailscale Serve proxy |
+| `TAILSCALE_AUTH_ENABLED` | `false` | Enable Tailscale identity auth |
+| `TAILSCALE_ENABLED` | `false` | Enable Tailscale auth plugin |
+| `TAILSCALE_TRUSTED_PROXIES` | `127.0.0.1,::1` | Trusted proxy addresses |
+
+## Registry Server
+
+| Variable | Default | Description |
+|---|---|---|
+| `REGISTRY_PORT` | `3458` | Registry server port |
+| `REGISTRY_HOST` | `0.0.0.0` | Registry bind address |
+| `REGISTRY_API_KEY` | (none) | API key for publishing |
+| `REGISTRY_DB_PATH` | (none) | Registry SQLite path |
+| `REGISTRY_CORS_ORIGIN` | (none) | Allowed CORS origin |

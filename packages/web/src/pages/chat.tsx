@@ -118,8 +118,10 @@ export function ChatPage() {
 	}, [id, setActiveConversation])
 
 	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-	}, [])
+		if (messages.length > 0 || streamingContent) {
+			messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+		}
+	}, [messages.length, streamingContent])
 
 	const handleSend = useCallback(
 		async (content: string) => {

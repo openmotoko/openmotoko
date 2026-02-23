@@ -18,16 +18,39 @@ import type {
 } from '../types.js'
 
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
+	'gemini-3.1-pro': { input: 0.002, output: 0.012 },
+	'gemini-3-pro': { input: 0.002, output: 0.012 },
+	'gemini-3-flash': { input: 0.0005, output: 0.003 },
+	'gemini-2.5-pro': { input: 0.00125, output: 0.01 },
+	'gemini-2.5-flash': { input: 0.0003, output: 0.0025 },
+	'gemini-2.5-flash-lite': { input: 0.0001, output: 0.0004 },
 	'gemini-2.0-flash': { input: 0.0001, output: 0.0004 },
-	'gemini-2.0-pro': { input: 0.00125, output: 0.005 },
-	'gemini-1.5-pro': { input: 0.00125, output: 0.005 },
-	'gemini-1.5-flash': { input: 0.000075, output: 0.0003 },
 }
 
 const KNOWN_MODELS: ModelInfo[] = [
 	{
-		id: 'gemini-2.0-flash',
-		name: 'Gemini 2.0 Flash',
+		id: 'gemini-2.5-pro',
+		name: 'Gemini 2.5 Pro',
+		provider: 'google',
+		contextWindow: 1_048_576,
+		supportsTools: true,
+		supportsStreaming: true,
+		costPer1kInput: 0.00125,
+		costPer1kOutput: 0.01,
+	},
+	{
+		id: 'gemini-2.5-flash',
+		name: 'Gemini 2.5 Flash',
+		provider: 'google',
+		contextWindow: 1_048_576,
+		supportsTools: true,
+		supportsStreaming: true,
+		costPer1kInput: 0.0003,
+		costPer1kOutput: 0.0025,
+	},
+	{
+		id: 'gemini-2.5-flash-lite',
+		name: 'Gemini 2.5 Flash Lite',
 		provider: 'google',
 		contextWindow: 1_048_576,
 		supportsTools: true,
@@ -35,37 +58,17 @@ const KNOWN_MODELS: ModelInfo[] = [
 		costPer1kInput: 0.0001,
 		costPer1kOutput: 0.0004,
 	},
-	{
-		id: 'gemini-2.0-pro',
-		name: 'Gemini 2.0 Pro',
-		provider: 'google',
-		contextWindow: 2_097_152,
-		supportsTools: true,
-		supportsStreaming: true,
-		costPer1kInput: 0.00125,
-		costPer1kOutput: 0.005,
-	},
-	{
-		id: 'gemini-1.5-pro',
-		name: 'Gemini 1.5 Pro',
-		provider: 'google',
-		contextWindow: 2_097_152,
-		supportsTools: true,
-		supportsStreaming: true,
-		costPer1kInput: 0.00125,
-		costPer1kOutput: 0.005,
-	},
-	{
-		id: 'gemini-1.5-flash',
-		name: 'Gemini 1.5 Flash',
-		provider: 'google',
-		contextWindow: 1_048_576,
-		supportsTools: true,
-		supportsStreaming: true,
-		costPer1kInput: 0.000075,
-		costPer1kOutput: 0.0003,
-	},
 ]
+
+const GENERATIVE_MODEL_PREFIXES = ['gemini-2.5', 'gemini-3']
+
+function lookupPricing(modelId: string): { input: number; output: number } | undefined {
+	if (MODEL_PRICING[modelId]) return MODEL_PRICING[modelId]
+	for (const key of Object.keys(MODEL_PRICING)) {
+		if (modelId.startsWith(key)) return MODEL_PRICING[key]
+	}
+	return undefined
+}
 
 function toGeminiContents(messages: LLMMessage[]): Content[] {
 	const contents: Content[] = []
@@ -76,7 +79,7 @@ function toGeminiContents(messages: LLMMessage[]): Content[] {
 		if (msg.role === 'tool' && msg.toolResults) {
 			const parts: Part[] = msg.toolResults.map((tr) => ({
 				functionResponse: {
-					name: tr.callId,
+					name: tr.toolName ?? tr.callId,
 					response:
 						typeof tr.output === 'object' && tr.output !== null
 							? (tr.output as Record<string, unknown>)
@@ -146,7 +149,7 @@ function extractText(result: GenerateContentResult): string {
 }
 
 function calculateCost(model: string, inputTokens: number, outputTokens: number): number {
-	const pricing = MODEL_PRICING[model]
+	const pricing = lookupPricing(model)
 	if (!pricing) return 0
 	return (inputTokens / 1000) * pricing.input + (outputTokens / 1000) * pricing.output
 }
@@ -155,9 +158,13 @@ export class GoogleProvider implements LLMProvider {
 	readonly id = 'google'
 	readonly name = 'Google'
 	private client: GoogleGenerativeAI
+	private apiKey: string
+	private modelCache: ModelInfo[] | null = null
+	private modelCacheExpiry = 0
 
 	constructor(apiKey: string) {
 		this.client = new GoogleGenerativeAI(apiKey)
+		this.apiKey = apiKey
 	}
 
 	async chat(messages: LLMMessage[], config: LLMConfig): Promise<LLMResponse> {
@@ -243,6 +250,47 @@ export class GoogleProvider implements LLMProvider {
 	}
 
 	async listModels(): Promise<ModelInfo[]> {
+		if (this.modelCache && Date.now() < this.modelCacheExpiry) return this.modelCache
+
+		try {
+			const res = await fetch(
+				`https://generativelanguage.googleapis.com/v1beta/models?key=${this.apiKey}`,
+			)
+			if (!res.ok) throw new Error(`Google API ${res.status}`)
+			const data = (await res.json()) as {
+				models: Array<{
+					name: string
+					displayName: string
+					supportedGenerationMethods?: string[]
+					inputTokenLimit?: number
+				}>
+			}
+
+			const models: ModelInfo[] = []
+			for (const m of data.models) {
+				const id = m.name.replace('models/', '')
+				if (!GENERATIVE_MODEL_PREFIXES.some((p) => id.startsWith(p))) continue
+				if (!m.supportedGenerationMethods?.includes('generateContent')) continue
+
+				const pricing = lookupPricing(id)
+				models.push({
+					id,
+					name: m.displayName,
+					provider: 'google',
+					contextWindow: m.inputTokenLimit ?? 1_048_576,
+					supportsTools: true,
+					supportsStreaming: true,
+					costPer1kInput: pricing?.input ?? 0,
+					costPer1kOutput: pricing?.output ?? 0,
+				})
+			}
+			if (models.length > 0) {
+				this.modelCache = models
+				this.modelCacheExpiry = Date.now() + 3_600_000
+				return models
+			}
+		} catch {}
+
 		return KNOWN_MODELS
 	}
 }

@@ -63,8 +63,6 @@ a:hover {
 	outline-offset: 2px;
 }
 
-/* ──────────── GLOBAL OVERLAYS ──────────── */
-
 #noise {
 	position: fixed;
 	inset: 0;
@@ -94,8 +92,6 @@ a:hover {
 	100% { top: 100vh; opacity: 0; }
 }
 
-/* ──────────── LAYOUT ──────────── */
-
 .container {
 	max-width: 1060px;
 	margin: 0 auto;
@@ -107,16 +103,12 @@ a:hover {
 	position: relative;
 }
 
-/* ──────────── GRID BG ──────────── */
-
 .grid-bg {
 	background-image:
 		linear-gradient(rgba(0, 240, 255, 0.025) 1px, transparent 1px),
 		linear-gradient(90deg, rgba(0, 240, 255, 0.025) 1px, transparent 1px);
 	background-size: 48px 48px;
 }
-
-/* ──────────── DIVIDER ──────────── */
 
 .divider {
 	height: 1px;
@@ -135,8 +127,6 @@ a:hover {
 	border: 1px solid var(--ghost);
 	opacity: 0.3;
 }
-
-/* ──────────── CORNER BRACKETS ──────────── */
 
 .frame {
 	position: relative;
@@ -165,8 +155,6 @@ a:hover {
 	border-right: 1px solid var(--ghost);
 }
 
-/* ──────────── SECTION LABEL ──────────── */
-
 .section-label {
 	font-family: var(--font-ui);
 	font-size: 0.5625rem;
@@ -188,8 +176,6 @@ a:hover {
 	max-width: 120px;
 }
 
-/* ──────────── SECTION TITLE ──────────── */
-
 .section-title {
 	font-family: var(--font-display);
 	font-size: 2rem;
@@ -202,8 +188,6 @@ a:hover {
 .section-title span {
 	color: var(--ghost);
 }
-
-/* ──────────── HERO ──────────── */
 
 .hero {
 	min-height: 100vh;
@@ -304,8 +288,6 @@ a:hover {
 }
 
 
-/* ──────────── BUTTONS ──────────── */
-
 .btn {
 	font-family: var(--font-ui);
 	font-size: 0.75rem;
@@ -350,8 +332,6 @@ a:hover {
 	background: var(--ghost-muted);
 	filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.2));
 }
-
-/* ──────────── PROBLEMS ──────────── */
 
 .problems {
 	background: var(--shell);
@@ -424,8 +404,6 @@ a:hover {
 	color: var(--static);
 	line-height: 1.55;
 }
-
-/* ──────────── FEATURES ──────────── */
 
 .features {
 	background: var(--void);
@@ -506,8 +484,6 @@ a:hover {
 	line-height: 1.55;
 }
 
-/* ──────────── COMPARISON ──────────── */
-
 .comparison {
 	background: var(--shell);
 }
@@ -582,8 +558,6 @@ a:hover {
 	background: rgba(0, 240, 255, 0.03);
 }
 
-/* ──────────── TECH STACK ──────────── */
-
 .tech {
 	background: var(--void);
 	text-align: center;
@@ -631,155 +605,139 @@ a:hover {
 	font-weight: 500;
 }
 
-/* ──────────── WAITLIST ──────────── */
-
-.waitlist {
+.channels {
 	background: var(--shell);
-	text-align: center;
 }
 
-.waitlist-sub {
-	font-size: 0.8125rem;
-	color: var(--static);
-	margin-bottom: 40px;
-	margin-top: -36px;
+.channel-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+	gap: 12px;
 }
 
-.waitlist-terminal {
-	max-width: 500px;
-	margin: 0 auto;
+.channel-card {
+	background: var(--void);
+	padding: 16px;
 	position: relative;
-	padding: 2px;
+	clip-path: polygon(
+		0 0,
+		calc(100% - var(--cut-sm)) 0,
+		100% var(--cut-sm),
+		100% 100%,
+		var(--cut-sm) 100%,
+		0 calc(100% - var(--cut-sm))
+	);
+	transition: filter 300ms ease;
 }
 
-.waitlist-terminal::before {
+.channel-card::before {
 	content: '';
 	position: absolute;
-	inset: 0;
+	inset: -1px;
+	background: var(--border-default);
+	clip-path: inherit;
+	z-index: -1;
+	transition: background 300ms ease;
+}
+
+.channel-card:hover {
+	filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.12));
+}
+
+.channel-card:hover::before {
 	background: var(--ghost-border);
-	clip-path: polygon(0 0, calc(100% - var(--cut-sm)) 0, 100% var(--cut-sm), 100% 100%, var(--cut-sm) 100%, 0 calc(100% - var(--cut-sm)));
-	z-index: 0;
 }
 
-.waitlist-terminal-inner {
-	position: relative;
-	z-index: 1;
-	background: var(--void);
-	clip-path: polygon(0 0, calc(100% - var(--cut-sm)) 0, 100% var(--cut-sm), 100% 100%, var(--cut-sm) 100%, 0 calc(100% - var(--cut-sm)));
-	padding: 20px 24px;
-}
-
-.waitlist-terminal-bar {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-bottom: 16px;
-	padding-bottom: 12px;
-	border-bottom: 1px solid var(--border-default);
-}
-
-.waitlist-terminal-bar span {
+.channel-card .card-num {
 	font-family: var(--font-ui);
-	font-size: 0.5rem;
+	font-size: 0.4375rem;
 	letter-spacing: 0.2em;
-	color: var(--static);
-	text-transform: uppercase;
-}
-
-.waitlist-terminal-dot {
-	width: 5px;
-	height: 5px;
-	border-radius: 50%;
-	background: var(--ghost);
+	color: var(--ghost);
 	opacity: 0.4;
+	margin-bottom: 10px;
+	display: block;
 }
 
-.waitlist-form {
-	display: flex;
-	gap: 0;
+.channel-card svg {
+	width: 20px;
+	height: 20px;
+	stroke: var(--ghost);
+	fill: none;
+	stroke-width: 1.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	margin-bottom: 8px;
+	filter: drop-shadow(0 0 3px rgba(0, 240, 255, 0.2));
 }
 
-.waitlist-input {
-	flex: 1;
-	background: transparent;
-	color: var(--chrome);
-	font-family: var(--font-body);
-	font-size: 0.875rem;
-	padding: 10px 0;
-	border: none;
-	border-bottom: 1px solid var(--border-default);
-	outline: none;
-	transition: border-color 200ms ease;
-}
-
-.waitlist-input::placeholder { color: var(--static); }
-
-.waitlist-input:focus {
-	border-color: var(--ghost);
-}
-
-.waitlist-submit {
-	background: var(--ghost);
-	color: var(--void);
-	font-family: var(--font-ui);
-	font-size: 0.6875rem;
-	font-weight: 700;
-	letter-spacing: 0.1em;
-	padding: 10px 24px;
-	border: none;
-	cursor: pointer;
-	margin-left: 12px;
-	clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
-	transition: all 200ms ease;
-}
-
-.waitlist-submit:hover {
-	background: var(--ghost-hover);
-	filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.4));
-}
-
-.waitlist-success {
-	display: none;
-	padding: 12px 0;
-}
-
-.waitlist-success.visible { display: block; }
-
-.waitlist-badge {
-	display: inline-block;
-	font-family: var(--font-ui);
-	font-size: 0.625rem;
-	font-weight: 700;
-	letter-spacing: 0.15em;
-	padding: 6px 28px;
-	background: var(--alive-muted);
-	color: var(--alive);
-	clip-path: polygon(var(--cut-sm) 0, calc(100% - var(--cut-sm)) 0, 100% 50%, calc(100% - var(--cut-sm)) 100%, var(--cut-sm) 100%, 0 50%);
-	animation: badge-in 0.3s ease-out;
-	filter: drop-shadow(0 0 8px rgba(57, 255, 20, 0.3));
-}
-
-@keyframes badge-in {
-	from { transform: scale(0.85); opacity: 0; }
-	to { transform: scale(1); opacity: 1; }
-}
-
-.waitlist-privacy {
-	font-size: 0.625rem;
-	color: var(--static);
-	margin-top: 20px;
-}
-
-.waitlist-error {
-	display: none;
+.channel-card h3 {
+	font-family: var(--font-display);
 	font-size: 0.75rem;
-	color: var(--pulse);
-	margin-top: 12px;
+	font-weight: 600;
+	color: var(--chrome);
+	margin-bottom: 4px;
 }
 
-.waitlist-error.visible { display: block; }
+.channel-card p {
+	font-size: 0.6875rem;
+	color: var(--static);
+	line-height: 1.45;
+}
 
-/* ──────────── FOOTER ──────────── */
+.skills-section {
+	background: var(--void);
+}
+
+.skill-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 20px;
+}
+
+.info-note {
+	font-family: var(--font-body);
+	font-size: 0.8125rem;
+	color: var(--static);
+	max-width: 640px;
+	margin: 40px auto 0;
+	text-align: center;
+	line-height: 1.6;
+	padding: 20px 24px;
+	background: var(--ghost-muted);
+	clip-path: polygon(
+		var(--cut-sm) 0,
+		calc(100% - var(--cut-sm)) 0,
+		100% var(--cut-sm),
+		100% calc(100% - var(--cut-sm)),
+		calc(100% - var(--cut-sm)) 100%,
+		var(--cut-sm) 100%,
+		0 calc(100% - var(--cut-sm)),
+		0 var(--cut-sm)
+	);
+}
+
+.info-note strong {
+	color: var(--ghost);
+	font-weight: 600;
+}
+
+.intelligence {
+	background: var(--shell);
+}
+
+.intel-grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 20px;
+}
+
+.security-section {
+	background: var(--void);
+}
+
+.deploy {
+	background: var(--shell);
+}
 
 .footer {
 	background: var(--void);
@@ -862,8 +820,6 @@ a:hover {
 	opacity: 0.6;
 }
 
-/* ──────────── LOGO GLITCH ──────────── */
-
 .tip-cyan { animation: tc 9s steps(1) infinite; }
 .tip-mag-l { animation: tml 9s steps(1) infinite; }
 .tip-mag-r { animation: tmr 9s steps(1) infinite; }
@@ -892,8 +848,6 @@ a:hover {
 	93.5% { transform: translate(4px, 0); opacity: 0.5; }
 }
 
-/* ──────────── SCROLL REVEAL ──────────── */
-
 .reveal {
 	opacity: 0;
 	transform: translateY(20px);
@@ -911,8 +865,6 @@ a:hover {
 .reveal-d4 { transition-delay: 0.32s; }
 .reveal-d5 { transition-delay: 0.40s; }
 .reveal-d6 { transition-delay: 0.48s; }
-
-/* ──────────── HERO ENTRANCE ──────────── */
 
 .hero-inner > * {
 	opacity: 0;
@@ -945,8 +897,6 @@ a:hover {
 	to { opacity: 0.35; }
 }
 
-/* ──────────── REDUCED MOTION ──────────── */
-
 @media (prefers-reduced-motion: reduce) {
 	*, *::before, *::after {
 		animation-duration: 0.01ms !important;
@@ -963,8 +913,6 @@ a:hover {
 	}
 }
 
-/* ──────────── RESPONSIVE ──────────── */
-
 @media (max-width: 1024px) {
 	.features-grid { grid-template-columns: repeat(2, 1fr); }
 	.problems-grid { grid-template-columns: repeat(2, 1fr); }
@@ -974,6 +922,8 @@ a:hover {
 		justify-self: center;
 	}
 	.hero-motoko { font-size: 3.5rem; }
+	.skill-grid { grid-template-columns: repeat(2, 1fr); }
+	.intel-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 640px) {
@@ -1011,8 +961,13 @@ a:hover {
 	.tech-dot { display: none; }
 	.tech-row span { font-size: 0.6875rem; }
 
-	.waitlist-form { flex-direction: column; gap: 12px; }
-	.waitlist-submit { margin-left: 0; width: 100%; }
+	.channel-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+	.channel-card { padding: 12px; }
+
+	.skill-grid { grid-template-columns: 1fr; }
+	.intel-grid { grid-template-columns: 1fr; }
+
+	.info-note { margin-top: 28px; padding: 16px 20px; }
 
 	.footer-inner, .footer-bottom {
 		flex-direction: column;

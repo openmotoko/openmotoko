@@ -14,11 +14,13 @@ export default async function skillRoutes(fastify: FastifyInstance) {
 		const rows = await db.select().from(skills)
 
 		return reply.send(
-			rows.map((row) => ({
-				...row,
-				manifest: row.manifest ? JSON.parse(row.manifest) : null,
-				enabled: Boolean(row.enabled),
-			})),
+			rows.map((row) => {
+				let manifest = null
+				try {
+					manifest = row.manifest ? JSON.parse(row.manifest) : null
+				} catch {}
+				return { ...row, manifest, enabled: Boolean(row.enabled) }
+			}),
 		)
 	})
 

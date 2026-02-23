@@ -1,0 +1,79 @@
+---
+title: Memory
+description: Layered memory architecture with working, semantic, episodic, and procedural stores.
+---
+
+OpenMotoko uses a four-tier memory system that gives the agent both short-term context and long-term recall. Each layer serves a different purpose and persists in the SQLite database.
+
+## Architecture overview
+
+| Layer | Storage Table | Purpose | Retention |
+|---|---|---|---|
+| Working | `working_memory_summaries` | Current conversation context | Per conversation |
+| Semantic | `semantic_memory` | Long-term facts and knowledge | Permanent |
+| Episodic | `episodic_memory` | Past interaction logs | Permanent |
+| Procedural | `procedural_memory` | Learned procedures and templates | Permanent |
+
+## Working memory
+
+Working memory maintains the active conversation context using a sliding window approach.
+
+- Keeps the last **20 messages** per conversation in full
+- When the conversation exceeds **40 messages**, older messages are summarized into a compressed form
+- Summaries are stored in the `working_memory_summaries` table
+- The LLM sees: system prompt + summary (if any) + recent messages
+
+This approach balances context quality with token budget.
+
+## Semantic memory
+
+Semantic memory stores factual knowledge the agent learns over time.
+
+- Facts are stored with a **category** and **confidence score**
+- New facts are **deduplicated** using cosine similarity (threshold > 0.9)
+- Search uses embedding-based retrieval with **BRE scoring** (dot product with magnitude penalty)
+- Facts can come from user statements, tool results, or agent observations
+
+Example stored facts:
+- "User prefers dark mode interfaces"
+- "The production server runs on Fly.io in Frankfurt"
+- "User's timezone is Europe/Berlin"
+
+## Episodic memory
+
+Episodic memory records past interactions as discrete episodes.
+
+- Each episode captures a timestamped interaction summary
+- Episodes have an **importance score** for retrieval ranking
+- Supports **time-range queries** to find episodes from specific periods
+- **Channel-aware**: episodes are tagged with their source channel
+
+The agent uses episodic memory to recall what happened in previous conversations, even across different channels.
+
+## Procedural memory
+
+Procedural memory stores reusable procedures the agent has learned.
+
+- Named procedures with ordered **steps**
+- **Triggers** that describe when to apply the procedure
+- **Usage tracking** to surface the most frequently used procedures
+
+Example: after the agent deploys code multiple times, it may learn a "deploy to production" procedure with the exact steps it followed.
+
+## Embeddings
+
+All memory layers that support search use local hash-based embeddings:
+
+- **384-dimensional** vectors
+- Generated locally via token hashing and L2 normalization
+- No external API calls required
+- BRE scoring combines dot product similarity with a magnitude penalty for better ranking
+
+## Memory manager
+
+The `MemoryManager` orchestrates all four stores and builds system prompt addendums:
+
+1. Retrieves the working memory summary for the current conversation
+2. Searches semantic memory for facts relevant to the current query
+3. Pulls recent episodic memories for context
+4. Injects all retrieved context into the system prompt before the LLM call

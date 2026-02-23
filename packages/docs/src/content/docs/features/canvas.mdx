@@ -1,0 +1,80 @@
+---
+title: Canvas
+description: A2UI artifacts for structured output including code, markdown, HTML, and Mermaid.
+---
+
+Canvas is the artifact system that lets the agent produce structured, versioned outputs beyond plain text. When the agent generates code, diagrams, or documents, they appear as interactive artifacts in the web UI.
+
+## Supported types
+
+| Type | Description | Example use |
+|---|---|---|
+| `code` | Source code with syntax highlighting | Generated scripts, config files |
+| `markdown` | Rendered markdown documents | Reports, summaries, documentation |
+| `html` | Sandboxed HTML preview | Prototypes, email templates |
+| `mermaid` | Rendered Mermaid diagrams | Flowcharts, sequence diagrams, ER diagrams |
+| `text` | Plain text | Notes, logs, raw data |
+
+## How artifacts work
+
+### Creation
+
+The agent uses the `create_artifact` tool:
+
+```json
+{
+  "conversationId": "conv_abc123",
+  "type": "code",
+  "title": "deploy.sh",
+  "content": "#!/bin/bash\npnpm build && fly deploy",
+  "language": "bash"
+}
+```
+
+The `language` field is optional and only relevant for `code` type artifacts.
+
+### Updates
+
+When the agent modifies an artifact, it uses `update_artifact`:
+
+```json
+{
+  "id": "art_xyz789",
+  "content": "#!/bin/bash\npnpm build && fly deploy --strategy rolling"
+}
+```
+
+Each update creates a **new version**. Previous versions are preserved.
+
+### Versioning
+
+All artifact versions are stored in the `artifact_versions` table. You can browse and restore any previous version.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/artifacts/:id/versions` | List all versions |
+| `GET` | `/api/artifacts/:id/versions/:version` | Get a specific version |
+
+## REST API
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/artifacts` | List artifacts (query: `conversationId`) |
+| `GET` | `/api/artifacts/:id` | Get artifact with current content |
+| `POST` | `/api/artifacts` | Create artifact |
+| `PATCH` | `/api/artifacts/:id` | Update artifact (creates new version) |
+| `DELETE` | `/api/artifacts/:id` | Delete artifact and all versions |
+
+## WebSocket events
+
+| Event | Fields |
+|---|---|
+| `artifact:created` | `artifactId`, `conversationId`, `title`, `artifactType` |
+| `artifact:updated` | `artifactId`, `conversationId`, `title`, `version` |
+
+## Tool definitions
+
+| Tool | Parameters | Description |
+|---|---|---|
+| `create_artifact` | `conversationId`, `type`, `title`, `content`, `language?` | Create a new artifact |
+| `update_artifact` | `id`, `content`, `title?`, `type?`, `language?` | Update existing artifact |

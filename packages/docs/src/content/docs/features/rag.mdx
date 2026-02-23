@@ -1,0 +1,94 @@
+---
+title: RAG
+description: Retrieval-augmented generation with hybrid vector and BM25 search.
+---
+
+OpenMotoko includes a built-in RAG pipeline for ingesting documents and retrieving relevant context at query time.
+
+## Pipeline stages
+
+### 1. Ingestion
+
+```typescript
+await ragPipeline.ingest(text, {
+  source: 'project-readme',
+  metadata: { repo: 'openmotoko' },
+})
+```
+
+The ingestion process:
+
+1. **Chunk** the input text into paragraphs
+2. **Embed** each chunk using local hash-based embeddings (384 dimensions)
+3. **Store** chunks in the `rag_documents` table with content, source, chunk index, metadata, and embedding
+
+### 2. Chunking
+
+The chunker splits text by paragraphs with configurable parameters:
+
+| Parameter | Default | Description |
+|---|---|---|
+| Chunk size | 512 tokens | Target tokens per chunk |
+| Overlap | 64 words | Overlap between adjacent chunks |
+
+Chunks preserve paragraph boundaries where possible for better semantic coherence.
+
+### 3. Search
+
+```typescript
+const results = await ragPipeline.search('How do I deploy?', {
+  limit: 10,
+  minScore: 0.05,
+  sources: ['docs'],
+  hybridAlpha: 0.7,
+})
+```
+
+Search combines two retrieval strategies:
+
+**Vector search** uses BRE scoring (dot product with magnitude penalty) on the stored embeddings.
+
+**BM25 search** uses a full BM25 implementation with parameters k1=1.2 and b=0.75 for keyword-based retrieval.
+
+The final score is a weighted blend:
+
+```
+score = (hybridAlpha * vectorScore) + ((1 - hybridAlpha) * bm25Score)
+```
+
+Default alpha is **0.7**, giving 70% weight to semantic similarity and 30% to keyword matching.
+
+### 4. Context building
+
+Retrieved chunks are ranked by hybrid score and injected into the system prompt before the LLM call. Each result includes:
+
+| Field | Description |
+|---|---|
+| `content` | The chunk text |
+| `source` | Source identifier |
+| `score` | Combined hybrid score |
+| `matchType` | `vector`, `bm25`, or `hybrid` |
+
+## Search options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `limit` | `number` | `10` | Max results |
+| `minScore` | `number` | `0.05` | Minimum score threshold |
+| `sources` | `string[]` | (all) | Filter by source |
+| `hybridAlpha` | `number` | `0.7` | Vector vs BM25 weight |
+
+## Storage schema
+
+Documents are stored in the `rag_documents` table:
+
+| Column | Type | Description |
+|---|---|---|
+| `id` | text | Unique ID (nanoid) |
+| `content` | text | Chunk text |
+| `source` | text | Source identifier |
+| `chunkIndex` | integer | Position in original document |
+| `metadata` | text | JSON metadata |
+| `embedding` | blob | 384-dim float vector |
+| `tokenCount` | integer | Token count of the chunk |
+| `createdAt` | integer | Unix ms timestamp |

@@ -1,0 +1,216 @@
+---
+title: Adding a Channel
+description: Create a custom channel adapter and register it as a plugin.
+---
+
+Channels connect OpenMotoko to messaging platforms. This guide covers implementing the `ChannelAdapter` interface, registering your adapter, and distributing it as a plugin.
+
+## ChannelAdapter interface
+
+Every channel must implement this interface:
+
+```typescript
+interface ChannelAdapter {
+  readonly type: string
+  start(): Promise<void>
+  stop(): Promise<void>
+  sendMessage(message: OutboundMessage): Promise<void>
+  onMessage(handler: (message: InboundMessage) => void): void
+}
+```
+
+### InboundMessage
+
+```typescript
+interface InboundMessage {
+  id: string
+  channelId: string
+  channelType: string
+  chatId: string
+  senderId: string
+  senderName: string
+  content: string
+  isGroup: boolean
+  groupId?: string
+  isMention?: boolean
+  replyToId?: string
+  attachments?: Attachment[]
+  timestamp: number
+}
+```
+
+### OutboundMessage
+
+```typescript
+interface OutboundMessage {
+  chatId: string
+  content: string
+  replyToId?: string
+  attachments?: Attachment[]
+}
+```
+
+## Creating an adapter
+
+Here is a minimal example for a hypothetical "Rocket.Chat" adapter:
+
+```typescript
+import type { ChannelAdapter, InboundMessage, OutboundMessage } from '@openmotoko/core'
+
+export class RocketChatAdapter implements ChannelAdapter {
+  readonly type = 'rocketchat'
+  private handler?: (msg: InboundMessage) => void
+  private client: RocketChatClient
+
+  constructor(private config: { url: string; token: string }) {
+    this.client = new RocketChatClient(config.url, config.token)
+  }
+
+  async start(): Promise<void> {
+    await this.client.connect()
+    this.client.on('message', (raw) => {
+      if (!this.handler) return
+      this.handler({
+        id: raw.id,
+        channelId: 'rocketchat',
+        channelType: 'rocketchat',
+        chatId: raw.roomId,
+        senderId: raw.userId,
+        senderName: raw.username,
+        content: raw.text,
+        isGroup: raw.roomType !== 'dm',
+        timestamp: Date.now(),
+      })
+    })
+  }
+
+  async stop(): Promise<void> {
+    await this.client.disconnect()
+  }
+
+  async sendMessage(message: OutboundMessage): Promise<void> {
+    await this.client.sendMessage(message.chatId, message.content)
+  }
+
+  onMessage(handler: (message: InboundMessage) => void): void {
+    this.handler = handler
+  }
+}
+```
+
+## Registering the channel type
+
+Add your channel type to the `ChannelType` union in `packages/core/src/channels/types.ts`:
+
+```typescript
+type ChannelType =
+  | 'telegram'
+  | 'whatsapp'
+  | 'discord'
+  | 'rocketchat'
+```
+
+## Chat commands
+
+All channels automatically support these slash commands:
+
+| Command | Description |
+|---|---|
+| `/status` | Agent status |
+| `/new` | New conversation |
+| `/reset` | Clear history |
+| `/compact` | Compress context |
+| `/model <name>` | Switch model |
+| `/think <level>` | Set thinking depth |
+| `/cost` | Show costs |
+| `/help` | List commands |
+
+Your adapter does not need to implement these; the channel manager handles them.
+
+## Channel plugin system
+
+To distribute your channel as a standalone npm package:
+
+### Package structure
+
+```
+@openmotoko/channel-rocketchat/
+  src/
+    adapter.ts
+    index.ts
+  package.json
+```
+
+### package.json
+
+```json
+{
+  "name": "@openmotoko/channel-rocketchat",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "peerDependencies": {
+    "@openmotoko/core": "workspace:*"
+  }
+}
+```
+
+### Entry point
+
+```typescript
+export { RocketChatAdapter } from './adapter'
+export const channelType = 'rocketchat'
+```
+
+### Registration
+
+Users register your plugin in `openmotoko.config.ts`:
+
+```typescript
+const config = {
+  channelPlugins: [
+    {
+      packageName: '@openmotoko/channel-rocketchat',
+      config: {
+        url: 'https://chat.example.com',
+        token: 'bot-token',
+      },
+    },
+  ],
+}
+
+export default config
+```
+
+Or install via the API:
+
+```bash
+curl -X POST http://localhost:3457/api/channel-plugins/install \
+  -H "Cookie: session=..." \
+  -H "Content-Type: application/json" \
+  -d '{"packageName": "@openmotoko/channel-rocketchat"}'
+```
+
+## Channel policy
+
+Each channel supports a per-channel message policy:
+
+```json
+{
+  "channels": {
+    "rocketchat": {
+      "enabled": true,
+      "policy": {
+        "dmPolicy": "allowlist",
+        "allowFrom": ["user123"],
+        "requireMention": true
+      }
+    }
+  }
+}
+```
+
+| Policy | Behavior |
+|---|---|
+| `open` | Accept messages from anyone |
+| `pairing` | Require a pairing code |
+| `allowlist` | Only accept from listed IDs |

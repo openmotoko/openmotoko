@@ -1,0 +1,130 @@
+---
+title: Security Overview
+description: Full security architecture including auth, sandboxing, rate limiting, and data protection.
+---
+
+OpenMotoko is designed to run as a personal agent with access to sensitive tools and data. Security is enforced at every layer.
+
+## Authentication
+
+### Password auth
+
+- Login via `POST /api/auth/login` with the configured `OPENMOTOKO_PASSWORD`
+- Password comparison uses **timing-safe** comparison to prevent timing attacks
+- Session tokens are **32 random bytes** (hex encoded), stored in memory
+- Sessions expire after **7 days** by default (configurable via `auth.sessionMaxAge`)
+- Cookies are `httpOnly` and `sameSite: strict`
+
+### Brute-force protection
+
+- **5 login attempts** per IP address
+- **15-minute lockout** after exceeding the limit
+
+### Tailscale auth
+
+When running behind Tailscale, identity is extracted from `tailscale-user-login` and `tailscale-user-name` headers via the `whois` API. This provides zero-config authentication within your tailnet.
+
+## Rate limiting
+
+Global rate limiting via `@fastify/rate-limit`:
+
+| Endpoint | Limit |
+|---|---|
+| General API | 100 requests/minute |
+| Login | 10 requests/minute |
+| Webhook triggers | 30 requests/minute |
+
+## HTTP security headers
+
+### Content Security Policy (CSP)
+
+```
+default-src 'self';
+script-src 'self' 'unsafe-inline';
+style-src 'self' 'unsafe-inline';
+connect-src 'self' ws: wss:;
+```
+
+### Helmet
+
+`@fastify/helmet` applies secure defaults including:
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Strict-Transport-Security` (in production)
+- COEP disabled for WebSocket compatibility
+
+## Environment sandboxing
+
+### Skill isolation
+
+Skills run in separate processes with IPC communication. Each skill:
+
+- Can only read environment variables listed in its `capabilities.env` manifest field
+- Cannot access other skills' state
+- Cannot crash the main process
+
+### Docker sandbox
+
+Optional Docker-based execution for untrusted code. See [Docker Sandbox](/docs/security/sandbox) for details.
+
+## Path validation
+
+### Filesystem skill
+
+- Only paths in `tools.filesystem.allowedPaths` are accessible
+- **Symlink resolution** prevents directory traversal attacks
+- Sensitive paths are blocked: `.ssh/`, `.gnupg/`, `.env`, private keys
+- Max read size: **10 MB**, max write size: **5 MB**
+
+### Shell skill
+
+- Extensive **blocklist** of dangerous commands: `rm -rf /`, `sudo`, `eval`, `curl | bash`, network tools
+- Blocked regex patterns for sensitive file paths
+- Max command length: **2048 characters**
+- Max output buffer: **2 MB**
+- Default timeout: **60 seconds**
+
+## Sensitive data redaction
+
+The redaction system (`packages/core/src/security/redact.ts`) uses regex patterns to detect and mask:
+
+- API keys (OpenAI, Anthropic, Google, AWS)
+- Bearer tokens
+- Private keys (RSA, EC, DSA)
+- Passwords in URLs
+- Connection strings
+- JWTs
+- GitHub tokens
+- Slack tokens
+
+Controlled by `redactSensitive` in `openmotoko.json`:
+
+| Mode | Behavior |
+|---|---|
+| `off` | No redaction |
+| `tools` | Redact in tool call results |
+| `all` | Redact in all LLM context |
+
+## HMAC action log
+
+Every agent action is recorded in the activity log with an HMAC signature:
+
+- Key: `OPENMOTOKO_HMAC_SECRET` (default: `openmotoko-default-hmac-key`)
+- Any modification to log entries is detectable by verifying the HMAC
+- The activity feed at `GET /api/activity` supports filtering by channel, skill, and action type
+
+## WebSocket auth
+
+WebSocket connections at `/ws` require authentication:
+
+- Session cookie (same as REST API)
+- Or `?token=` query parameter
+
+Unauthenticated upgrade requests are rejected.
+
+## CORS
+
+- Development: allows `http://localhost:5173`
+- Production: set `OPENMOTOKO_CORS_ORIGIN` to your domain
+- Credentials are included (cookies)

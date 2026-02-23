@@ -7,6 +7,9 @@ import type {
 } from '@openmotoko/core'
 import { nanoid } from '@openmotoko/core'
 
+const MAX_RECONNECT_ATTEMPTS = 5
+const BASE_DELAY_MS = 1000
+
 export class MattermostChannel implements ChannelAdapter {
 	readonly id: string
 	readonly type = 'mattermost' as const
@@ -17,6 +20,8 @@ export class MattermostChannel implements ChannelAdapter {
 	private baseUrl = ''
 	private token = ''
 	private botUserId = ''
+	private reconnectAttempts = 0
+	private reconnectTimer: ReturnType<typeof setTimeout> | null = null
 
 	constructor(id: string) {
 		this.id = id
@@ -38,10 +43,16 @@ export class MattermostChannel implements ChannelAdapter {
 		const me = (await meResponse.json()) as { id: string }
 		this.botUserId = me.id
 
+		this.connectWebSocket()
+		this.running = true
+	}
+
+	private connectWebSocket(): void {
 		const wsUrl = `${this.baseUrl.replace(/^http/, 'ws')}/api/v4/websocket`
 		this.ws = new WebSocket(wsUrl)
 
 		this.ws.addEventListener('open', () => {
+			this.reconnectAttempts = 0
 			this.ws?.send(
 				JSON.stringify({
 					seq: 1,
@@ -55,12 +66,29 @@ export class MattermostChannel implements ChannelAdapter {
 			this.handleWsMessage(String(ev.data))
 		})
 
-		this.ws.addEventListener('close', () => {
-			this.running = false
-			this.ws = null
-		})
+		this.ws.addEventListener('error', () => {})
 
-		this.running = true
+		this.ws.addEventListener('close', () => {
+			this.ws = null
+			if (this.running) {
+				this.scheduleReconnect()
+			}
+		})
+	}
+
+	private scheduleReconnect(): void {
+		if (this.reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+			this.running = false
+			return
+		}
+
+		const delay = BASE_DELAY_MS * 2 ** this.reconnectAttempts
+		this.reconnectAttempts++
+
+		this.reconnectTimer = setTimeout(() => {
+			if (!this.running) return
+			this.connectWebSocket()
+		}, delay)
 	}
 
 	private handleWsMessage(raw: string): void {
@@ -121,6 +149,7 @@ export class MattermostChannel implements ChannelAdapter {
 	async stop(): Promise<void> {
 		if (!this.running) return
 		this.running = false
+		if (this.reconnectTimer) clearTimeout(this.reconnectTimer)
 		this.ws?.close()
 		this.ws = null
 	}

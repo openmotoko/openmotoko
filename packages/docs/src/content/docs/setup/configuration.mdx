@@ -1,0 +1,162 @@
+---
+title: Configuration
+description: The openmotoko.json config file format and model aliases.
+---
+
+OpenMotoko uses a JSON5 config file at `~/.openmotoko/openmotoko.json`. All fields are optional and have sensible defaults.
+
+## Full schema
+
+```json
+{
+  "gateway": {
+    "bind": "loopback",
+    "port": 3000,
+    "auth": {
+      "password": "...",
+      "sessionMaxAge": 604800000
+    },
+    "tailscale": {
+      "enabled": false,
+      "trustedProxies": ["127.0.0.1", "::1"]
+    }
+  },
+  "channels": {
+    "telegram": {
+      "token": "...",
+      "enabled": true,
+      "policy": {
+        "dmPolicy": "open",
+        "allowFrom": [],
+        "requireMention": false
+      }
+    }
+  },
+  "agents": {
+    "model": "balanced",
+    "maxTokens": 4096,
+    "temperature": 0.7,
+    "sandbox": {
+      "mode": "off",
+      "image": "openmotoko/sandbox:latest",
+      "networkPolicy": "restricted"
+    },
+    "workspace": "~/openmotoko-workspace"
+  },
+  "tools": {
+    "filesystem": {
+      "allowedPaths": ["~/Documents", "~/Projects"],
+      "maxFileSize": 10485760
+    },
+    "shell": {
+      "blocked": ["rm -rf /"],
+      "timeout": 60000,
+      "elevated": false
+    }
+  },
+  "pulse": {
+    "enabled": false,
+    "budget": {
+      "daily": 200000,
+      "model": "fast"
+    },
+    "activeHours": {
+      "start": "08:00",
+      "end": "22:00",
+      "timezone": "Europe/Berlin"
+    },
+    "tasks": []
+  },
+  "mcp": {
+    "servers": [],
+    "expose": false
+  },
+  "llm": {
+    "providers": [],
+    "aliases": {
+      "fast": { "provider": "anthropic", "model": "claude-haiku-4-5" },
+      "balanced": { "provider": "anthropic", "model": "claude-sonnet-4-6" },
+      "smart": { "provider": "anthropic", "model": "claude-opus-4-6" }
+    }
+  },
+  "notifications": {
+    "routing": {
+      "critical": "telegram",
+      "important": "telegram",
+      "informational": "web",
+      "digest": "web",
+      "silent": "log"
+    }
+  },
+  "redactSensitive": "off"
+}
+```
+
+## Key sections
+
+### gateway
+
+Controls the HTTP server binding and auth.
+
+| Field | Default | Description |
+|---|---|---|
+| `bind` | `loopback` | `loopback` or `0.0.0.0` |
+| `port` | `3000` | Server port |
+| `auth.password` | env var | Override `OPENMOTOKO_PASSWORD` |
+| `auth.sessionMaxAge` | `604800000` | Session TTL in ms (7 days) |
+
+### agents
+
+Controls the default agent behavior.
+
+| Field | Default | Description |
+|---|---|---|
+| `model` | `balanced` | Default model alias |
+| `sandbox.mode` | `off` | `off`, `non-main`, or `all` |
+| `sandbox.image` | `openmotoko/sandbox:latest` | Docker image for sandbox |
+| `sandbox.networkPolicy` | `restricted` | `none`, `restricted`, or `full` |
+
+### tools
+
+Filesystem and shell security boundaries.
+
+| Field | Description |
+|---|---|
+| `filesystem.allowedPaths` | Directories the agent can access |
+| `filesystem.maxFileSize` | Max file size in bytes (default 10 MB) |
+| `shell.blocked` | Additional blocked command patterns |
+| `shell.timeout` | Command timeout in ms |
+| `shell.elevated` | Allow sudo (default false) |
+
+### llm
+
+Provider configuration and model aliases.
+
+| Alias | Default Provider | Default Model |
+|---|---|---|
+| `fast` | anthropic | claude-haiku-4-5 |
+| `balanced` | anthropic | claude-sonnet-4-6 |
+| `smart` | anthropic | claude-opus-4-6 |
+
+You can override aliases to point at any provider:
+
+```json
+{
+  "llm": {
+    "aliases": {
+      "fast": { "provider": "openai", "model": "gpt-4o-mini" },
+      "balanced": { "provider": "google", "model": "gemini-2.5-flash" }
+    }
+  }
+}
+```
+
+### redactSensitive
+
+Controls automatic redaction of secrets in tool output.
+
+| Value | Behavior |
+|---|---|
+| `off` | No redaction |
+| `tools` | Redact in tool call results only |
+| `all` | Redact in all LLM context |

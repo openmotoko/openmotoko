@@ -1,0 +1,199 @@
+---
+title: Writing a Skill
+description: Create custom skills using the CLI scaffolder, SDK, and test harness.
+---
+
+Skills extend OpenMotoko with new tools. This guide covers creating a skill from scratch, the manifest format, the `defineSkill` API, testing, and publishing.
+
+## Quick start with CLI
+
+```bash
+npx create-openmotoko-skill my-skill
+cd my-skill
+pnpm install
+```
+
+This scaffolds a skill project with the manifest, entry point, and test setup.
+
+## Project structure
+
+```
+my-skill/
+  manifest.json
+  src/
+    index.ts
+  test/
+    index.test.ts
+  package.json
+  tsconfig.json
+```
+
+## Manifest format
+
+Every skill needs a `manifest.json`:
+
+```json
+{
+  "id": "my-skill",
+  "name": "My Skill",
+  "version": "1.0.0",
+  "description": "Does something useful",
+  "author": "your-name",
+  "capabilities": {
+    "network": false,
+    "filesystem": {
+      "enabled": false,
+      "paths": []
+    },
+    "shell": false,
+    "env": []
+  },
+  "tools": [
+    {
+      "name": "do_thing",
+      "description": "Does the thing with the input",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "The input to process"
+          }
+        },
+        "required": ["query"]
+      }
+    }
+  ]
+}
+```
+
+### Capability fields
+
+| Field | Type | Description |
+|---|---|---|
+| `network` | `boolean` | Outbound HTTP access |
+| `filesystem.enabled` | `boolean` | File read/write access |
+| `filesystem.paths` | `string[]` | Allowed directories |
+| `shell` | `boolean` | Shell command execution |
+| `env` | `string[]` | Environment variables the skill can read |
+
+Only declare what you actually need. The security scanner rejects skills that use undeclared capabilities.
+
+## defineSkill API
+
+```typescript
+import { defineSkill } from '@openmotoko/skill-sdk'
+
+export default defineSkill(
+  require('./manifest.json'),
+  async (ctx, toolName, input) => {
+    switch (toolName) {
+      case 'do_thing':
+        const result = await processQuery(input.query)
+        return { content: result }
+      default:
+        throw new Error(`Unknown tool: ${toolName}`)
+    }
+  }
+)
+```
+
+### SkillContext
+
+The `ctx` parameter provides:
+
+| Property | Type | Description |
+|---|---|---|
+| `manifest` | `SkillManifest` | The parsed manifest |
+| `env` | `Record<string, string>` | Allowed environment variables |
+| `log` | `Logger` | Structured logger |
+
+### Return format
+
+Tool handlers return an object with a `content` field:
+
+```typescript
+return { content: 'Result text here' }
+```
+
+For errors, throw an exception:
+
+```typescript
+throw new Error('Something went wrong')
+```
+
+## Helper functions
+
+The SDK exports utilities:
+
+| Function | Description |
+|---|---|
+| `formatToolResult(content)` | Wraps content in the expected result format |
+| `formatError(error)` | Formats an error for the IPC response |
+| `parseJsonInput(raw)` | Safely parses JSON input |
+| `validateInput(input, schema)` | Validates input against a JSON schema |
+
+## Testing with SkillTestHarness
+
+```typescript
+import { SkillTestHarness } from '@openmotoko/skill-sdk'
+import skill from '../src/index'
+
+const harness = new SkillTestHarness(skill)
+
+const result = await harness.runTool('do_thing', {
+  query: 'test input',
+})
+
+console.log(result.result)
+console.log(result.logs)
+console.log(result.durationMs)
+```
+
+### Test result fields
+
+| Field | Type | Description |
+|---|---|---|
+| `toolName` | `string` | Tool that was called |
+| `input` | `object` | Input that was passed |
+| `result` | `object` | Tool return value |
+| `logs` | `string[]` | Log output during execution |
+| `durationMs` | `number` | Execution time |
+
+## Manual creation
+
+If you prefer not to use the CLI:
+
+1. Create a directory with `manifest.json` and `src/index.ts`
+2. Add `@openmotoko/skill-sdk` as a dependency
+3. Export a `defineSkill` call as the default export
+4. Write tests using `SkillTestHarness`
+
+## Publishing to the registry
+
+```bash
+npx @openmotoko/cli publish ./my-skill
+```
+
+This uploads your skill to the OpenMotoko registry where it undergoes [security scanning](/docs/security/skill-scanning) before being listed.
+
+### Pre-publish checklist
+
+- All capabilities are correctly declared in the manifest
+- No `eval()` or dynamic code execution
+- Environment variable usage matches `capabilities.env`
+- Tests pass via `SkillTestHarness`
+- Version follows semver
+
+## Installing from registry
+
+Users install published skills via the API:
+
+```bash
+curl -X POST http://localhost:3457/api/registry/install \
+  -H "Cookie: session=..." \
+  -H "Content-Type: application/json" \
+  -d '{"skillId": "my-skill"}'
+```
+
+Or through the web UI's skill library.

@@ -1,0 +1,129 @@
+---
+title: WebSocket
+description: Real-time event streaming via WebSocket.
+---
+
+OpenMotoko uses WebSocket for real-time communication between the API server and clients (web UI, channel adapters, external integrations).
+
+## Connection
+
+### Endpoint
+
+```
+ws://localhost:3457/ws
+```
+
+### Authentication
+
+Connect with either:
+
+- **Session cookie**: same cookie from `POST /api/auth/login`
+- **Token query parameter**: `ws://localhost:3457/ws?token=your-session-token`
+
+Unauthenticated connections are rejected.
+
+### JavaScript example
+
+```javascript
+const ws = new WebSocket('ws://localhost:3457/ws')
+
+ws.onopen = () => {
+  console.log('Connected')
+}
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data)
+  console.log(data.type, data)
+}
+
+ws.onclose = () => {
+  console.log('Disconnected')
+}
+```
+
+## Event types
+
+All events follow this structure:
+
+```json
+{
+  "type": "event:name",
+  "timestamp": 1700000000000,
+  "...fields": "specific to event type"
+}
+```
+
+### Messages
+
+| Event | Fields | Description |
+|---|---|---|
+| `message:received` | `conversationId`, `role`, `content` | User message received |
+| `message:sent` | `conversationId`, `role`, `content` | Agent message sent |
+
+### LLM streaming
+
+| Event | Fields | Description |
+|---|---|---|
+| `llm:stream` | `conversationId`, `chunk` | Streaming token chunk |
+| `llm:complete` | `conversationId`, `tokens`, `cost` | Generation complete |
+
+### Tool execution
+
+| Event | Fields | Description |
+|---|---|---|
+| `tool:called` | `conversationId`, `toolName`, `args` | Tool invocation started |
+| `tool:result` | `conversationId`, `toolName`, `result` | Tool returned result |
+
+### Cost tracking
+
+| Event | Fields | Description |
+|---|---|---|
+| `cost:updated` | `conversationId`, `provider`, `model`, `cost` | Token cost recorded |
+
+### Skills
+
+| Event | Fields | Description |
+|---|---|---|
+| `skill:activated` | `skillId`, `conversationId` | Skill was used |
+
+### Channels
+
+| Event | Fields | Description |
+|---|---|---|
+| `channel:message` | `channelId`, `channelType`, `content` | Message from external channel |
+
+### Scheduler
+
+| Event | Fields | Description |
+|---|---|---|
+| `scheduler:started` | `taskId`, `taskName` | Task execution began |
+| `scheduler:completed` | `taskId`, `taskName`, `duration` | Task finished |
+| `scheduler:failed` | `taskId`, `taskName`, `error` | Task errored |
+
+### Artifacts
+
+| Event | Fields | Description |
+|---|---|---|
+| `artifact:created` | `artifactId`, `conversationId`, `title`, `artifactType` | New artifact |
+| `artifact:updated` | `artifactId`, `conversationId`, `title`, `version` | Artifact modified |
+
+### Agents
+
+| Event | Fields | Description |
+|---|---|---|
+| `agent:spawned` | `agentId`, `parentId`, `name`, `model` | Sub-agent created |
+| `agent:completed` | `agentId`, `parentId`, `name`, `output`, `durationMs` | Sub-agent done |
+| `agent:failed` | `agentId`, `parentId`, `name`, `output`, `durationMs` | Sub-agent errored |
+
+### Intents
+
+| Event | Fields | Description |
+|---|---|---|
+| `intent:created` | `intentId`, `summary`, `requiresApproval` | Action intent created |
+| `intent:resolved` | `intentId`, `status` | Intent approved/rejected |
+
+### Config
+
+| Event | Fields | Description |
+|---|---|---|
+| `config:changed` | `timestamp` | Configuration was updated |

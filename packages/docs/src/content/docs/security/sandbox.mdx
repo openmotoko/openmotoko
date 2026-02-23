@@ -1,0 +1,124 @@
+---
+title: Docker Sandbox
+description: Isolated code execution with resource limits, network isolation, and read-only filesystem.
+---
+
+The Docker sandbox provides secure, isolated execution for untrusted code. It is used when `agents.sandbox.mode` is set to `non-main` or `all` in `openmotoko.json`.
+
+## Dockerfile.sandbox
+
+The sandbox image is minimal:
+
+```dockerfile
+FROM node:24-alpine
+RUN adduser -D -u 1001 sandbox && \
+    mkdir -p /workspace && \
+    chown sandbox:sandbox /workspace
+USER sandbox
+WORKDIR /workspace
+ENV NODE_ENV=production
+```
+
+The sandbox runs as a non-root user (`sandbox`, UID 1001) with no elevated privileges.
+
+## Resource limits
+
+| Resource | Limit | Description |
+|---|---|---|
+| Memory | 256 MB | Hard memory cap |
+| CPU | 50% of one core | `cpuQuota: 50000` (50% of 100000) |
+| PIDs | 256 | Prevents fork bombs |
+| Open files | 1024 (soft) / 2048 (hard) | `nofile` ulimit |
+| Processes | 128 (soft) / 256 (hard) | `nproc` ulimit |
+| Timeout | 30 seconds | Configurable per execution |
+
+## Security measures
+
+### Read-only filesystem
+
+The root filesystem is mounted read-only (`ReadonlyRootfs: true`). Only `/workspace` is writable via a tmpfs mount:
+
+```
+tmpfs /workspace size=64m,noexec,nosuid
+```
+
+The workspace is limited to 64 MB and blocks executable files (`noexec`) and setuid binaries (`nosuid`).
+
+### Capability dropping
+
+All Linux capabilities are dropped (`CapDrop: ALL`). The container cannot:
+
+- Change file ownership
+- Bind to privileged ports
+- Load kernel modules
+- Modify network settings
+- Access raw sockets
+
+### No privilege escalation
+
+`SecurityOpt: no-new-privileges` prevents gaining additional privileges via setuid binaries or other mechanisms.
+
+### Auto-removal
+
+Containers are automatically removed after execution (`AutoRemove: true`), leaving no state behind.
+
+## Network policies
+
+| Policy | Behavior |
+|---|---|
+| `none` | No network access at all |
+| `restricted` | DNS and HTTPS only (ports 53, 443) |
+| `full` | Unrestricted network |
+
+Configure in `openmotoko.json`:
+
+```json
+{
+  "agents": {
+    "sandbox": {
+      "mode": "all",
+      "networkPolicy": "restricted"
+    }
+  }
+}
+```
+
+## Sandbox modes
+
+| Mode | Description |
+|---|---|
+| `off` | No sandboxing (default) |
+| `non-main` | Sandbox sub-agents only; primary agent runs natively |
+| `all` | Sandbox all code execution |
+
+## SandboxManager
+
+The `SandboxManager` wraps `DockerSandbox` and reads config from `openmotoko.json`. It provides a `execute(options)` interface:
+
+```typescript
+interface SandboxOptions {
+  image: string
+  command: string[]
+  env?: Record<string, string>
+  workDir?: string
+  networkPolicy?: 'none' | 'restricted' | 'full'
+  timeout?: number
+  memoryLimit?: number
+  cpuQuota?: number
+}
+
+interface SandboxResult {
+  stdout: string
+  stderr: string
+  exitCode: number
+  timedOut: boolean
+}
+```
+
+## Prerequisites
+
+Docker must be installed and running. The sandbox image is built automatically on first use:
+
+```bash
+docker build -t openmotoko/sandbox:latest -f docker/Dockerfile.sandbox .
+```

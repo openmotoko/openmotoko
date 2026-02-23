@@ -92,6 +92,24 @@ export class DiscordChannel implements ChannelAdapter {
 			})
 		})
 
+		this.client.on(Events.Error, (err) => {
+			eventBus.emit('channel:message', {
+				type: 'channel:message',
+				channelId: this.id,
+				channelType: this.type,
+				content: `Discord error: ${err.message}`,
+			})
+		})
+
+		this.client.on(Events.ShardError, (err) => {
+			eventBus.emit('channel:message', {
+				type: 'channel:message',
+				channelId: this.id,
+				channelType: this.type,
+				content: `Discord shard error: ${err.message}`,
+			})
+		})
+
 		this.client.once(Events.ClientReady, () => {
 			eventBus.emit('channel:message', {
 				type: 'channel:message',

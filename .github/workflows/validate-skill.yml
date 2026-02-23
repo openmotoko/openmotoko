@@ -4,11 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - "skills/**"
+      - "packages/skills/**"
   pull_request:
     branches: [main]
     paths:
-      - "skills/**"
+      - "packages/skills/**"
 
 jobs:
   validate:
@@ -21,14 +21,12 @@ jobs:
           node-version: "24"
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - run: pnpm install --frozen-lockfile
 
       - name: Validate manifest schema
         run: |
-          for dir in skills/*/; do
+          for dir in packages/skills/src/*/; do
             if [ -f "$dir/manifest.json" ]; then
               node -e "
                 const fs = require('fs');
@@ -48,31 +46,30 @@ jobs:
 
       - name: Security scan
         run: |
-          for dir in skills/*/; do
+          for dir in packages/skills/src/*/; do
             if [ -f "$dir/manifest.json" ]; then
               echo "=== Security scan: $dir ==="
               manifest="$dir/manifest.json"
 
               has_shell=$(node -e "const m=JSON.parse(require('fs').readFileSync('$manifest','utf-8'));console.log(m.capabilities?.shell===true)")
               has_fs=$(node -e "const m=JSON.parse(require('fs').readFileSync('$manifest','utf-8'));console.log(m.capabilities?.filesystem?.enabled===true)")
-              has_net=$(node -e "const m=JSON.parse(require('fs').readFileSync('$manifest','utf-8'));console.log(m.capabilities?.network===true)")
 
               for f in $(find "$dir" -name '*.ts' -o -name '*.js' | grep -v node_modules); do
-                if grep -qP '\beval\s*\(' "$f"; then
+                if grep -qE '\beval\s*\(' "$f"; then
                   echo "CRITICAL: eval() found in $f"
                   exit 1
                 fi
-                if grep -qP '\bnew\s+Function\s*\(' "$f"; then
+                if grep -qE '\bnew\s+Function\s*\(' "$f"; then
                   echo "CRITICAL: new Function() found in $f"
                   exit 1
                 fi
-                if grep -qP "from\s+['\"]node:child_process['\"]|require\s*\(\s*['\"]child_process['\"]\s*\)" "$f"; then
+                if grep -qE "from\s+['\"]node:child_process['\"]|require\s*\(\s*['\"]child_process['\"]\s*\)" "$f"; then
                   if [ "$has_shell" != "true" ]; then
                     echo "ERROR: $f uses child_process without shell capability"
                     exit 1
                   fi
                 fi
-                if grep -qP "from\s+['\"]node:fs['\"]|from\s+['\"]fs['\"]|from\s+['\"]node:fs/promises['\"]" "$f"; then
+                if grep -qE "from\s+['\"]node:fs['\"]|from\s+['\"]fs['\"]|from\s+['\"]node:fs/promises['\"]" "$f"; then
                   if [ "$has_fs" != "true" ]; then
                     echo "ERROR: $f uses fs without filesystem capability"
                     exit 1
@@ -80,51 +77,16 @@ jobs:
                 fi
               done
 
-              if [ -f "$dir/package.json" ]; then
-                cd "$dir"
-                npx npm-audit-ci --moderate 2>/dev/null || echo "WARN: npm audit issues in $dir"
-                cd -
-              fi
               echo "PASS: $dir"
             fi
           done
 
       - name: Build skills
-        run: |
-          for dir in skills/*/; do
-            if [ -f "$dir/package.json" ]; then
-              echo "Building $dir"
-              cd "$dir"
-              pnpm install --frozen-lockfile
-              pnpm build || true
-              cd -
-            fi
-          done
+        run: pnpm --filter @openmotoko/skills build
 
-      - name: Run skill tests
+      - name: Test skills
         run: |
-          for dir in skills/*/; do
-            if [ -f "$dir/package.json" ]; then
-              cd "$dir"
-              if grep -q '"test"' package.json; then
-                echo "Testing $dir"
-                pnpm test
-              fi
-              cd -
-            fi
-          done
-
-      - name: Generate checksums
-        run: |
-          for dir in skills/*/; do
-            if [ -f "$dir/manifest.json" ]; then
-              tar -czf "/tmp/$(basename $dir).tar.gz" -C skills "$(basename $dir)"
-              sha256sum "/tmp/$(basename $dir).tar.gz" >> checksums.txt
-            fi
-          done
-          cat checksums.txt
-
-      - name: Update index.json
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: |
-          node scripts/update-registry-index.js
+          cd packages/skills
+          if grep -q '"test"' package.json; then
+            pnpm test
+          fi

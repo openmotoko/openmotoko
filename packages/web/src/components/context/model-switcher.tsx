@@ -1,50 +1,20 @@
-import { ChevronDown, Cpu } from 'lucide-react'
+import { ChevronDown, Cpu, Loader2 } from 'lucide-react'
 import { useRef, useState } from 'react'
-
-interface ModelOption {
-	id: string
-	label: string
-	detail: string
-}
+import { useModels } from '../../hooks/use-models'
 
 interface ModelGroup {
 	label: string
-	models: ModelOption[]
+	models: { id: string; label: string; detail: string }[]
 }
 
-const MODEL_GROUPS: ModelGroup[] = [
-	{
-		label: 'Presets',
-		models: [
-			{ id: 'fast', label: 'Fast', detail: 'Low latency, low cost' },
-			{ id: 'smart', label: 'Smart', detail: 'Best quality, higher cost' },
-			{ id: 'balanced', label: 'Balanced', detail: 'Good balance of speed and quality' },
-		],
-	},
-	{
-		label: 'Anthropic',
-		models: [
-			{ id: 'claude-4-opus', label: 'Claude 4 Opus', detail: 'Most capable' },
-			{ id: 'claude-4-sonnet', label: 'Claude 4 Sonnet', detail: 'Fast and capable' },
-			{ id: 'claude-4-haiku', label: 'Claude 4 Haiku', detail: 'Fastest, cheapest' },
-		],
-	},
-	{
-		label: 'OpenAI',
-		models: [
-			{ id: 'gpt-4o', label: 'GPT-4o', detail: 'Multimodal flagship' },
-			{ id: 'gpt-4o-mini', label: 'GPT-4o Mini', detail: 'Fast and affordable' },
-			{ id: 'o3', label: 'o3', detail: 'Advanced reasoning' },
-		],
-	},
-	{
-		label: 'Ollama',
-		models: [
-			{ id: 'llama3.3', label: 'Llama 3.3', detail: 'Local, 70B' },
-			{ id: 'qwen3', label: 'Qwen 3', detail: 'Local, multilingual' },
-		],
-	},
-]
+const PRESET_GROUP: ModelGroup = {
+	label: 'Presets',
+	models: [
+		{ id: 'fast', label: 'Fast', detail: 'Low latency, low cost' },
+		{ id: 'smart', label: 'Smart', detail: 'Best quality, higher cost' },
+		{ id: 'balanced', label: 'Balanced', detail: 'Good balance of speed and quality' },
+	],
+}
 
 interface ModelSwitcherProps {
 	currentModel: string
@@ -54,9 +24,26 @@ interface ModelSwitcherProps {
 export function ModelSwitcher({ currentModel, onSelect }: ModelSwitcherProps) {
 	const [open, setOpen] = useState(false)
 	const containerRef = useRef<HTMLDivElement>(null)
+	const { data, loading } = useModels()
 
-	const currentLabel =
-		MODEL_GROUPS.flatMap((g) => g.models).find((m) => m.id === currentModel)?.label ?? currentModel
+	const groups: ModelGroup[] = [PRESET_GROUP]
+
+	if (data) {
+		for (const provider of data.providers) {
+			groups.push({
+				label: provider.name,
+				models: provider.models.map((m) => ({
+					id: m.id,
+					label: m.name,
+					detail:
+						m.costPer1kOutput > 0 ? `$${(m.costPer1kOutput * 1000).toFixed(2)}/MTok out` : 'Local',
+				})),
+			})
+		}
+	}
+
+	const allModels = groups.flatMap((g) => g.models)
+	const currentLabel = allModels.find((m) => m.id === currentModel)?.label ?? currentModel
 
 	return (
 		<div ref={containerRef} className="relative">
@@ -71,17 +58,21 @@ export function ModelSwitcher({ currentModel, onSelect }: ModelSwitcherProps) {
 			>
 				<Cpu size={14} className="text-ghost shrink-0" />
 				<span className="flex-1 text-left truncate">{currentLabel}</span>
-				<ChevronDown
-					size={12}
-					className={`text-static transition-transform ${open ? 'rotate-180' : ''}`}
-				/>
+				{loading ? (
+					<Loader2 size={12} className="text-static animate-spin" />
+				) : (
+					<ChevronDown
+						size={12}
+						className={`text-static transition-transform ${open ? 'rotate-180' : ''}`}
+					/>
+				)}
 			</button>
 			{open && (
 				<div
 					className="absolute z-50 top-full left-0 right-0 mt-1 bg-shell border border-(--ghost-border) max-h-64 overflow-y-auto cut-tr"
 					style={{ '--cut-md': '6px' } as React.CSSProperties}
 				>
-					{MODEL_GROUPS.map((group) => (
+					{groups.map((group) => (
 						<div key={group.label}>
 							<div className="px-3 py-1.5 text-[10px] font-ui font-bold uppercase tracking-widest text-static">
 								{group.label}

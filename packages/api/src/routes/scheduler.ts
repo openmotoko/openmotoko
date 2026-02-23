@@ -50,11 +50,13 @@ export default async function schedulerRoutes(fastify: FastifyInstance) {
 				.limit(limit)
 				.offset(offset)
 
-			const mapped = tasks.map((t) => ({
-				...t,
-				enabled: Boolean(t.enabled),
-				payload: JSON.parse(t.payload || '{}'),
-			}))
+			const mapped = tasks.map((t) => {
+				let payload = {}
+				try {
+					payload = JSON.parse(t.payload || '{}')
+				} catch {}
+				return { ...t, enabled: Boolean(t.enabled), payload }
+			})
 			return reply.send(mapped)
 		},
 	)
@@ -80,10 +82,14 @@ export default async function schedulerRoutes(fastify: FastifyInstance) {
 				})
 				.returning()
 
+			let payload = {}
+			try {
+				payload = JSON.parse(task?.payload || '{}')
+			} catch {}
 			return reply.status(201).send({
 				...task,
 				enabled: Boolean(task?.enabled),
-				payload: JSON.parse(task?.payload || '{}'),
+				payload,
 			})
 		},
 	)
@@ -117,10 +123,14 @@ export default async function schedulerRoutes(fastify: FastifyInstance) {
 				return reply.status(404).send({ error: 'Task not found', code: 'NOT_FOUND' })
 			}
 
+			let payload = {}
+			try {
+				payload = JSON.parse(updated.payload || '{}')
+			} catch {}
 			return reply.send({
 				...updated,
 				enabled: Boolean(updated.enabled),
-				payload: JSON.parse(updated.payload || '{}'),
+				payload,
 			})
 		},
 	)
@@ -132,13 +142,18 @@ export default async function schedulerRoutes(fastify: FastifyInstance) {
 			const { id } = request.params as { id: string }
 			const db = getDb()
 
-			const [deleted] = await db.delete(scheduledTasks).where(eq(scheduledTasks.id, id)).returning()
+			const [task] = await db
+				.select()
+				.from(scheduledTasks)
+				.where(eq(scheduledTasks.id, id))
+				.limit(1)
 
-			if (!deleted) {
+			if (!task) {
 				return reply.status(404).send({ error: 'Task not found', code: 'NOT_FOUND' })
 			}
 
 			await db.delete(taskRuns).where(eq(taskRuns.taskId, id))
+			await db.delete(scheduledTasks).where(eq(scheduledTasks.id, id))
 			return reply.status(204).send()
 		},
 	)
@@ -171,10 +186,14 @@ export default async function schedulerRoutes(fastify: FastifyInstance) {
 				.where(eq(scheduledTasks.id, id))
 				.returning()
 
+			let togglePayload = {}
+			try {
+				togglePayload = JSON.parse(updated?.payload || '{}')
+			} catch {}
 			return reply.send({
 				...updated,
 				enabled: Boolean(updated?.enabled),
-				payload: JSON.parse(updated?.payload || '{}'),
+				payload: togglePayload,
 			})
 		},
 	)
@@ -210,11 +229,13 @@ export default async function schedulerRoutes(fastify: FastifyInstance) {
 				.limit(limit)
 				.offset(offset)
 
-			const mapped = runs.map((r) => ({
-				...r,
-				success: Boolean(r.success),
-				output: r.output ? JSON.parse(r.output) : null,
-			}))
+			const mapped = runs.map((r) => {
+				let output = null
+				try {
+					output = r.output ? JSON.parse(r.output) : null
+				} catch {}
+				return { ...r, success: Boolean(r.success), output }
+			})
 
 			return reply.send(mapped)
 		},

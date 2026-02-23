@@ -111,7 +111,7 @@ export class AgentRuntime {
 				}
 			}
 
-			const skillPath = resolve(this.skillsBasePath, row.id, 'index.js')
+			const skillPath = resolve(this.skillsBasePath, row.name, 'index.js')
 
 			try {
 				await this.skillRuntime.startSkill(row.id, skillPath, manifest)

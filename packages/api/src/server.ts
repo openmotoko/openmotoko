@@ -16,6 +16,7 @@ import conversationRoutes from './routes/conversations.js'
 import costRoutes from './routes/costs.js'
 import healthRoutes from './routes/health.js'
 import messageRoutes from './routes/messages.js'
+import modelRoutes from './routes/models.js'
 import openaiCompatRoutes from './routes/openai-compat.js'
 import registryRoutes from './routes/registry.js'
 import schedulerRoutes from './routes/scheduler.js'
@@ -66,6 +67,7 @@ export async function createServer() {
 		await scope.register(tailscaleRoutes)
 		await scope.register(agentRoutes)
 		await scope.register(channelPluginRoutes)
+		await scope.register(modelRoutes)
 		await scope.register(openaiCompatRoutes)
 	})
 

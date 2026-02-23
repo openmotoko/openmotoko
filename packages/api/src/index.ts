@@ -58,6 +58,16 @@ async function main() {
 	process.on('SIGTERM', () => shutdown('SIGTERM'))
 }
 
+process.on('unhandledRejection', (reason) => {
+	console.error('[FATAL] Unhandled promise rejection:', reason)
+	process.exit(1)
+})
+
+process.on('uncaughtException', (err) => {
+	console.error('[FATAL] Uncaught exception:', err)
+	process.exit(1)
+})
+
 main().catch((err) => {
 	console.error('Failed to start server:', err)
 	process.exit(1)

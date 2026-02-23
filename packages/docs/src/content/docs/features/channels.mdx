@@ -1,0 +1,177 @@
+---
+title: Channels
+description: All 14 messaging channels, setup instructions, and the channel plugin system.
+---
+
+Channels connect OpenMotoko to messaging platforms. Each channel implements the `ChannelAdapter` interface and translates platform-specific messages into a common format.
+
+## Supported channels
+
+| Channel | Library | Auth Method |
+|---|---|---|
+| Telegram | grammy | Bot token |
+| Discord | discord.js | Bot token |
+| WhatsApp | whatsapp-web.js | QR session |
+| Slack | @slack/bolt | Bot + App tokens |
+| Signal | signal-cli | Phone number |
+| iMessage | BlueBubbles API | Server password |
+| Google Chat | Google APIs | Service account |
+| Microsoft Teams | Bot Framework | App ID + password |
+| Matrix | matrix-js-sdk | User + password |
+| Mattermost | REST API | Bot token |
+| Feishu / Lark | Feishu API | App ID + secret |
+| LINE | Messaging API | Channel token + secret |
+| IRC | IRC client | Server + nick |
+| Webchat | Built-in | No external deps |
+
+## Chat commands
+
+All channels support these slash commands:
+
+| Command | Description |
+|---|---|
+| `/status` | Show agent status |
+| `/new` | Start a new conversation |
+| `/reset` | Clear conversation history |
+| `/compact` | Summarize and compress context |
+| `/model <name>` | Switch model |
+| `/think <level>` | Set thinking depth |
+| `/cost` | Show token usage and costs |
+| `/help` | List commands |
+
+## Channel setup
+
+### Telegram
+
+1. Create a bot with [@BotFather](https://t.me/BotFather)
+2. Set `TELEGRAM_BOT_TOKEN` in your `.env`
+3. Enable the Telegram channel in settings or `openmotoko.json`
+
+The adapter supports DMs, group messages, mention detection, and a 4096-character message limit.
+
+### Discord
+
+1. Create an application at the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Add a bot and copy the token
+3. Set `DISCORD_BOT_TOKEN`
+4. Invite the bot to your server with message read/write permissions
+
+Supports guild and DM messages, mentions, and media attachments (2000-character limit).
+
+### WhatsApp
+
+1. Set `WHATSAPP_SESSION_PATH` (default `./data/whatsapp`)
+2. Start OpenMotoko and scan the QR code that appears in the logs
+3. Session persists across restarts
+
+### Slack
+
+1. Create a Slack app at [api.slack.com/apps](https://api.slack.com/apps)
+2. Enable Socket Mode and create an app-level token
+3. Set `SLACK_BOT_TOKEN` (`xoxb-...`) and `SLACK_APP_TOKEN` (`xapp-...`)
+
+### Signal
+
+1. Install `signal-cli` on your system
+2. Register or link a phone number
+3. Set `SIGNAL_CLI_PATH` and `SIGNAL_PHONE_NUMBER`
+
+### iMessage
+
+1. Run [BlueBubbles Server](https://bluebubbles.app) on a Mac
+2. Set `BLUEBUBBLES_URL` and `BLUEBUBBLES_PASSWORD`
+
+### Google Chat
+
+1. Create a service account in Google Cloud Console
+2. Enable the Chat API
+3. Set `GOOGLE_CHAT_CREDENTIALS_PATH` to the JSON key file
+
+### Microsoft Teams
+
+1. Register a bot in the Azure Bot Framework
+2. Set `TEAMS_APP_ID` and `TEAMS_APP_PASSWORD`
+
+### Matrix
+
+1. Create a bot account on your homeserver
+2. Set `MATRIX_HOMESERVER`, `MATRIX_USER`, and `MATRIX_PASSWORD`
+
+### Mattermost
+
+1. Create a bot account in Mattermost
+2. Set `MATTERMOST_URL` and `MATTERMOST_TOKEN`
+
+### Feishu / Lark
+
+1. Create an app in the Feishu developer console
+2. Set `FEISHU_APP_ID` and `FEISHU_APP_SECRET`
+
+### LINE
+
+1. Create a Messaging API channel in the LINE Developer Console
+2. Set `LINE_CHANNEL_TOKEN` and `LINE_CHANNEL_SECRET`
+
+### IRC
+
+1. Set `IRC_SERVER`, `IRC_PORT`, `IRC_NICK`, and `IRC_CHANNEL`
+2. Default port is `6697` (TLS)
+
+### Webchat
+
+The built-in webchat channel works out of the box with no external dependencies. It is the web UI's chat interface.
+
+## Channel plugin system
+
+You can extend OpenMotoko with third-party channel adapters via the plugin system.
+
+### openmotoko.config.ts
+
+```typescript
+const config = {
+  channelPlugins: [
+    {
+      packageName: '@openmotoko/channel-rocketchat',
+      config: {
+        url: 'https://chat.example.com',
+        token: 'bot-token',
+      },
+    },
+  ],
+}
+
+export default config
+```
+
+### Plugin API endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/channel-plugins` | List installed plugins |
+| `POST` | `/api/channel-plugins/install` | Install by package name |
+| `DELETE` | `/api/channel-plugins/:id` | Remove a plugin |
+
+### Channel policy
+
+Each channel supports a per-channel policy in `openmotoko.json`:
+
+```json
+{
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "policy": {
+        "dmPolicy": "allowlist",
+        "allowFrom": ["123456789"],
+        "requireMention": true
+      }
+    }
+  }
+}
+```
+
+| Policy | Description |
+|---|---|
+| `open` | Accept messages from anyone |
+| `pairing` | Require a pairing code |
+| `allowlist` | Only accept from listed IDs |
