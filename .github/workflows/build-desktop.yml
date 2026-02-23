@@ -56,16 +56,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ matrix.target }}
-          path: |
-            packages/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*
+          if-no-files-found: warn
+          path: packages/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/
 
       - name: Upload release assets
         if: github.event_name == 'release'
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          for file in packages/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*; do
-            if [ -f "$file" ]; then
-              gh release upload "${{ github.event.release.tag_name }}" "$file" --clobber || true
-            fi
+          find packages/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/ -type f 2>/dev/null | while read -r file; do
+            gh release upload "${{ github.event.release.tag_name }}" "$file" --clobber || true
           done
