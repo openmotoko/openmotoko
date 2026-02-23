@@ -12,14 +12,21 @@ function createMockRequest(overrides: Record<string, unknown> = {}) {
 	} as unknown as FastifyRequest
 }
 
-interface MockReply {
-	statusCode: number
-	sent: unknown
-	status(code: number): MockReply
-	send(data: unknown): MockReply
+interface ValidationErrorResponse {
+	error: string
+	code: string
+	details: Array<{ field: string; path: string; message: string }>
 }
 
-function createMockReply() {
+interface MockReply {
+	statusCode: number
+	sent: ValidationErrorResponse | null
+	status(code: number): MockReply
+	send(data: unknown): MockReply
+	asFastify(): FastifyReply
+}
+
+function createMockReply(): MockReply {
 	const reply: MockReply = {
 		statusCode: 200,
 		sent: null,
@@ -28,11 +35,14 @@ function createMockReply() {
 			return reply
 		},
 		send(data: unknown) {
-			reply.sent = data
+			reply.sent = data as ValidationErrorResponse
 			return reply
 		},
+		asFastify() {
+			return reply as unknown as FastifyReply
+		},
 	}
-	return reply as unknown as MockReply & FastifyReply
+	return reply
 }
 
 describe('validate middleware', () => {
@@ -42,7 +52,7 @@ describe('validate middleware', () => {
 		it('passes valid body', async () => {
 			const req = createMockRequest({ body: { name: 'Alice' } })
 			const reply = createMockReply()
-			await validate(schema)(req, reply)
+			await validate(schema)(req, reply.asFastify())
 			expect(reply.sent).toBeNull()
 			expect(req.body).toEqual({ name: 'Alice' })
 		})
@@ -50,17 +60,17 @@ describe('validate middleware', () => {
 		it('rejects invalid body', async () => {
 			const req = createMockRequest({ body: { name: '' } })
 			const reply = createMockReply()
-			await validate(schema)(req, reply)
+			await validate(schema)(req, reply.asFastify())
 			expect(reply.statusCode).toBe(400)
-			expect(reply.sent.code).toBe('VALIDATION_ERROR')
-			expect(reply.sent.details).toHaveLength(1)
-			expect(reply.sent.details[0].field).toBe('body')
+			expect(reply.sent?.code).toBe('VALIDATION_ERROR')
+			expect(reply.sent?.details).toHaveLength(1)
+			expect(reply.sent?.details[0].field).toBe('body')
 		})
 
 		it('rejects missing body field', async () => {
 			const req = createMockRequest({ body: {} })
 			const reply = createMockReply()
-			await validate(schema)(req, reply)
+			await validate(schema)(req, reply.asFastify())
 			expect(reply.statusCode).toBe(400)
 		})
 	})
@@ -71,16 +81,16 @@ describe('validate middleware', () => {
 		it('passes valid params', async () => {
 			const req = createMockRequest({ params: { id: 'abc123' } })
 			const reply = createMockReply()
-			await validate(schema)(req, reply)
+			await validate(schema)(req, reply.asFastify())
 			expect(reply.sent).toBeNull()
 		})
 
 		it('rejects invalid params', async () => {
 			const req = createMockRequest({ params: { id: '' } })
 			const reply = createMockReply()
-			await validate(schema)(req, reply)
+			await validate(schema)(req, reply.asFastify())
 			expect(reply.statusCode).toBe(400)
-			expect(reply.sent.details[0].field).toBe('params')
+			expect(reply.sent?.details[0].field).toBe('params')
 		})
 	})
 
@@ -90,14 +100,14 @@ describe('validate middleware', () => {
 		it('passes valid query', async () => {
 			const req = createMockRequest({ query: { page: '5' } })
 			const reply = createMockReply()
-			await validate(schema)(req, reply)
+			await validate(schema)(req, reply.asFastify())
 			expect(reply.sent).toBeNull()
 		})
 
 		it('rejects invalid query', async () => {
 			const req = createMockRequest({ query: { page: '0' } })
 			const reply = createMockReply()
-			await validate(schema)(req, reply)
+			await validate(schema)(req, reply.asFastify())
 			expect(reply.statusCode).toBe(400)
 		})
 	})
@@ -108,11 +118,14 @@ describe('validate middleware', () => {
 				body: z.object({ x: z.number() }),
 				params: z.object({ id: z.string().min(1) }),
 			}
-			const req = createMockRequest({ body: { x: 'not-number' }, params: { id: '' } })
+			const req = createMockRequest({
+				body: { x: 'not-number' },
+				params: { id: '' },
+			})
 			const reply = createMockReply()
-			await validate(schema)(req, reply)
+			await validate(schema)(req, reply.asFastify())
 			expect(reply.statusCode).toBe(400)
-			expect(reply.sent.details.length).toBeGreaterThanOrEqual(2)
+			expect(reply.sent?.details.length).toBeGreaterThanOrEqual(2)
 		})
 	})
 })
