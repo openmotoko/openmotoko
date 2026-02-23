@@ -45,7 +45,7 @@ function walk(dir: string) {
 		const full = join(dir, entry)
 		if (statSync(full).isDirectory()) {
 			walk(full)
-		} else if (entry === 'package.json' || entry === 'manifest.json') {
+		} else if (entry === 'package.json' || entry === 'manifest.json' || entry === 'tauri.conf.json') {
 			updateJson(full)
 		}
 	}

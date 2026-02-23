@@ -1,7 +1,7 @@
 {
 	"id": "translator",
 	"name": "Translator",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Translate text between languages using LibreTranslate",
 	"author": "openmotoko",
 	"capabilities": {

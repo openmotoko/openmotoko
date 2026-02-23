@@ -1,7 +1,7 @@
 {
 	"id": "timer-cron",
 	"name": "Timer & Cron",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Set timers and schedule recurring tasks with cron expressions",
 	"author": "openmotoko",
 	"capabilities": {
