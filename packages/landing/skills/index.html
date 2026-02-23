@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Skill Marketplace - OpenMotoko</title>
+	<meta name="description" content="Browse security-scanned skills for your OpenMotoko agent. Every skill is graded before it reaches the registry.">
+	<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=JetBrains+Mono:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="/src/styles.css">
+	<link rel="stylesheet" href="/skills/skills.css">
+</head>
+
+<body>
+
+	<div id="noise"></div>
+
+	<nav class="skills-nav">
+		<a href="/" class="nav-lockup">
+			<svg viewBox="0 0 100 100" width="24" height="24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+				<path d="M 10,16 L 90,16 L 59.1,72 M 10,16 L 40.9,72" fill="none" stroke="var(--ghost)" stroke-width="2" stroke-linejoin="miter" stroke-linecap="square" />
+				<path d="M 40.9,72 L 50,88 L 59.1,72" fill="none" stroke="var(--pulse)" stroke-width="2" stroke-linejoin="miter" stroke-linecap="square" />
+			</svg>
+			<span class="nav-open">OPEN</span><span class="nav-motoko">MOTOKO</span>
+		</a>
+		<div class="nav-links">
+			<a href="/skills" class="nav-link active">Skills</a>
+			<a href="/docs" class="nav-link">Docs</a>
+			<a href="https://github.com/openmotoko/openmotoko" target="_blank" rel="noopener" class="nav-link">GitHub</a>
+		</div>
+	</nav>
+
+	<section class="skills-hero">
+		<span class="section-label">REGISTRY</span>
+		<h1>Skill Marketplace</h1>
+		<p>Every skill is security-scanned and graded before it reaches the registry. Browse, install, build your own.</p>
+		<div class="skills-search-wrap">
+			<input type="text" id="skill-search" placeholder="Search skills..." autocomplete="off" spellcheck="false">
+		</div>
+		<div class="skills-stats" id="stats"></div>
+	</section>
+
+	<section class="skills-list">
+		<div class="container">
+			<div id="skills-grid" class="skills-grid">
+				<div class="skills-loading">Loading skills from registry...</div>
+			</div>
+		</div>
+	</section>
+
+	<footer class="footer" style="margin-top: 60px;">
+		<div class="container">
+			<div class="footer-bottom" style="padding: 24px 0;">
+				<span class="footer-copy">2026 OpenMotoko - Marcel Baklouti & contributors. MIT License.</span>
+			</div>
+		</div>
+	</footer>
+
+	<script type="module" src="/skills/skills.ts"></script>
+</body>
+
+</html>

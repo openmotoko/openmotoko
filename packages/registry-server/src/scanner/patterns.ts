@@ -20,7 +20,7 @@ export const VULN_PATTERNS: VulnPattern[] = [
 	{ id: 'fs-write', severity: 'medium', category: 'filesystem', pattern: /(?:writeFile|appendFile|createWriteStream)\s*\(/, description: 'Filesystem write operation' },
 	{ id: 'fs-unlink', severity: 'high', category: 'filesystem', pattern: /(?:unlink|rmdir|rm)\s*\(/, description: 'File/directory deletion' },
 	{ id: 'fs-chmod', severity: 'high', category: 'filesystem', pattern: /(?:chmod|chown)\s*\(/, description: 'Permission change' },
-	{ id: 'path-traversal', severity: 'critical', category: 'filesystem', pattern: /\.\.\/?(?:\.\.\/)*/, description: 'Path traversal attempt' },
+	{ id: 'path-traversal', severity: 'critical', category: 'filesystem', pattern: /(?:^|['"`\/])\.\.\//, description: 'Path traversal attempt' },
 	{ id: 'symlink-create', severity: 'high', category: 'filesystem', pattern: /(?:symlink|link)Sync?\s*\(/, description: 'Symlink creation' },
 	{ id: 'net-http', severity: 'medium', category: 'network', pattern: /(?:http|https)\.(?:get|request|createServer)\s*\(/, description: 'HTTP request/server' },
 	{ id: 'net-fetch', severity: 'low', category: 'network', pattern: /\bfetch\s*\(/, description: 'fetch() call' },

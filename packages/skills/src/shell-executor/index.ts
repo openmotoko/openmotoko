@@ -110,6 +110,12 @@ export const shellExecutor = defineSkill(manifest, async (toolName, args, ctx) =
 
 	ctx.log(`Executing: ${command}`)
 
+	const safeEnvKeys = ['PATH', 'HOME', 'LANG', 'TERM', 'SHELL'] as const
+	const sandboxEnv: Record<string, string | undefined> = {}
+	for (const key of safeEnvKeys) {
+		sandboxEnv[key] = ctx.env[key]
+	}
+
 	return new Promise((resolve) => {
 		exec(
 			command,
@@ -117,13 +123,7 @@ export const shellExecutor = defineSkill(manifest, async (toolName, args, ctx) =
 				cwd,
 				timeout,
 				maxBuffer: MAX_BUFFER,
-				env: {
-					PATH: process.env.PATH,
-					HOME: process.env.HOME,
-					LANG: process.env.LANG,
-					TERM: process.env.TERM,
-					SHELL: process.env.SHELL,
-				},
+				env: sandboxEnv,
 			},
 			(error, stdout, stderr) => {
 				const truncatedStdout =

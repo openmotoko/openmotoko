@@ -1,7 +1,7 @@
 {
 	"id": "summarize",
 	"name": "Summarize",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Summarize text content or web pages into concise overviews",
 	"author": "openmotoko",
 	"capabilities": {

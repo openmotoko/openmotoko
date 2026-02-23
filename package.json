@@ -1,6 +1,6 @@
 {
   "name": "openmotoko",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Personal AI Agent for Humans",
@@ -21,7 +21,10 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "db:generate": "pnpm --filter @openmotoko/core db:generate",
-    "db:migrate": "pnpm --filter @openmotoko/core db:migrate"
+    "db:migrate": "pnpm --filter @openmotoko/core db:migrate",
+    "version:patch": "tsx scripts/bump-version.ts patch",
+    "version:minor": "tsx scripts/bump-version.ts minor",
+    "version:major": "tsx scripts/bump-version.ts major"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",

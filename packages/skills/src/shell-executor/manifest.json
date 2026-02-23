@@ -1,7 +1,7 @@
 {
 	"id": "shell-executor",
 	"name": "Shell Executor",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Execute shell commands with timeout and working directory support",
 	"author": "openmotoko",
 	"capabilities": {

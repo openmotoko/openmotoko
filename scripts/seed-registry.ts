@@ -41,7 +41,7 @@ for (const skill of skillDirs) {
 
 		const distSkillDir = join(DIST_DIR, skill)
 		if (statSync(distSkillDir).isDirectory()) {
-			execSync(`cp -r ${distSkillDir}/* ${pkgDir}/`)
+			execSync(`rsync -a --exclude='*.test.*' --exclude='*.test.d.*' ${distSkillDir}/ ${pkgDir}/`)
 		}
 
 		const tarPath = join(tmpDir, `${manifest.id}.tar.gz`)
