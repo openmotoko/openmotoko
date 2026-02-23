@@ -58,7 +58,7 @@ function parseTar(buffer: ArrayBuffer): TarEntry[] {
 
 		if (typeFlag === 0 || typeFlag === 48) {
 			if (size > 0 && size < 10_000_000) {
-				const decoder = new TextDecoder('utf-8', { fatal: false })
+				const decoder = new TextDecoder('utf-8', { fatal: false, ignoreBOM: false })
 				const content = decoder.decode(view.slice(offset, offset + size))
 				entries.push({ path: stripped, content, size })
 			}

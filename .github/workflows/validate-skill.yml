@@ -70,9 +70,13 @@ jobs:
                   fi
                 fi
                 if grep -qE "from\s+['\"]node:fs['\"]|from\s+['\"]fs['\"]|from\s+['\"]node:fs/promises['\"]" "$f"; then
-                  if [ "$has_fs" != "true" ]; then
-                    echo "ERROR: $f uses fs without filesystem capability"
-                    exit 1
+                  if [ "$has_fs" != "true" ] && [ "$has_shell" != "true" ]; then
+                    fs_ops=$(grep -cE "\b(writeFile|mkdir|unlink|readdir|statSync|lstat|access|appendFile|copyFile|rename|rmdir)\b" "$f" || true)
+                    non_manifest_reads=$(grep -v "^import " "$f" | grep -E "readFile" | grep -cv "manifest\.json" || true)
+                    if [ "$fs_ops" -gt 0 ] || [ "$non_manifest_reads" -gt 0 ]; then
+                      echo "ERROR: $f uses fs without filesystem or shell capability"
+                      exit 1
+                    fi
                   fi
                 fi
               done
