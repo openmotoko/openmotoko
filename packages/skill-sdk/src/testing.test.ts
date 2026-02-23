@@ -9,7 +9,12 @@ const manifest: SkillManifest = {
 	version: '1.0.0',
 	description: 'simple calculator',
 	author: 'test',
-	capabilities: { network: false, filesystem: { enabled: false, paths: [] }, shell: false, env: [] },
+	capabilities: {
+		network: false,
+		filesystem: { enabled: false, paths: [] },
+		shell: false,
+		env: [],
+	},
 	tools: [
 		{ name: 'add', description: 'Add two numbers', inputSchema: { type: 'object' } },
 		{ name: 'multiply', description: 'Multiply two numbers', inputSchema: { type: 'object' } },
@@ -48,7 +53,9 @@ describe('SkillTestHarness', () => {
 
 	it('throws for unknown tool', async () => {
 		const harness = new SkillTestHarness(calcSkill)
-		await expect(harness.runTool('divide', { a: 1, b: 2 })).rejects.toThrow('Tool "divide" not found')
+		await expect(harness.runTool('divide', { a: 1, b: 2 })).rejects.toThrow(
+			'Tool "divide" not found',
+		)
 	})
 
 	it('runs all tools', async () => {
@@ -73,13 +80,10 @@ describe('SkillTestHarness', () => {
 	})
 
 	it('passes custom env', async () => {
-		const envSkill = defineSkill(
-			{ ...manifest, id: 'env-test' },
-			async (_tool, _args, ctx) => ({
-				success: true,
-				data: { key: ctx.env.MY_KEY },
-			}),
-		)
+		const envSkill = defineSkill({ ...manifest, id: 'env-test' }, async (_tool, _args, ctx) => ({
+			success: true,
+			data: { key: ctx.env.MY_KEY },
+		}))
 		const harness = new SkillTestHarness(envSkill, { MY_KEY: 'secret123' })
 		const run = await harness.runTool('add', {})
 		expect((run.result.data as Record<string, string>).key).toBe('secret123')

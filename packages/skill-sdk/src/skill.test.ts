@@ -43,11 +43,15 @@ describe('defineSkill', () => {
 			data: { greeting: `Hello ${args.name}` },
 		}))
 
-		const result = await skill.handler('greet', { name: 'World' }, {
-			manifest: validManifest,
-			env: {},
-			log: () => {},
-		})
+		const result = await skill.handler(
+			'greet',
+			{ name: 'World' },
+			{
+				manifest: validManifest,
+				env: {},
+				log: () => {},
+			},
+		)
 
 		expect(result.success).toBe(true)
 		expect((result.data as Record<string, string>).greeting).toBe('Hello World')

@@ -297,7 +297,7 @@ return text
 .replace(/\`([^\`]+)\`/g,'<code>$1</code>')
 .replace(/\\*\\*(.+?)\\*\\*/g,'<strong>$1</strong>')
 .replace(/\\*(.+?)\\*/g,'<em>$1</em>')
-.replace(/\[([^\]]+)\]\(([^)]+)\)/g,function(_,t,u){
+.replace(/[([^]]+)](([^)]+))/g,function(_,t,u){
 var lu=u.trim().toLowerCase();
 if(lu.indexOf('javascript:')===0||lu.indexOf('data:')===0||lu.indexOf('vbscript:')===0)return t;
 return '<a href="'+u+'" target="_blank" rel="noopener noreferrer">'+t+'</a>';

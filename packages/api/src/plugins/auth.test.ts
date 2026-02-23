@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { createSession, destroySession, getSession, pruneExpiredSessions } from './auth.js'
 
 describe('Session Management', () => {
@@ -21,8 +21,8 @@ describe('Session Management', () => {
 			const token = createSession('owner')
 			const session = getSession(token)
 			expect(session).toBeDefined()
-			expect(session!.userId).toBe('owner')
-			expect(session!.createdAt).toBeLessThanOrEqual(Date.now())
+			expect(session?.userId).toBe('owner')
+			expect(session?.createdAt).toBeLessThanOrEqual(Date.now())
 			destroySession(token)
 		})
 

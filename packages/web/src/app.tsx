@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate, useRouteError, isRouteErrorResponse } from 'react-router'
+import { createBrowserRouter, isRouteErrorResponse, Navigate, useRouteError } from 'react-router'
 import { RootLayout } from './layouts/root-layout'
 import { ActivityPage } from './pages/activity'
 import { CanvasPage } from './pages/canvas'

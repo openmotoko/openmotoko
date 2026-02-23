@@ -1,13 +1,13 @@
 import { resolve } from 'node:path'
 import type { SkillManifest, ToolDefinition } from '@openmotoko/skill-sdk'
 import { skillManifestSchema } from '@openmotoko/skill-sdk'
-import { AgentManager, getAgentManager } from '../agents/manager.js'
+import { getAgentManager } from '../agents/manager.js'
 import type { SpawnOptions } from '../agents/types.js'
 import type { CreateArtifactInput, UpdateArtifactInput } from '../artifacts/index.js'
 import { artifactManager } from '../artifacts/index.js'
+import { budgetEnforcer } from '../budget/index.js'
 import { getDb } from '../db/client.js'
 import { skills } from '../db/schema.js'
-import { budgetEnforcer } from '../budget/index.js'
 import { eventBus } from '../events/bus.js'
 import type { ArtifactCreatedEvent, ArtifactUpdatedEvent } from '../events/types.js'
 import { AnthropicProvider } from '../llm/providers/anthropic.js'
@@ -191,8 +191,7 @@ export class AgentRuntime {
 			},
 			{
 				name: 'wait_agents',
-				description:
-					'Wait for one or more sub-agents to complete and return their results.',
+				description: 'Wait for one or more sub-agents to complete and return their results.',
 				inputSchema: {
 					type: 'object',
 					properties: {
@@ -249,7 +248,11 @@ export class AgentRuntime {
 		return JSON.stringify({ success: true, artifact })
 	}
 
-	async executeToolCall(toolName: string, input: unknown, conversationId?: string): Promise<string> {
+	async executeToolCall(
+		toolName: string,
+		input: unknown,
+		conversationId?: string,
+	): Promise<string> {
 		if (toolName === 'create_artifact' || toolName === 'update_artifact') {
 			try {
 				return await this.handleArtifactToolCall(toolName, input as Record<string, unknown>)

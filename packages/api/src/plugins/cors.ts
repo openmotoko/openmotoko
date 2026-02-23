@@ -3,7 +3,8 @@ import fp from 'fastify-plugin'
 
 async function corsPlugin(fastify: FastifyInstance) {
 	const envOrigin = process.env.OPENMOTOKO_CORS_ORIGIN
-	const origin = envOrigin ?? (process.env.NODE_ENV === 'production' ? false : 'http://localhost:5173')
+	const origin =
+		envOrigin ?? (process.env.NODE_ENV === 'production' ? false : 'http://localhost:5173')
 
 	await fastify.register(import('@fastify/cors'), {
 		origin,

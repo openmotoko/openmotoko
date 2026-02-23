@@ -12,7 +12,7 @@ export function useConversations() {
 export function useConversation(id: string | undefined) {
 	return useQuery({
 		queryKey: ['conversation', id],
-		queryFn: () => api.getConversation(id!),
+		queryFn: () => api.getConversation(id as string),
 		enabled: !!id,
 	})
 }

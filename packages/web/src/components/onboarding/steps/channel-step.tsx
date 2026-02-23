@@ -67,12 +67,12 @@ export function ChannelStep({ data, onChange }: StepProps) {
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: i * 0.05 }}
 						whileTap={{ scale: 0.97 }}
-					onClick={() => toggleChannel(ch.id)}
-					className={`text-left p-4 border transition-all cut-tr cut-border ${
-						data.channels?.includes(ch.id)
-							? 'bg-ghost-muted border-[var(--ghost-border)]'
-							: 'bg-shell border-[var(--border-default)] hover:border-static'
-					}`}
+						onClick={() => toggleChannel(ch.id)}
+						className={`text-left p-4 border transition-all cut-tr cut-border ${
+							data.channels?.includes(ch.id)
+								? 'bg-ghost-muted border-[var(--ghost-border)]'
+								: 'bg-shell border-[var(--border-default)] hover:border-static'
+						}`}
 						style={{ '--cut-md': '8px' } as React.CSSProperties}
 					>
 						<div className="flex items-center gap-3">
@@ -81,7 +81,10 @@ export function ChannelStep({ data, onChange }: StepProps) {
 									data.channels?.includes(ch.id) ? 'bg-ghost/20' : 'bg-void/50'
 								}`}
 							>
-								<ch.icon size={14} className={data.channels?.includes(ch.id) ? 'text-ghost' : 'text-static'} />
+								<ch.icon
+									size={14}
+									className={data.channels?.includes(ch.id) ? 'text-ghost' : 'text-static'}
+								/>
 							</div>
 							<span
 								className={`font-ui font-bold text-sm ${data.channels?.includes(ch.id) ? 'text-ghost' : 'text-chrome'}`}
@@ -103,8 +106,8 @@ export function ChannelStep({ data, onChange }: StepProps) {
 					<span className="text-xs font-ui font-bold text-ghost uppercase tracking-wider block mb-2">
 						{active.name} Setup
 					</span>
-				<p className="text-xs font-body text-chrome/50 leading-relaxed">{active.hint}</p>
-				<p className="text-xs font-body text-chrome/35 mt-2">
+					<p className="text-xs font-body text-chrome/50 leading-relaxed">{active.hint}</p>
+					<p className="text-xs font-body text-chrome/35 mt-2">
 						Configure in Settings after completing setup.
 					</p>
 				</motion.div>

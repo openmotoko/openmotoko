@@ -60,7 +60,8 @@ async function authPlugin(fastify: FastifyInstance) {
 		const urlPath = request.url.split('?')[0]
 		if (PUBLIC_ROUTES.has(urlPath)) return
 		if (urlPath === '/ws') return
-		if (urlPath.match(/^\/api\/webhooks\/[^/]+\/trigger$/) || urlPath === '/api/webhooks/gmail') return
+		if (urlPath.match(/^\/api\/webhooks\/[^/]+\/trigger$/) || urlPath === '/api/webhooks/gmail')
+			return
 
 		const token = request.cookies.session
 		if (!token) {

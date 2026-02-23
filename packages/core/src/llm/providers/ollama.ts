@@ -137,7 +137,9 @@ export class OllamaProvider implements LLMProvider {
 			yield {
 				content: part.message.content,
 				done: part.done,
-				...(part.done && accumulatedToolCalls.length > 0 ? { toolCalls: accumulatedToolCalls } : {}),
+				...(part.done && accumulatedToolCalls.length > 0
+					? { toolCalls: accumulatedToolCalls }
+					: {}),
 			}
 		}
 	}

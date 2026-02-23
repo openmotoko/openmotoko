@@ -7,7 +7,7 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string }> =
 }
 
 export function StatusBadge({ status }: { status: string }) {
-	const style = STATUS_STYLES[status] ?? STATUS_STYLES.pending!
+	const style = STATUS_STYLES[status] ?? STATUS_STYLES.pending
 
 	return (
 		<span

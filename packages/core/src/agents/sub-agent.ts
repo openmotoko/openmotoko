@@ -37,7 +37,7 @@ export class SubAgent {
 		eventBus.emit('agent:spawned', {
 			type: 'agent:spawned',
 			agentId: this.instance.id,
-			parentId: this.instance.parentId!,
+			parentId: this.instance.parentId ?? '',
 			name: this.instance.name,
 			model: this.instance.model,
 		})
@@ -103,7 +103,7 @@ export class SubAgent {
 		eventBus.emit(eventType, {
 			type: eventType,
 			agentId: this.instance.id,
-			parentId: this.instance.parentId!,
+			parentId: this.instance.parentId ?? '',
 			name: this.instance.name,
 			output: this.instance.output ?? '',
 			durationMs,

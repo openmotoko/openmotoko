@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
 import { timingSafeEqual } from 'node:crypto'
+import { describe, expect, it } from 'vitest'
 
 function safeCompareSecrets(a: string, b: string): boolean {
 	const bufA = Buffer.from(a, 'utf-8')

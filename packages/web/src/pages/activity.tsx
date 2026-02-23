@@ -113,7 +113,7 @@ export function ActivityPage() {
 				<ActivityFeed
 					items={
 						activityFilters.type
-							? uniqueItems.filter((i) => i.type.startsWith(activityFilters.type!))
+							? uniqueItems.filter((i) => i.type.startsWith(activityFilters.type as string))
 							: uniqueItems
 					}
 					isLoading={isLoading}

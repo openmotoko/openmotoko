@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
-import { validate } from './validate.js'
+import type { FastifyReply, FastifyRequest } from 'fastify'
+import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
+import { validate } from './validate.js'
 
 function createMockRequest(overrides: Record<string, unknown> = {}) {
 	return {
@@ -8,11 +9,18 @@ function createMockRequest(overrides: Record<string, unknown> = {}) {
 		params: {},
 		query: {},
 		...overrides,
-	} as any
+	} as unknown as FastifyRequest
+}
+
+interface MockReply {
+	statusCode: number
+	sent: unknown
+	status(code: number): MockReply
+	send(data: unknown): MockReply
 }
 
 function createMockReply() {
-	const reply: any = {
+	const reply: MockReply = {
 		statusCode: 200,
 		sent: null,
 		status(code: number) {
@@ -24,7 +32,7 @@ function createMockReply() {
 			return reply
 		},
 	}
-	return reply
+	return reply as unknown as MockReply & FastifyReply
 }
 
 describe('validate middleware', () => {

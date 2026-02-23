@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { PairingManager } from './pairing.js'
 
 describe('PairingManager', () => {
@@ -63,7 +63,7 @@ describe('PairingManager', () => {
 			const req = pm.createRequest('ch1', 'telegram', 'sender1', 'Alice')
 			const approved = pm.approveByCode(req.code)
 			expect(approved).not.toBeNull()
-			expect(approved!.approved).toBe(true)
+			expect(approved?.approved).toBe(true)
 		})
 
 		it('returns null for invalid code', () => {
@@ -88,7 +88,7 @@ describe('PairingManager', () => {
 			const req = pm.createRequest('ch1', 'telegram', 'sender1', 'Alice')
 			const approved = pm.approveById(req.id)
 			expect(approved).not.toBeNull()
-			expect(approved!.approved).toBe(true)
+			expect(approved?.approved).toBe(true)
 		})
 
 		it('returns null for unknown ID', () => {

@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { timingSafeEqual } from 'node:crypto'
+import { beforeEach, describe, expect, it } from 'vitest'
 
 describe('Auth Security', () => {
 	describe('timing-safe comparison', () => {

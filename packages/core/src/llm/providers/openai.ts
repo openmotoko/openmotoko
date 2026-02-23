@@ -221,7 +221,8 @@ export class OpenAIProvider implements LLMProvider {
 							argsBuf: '',
 						})
 					}
-					const acc = toolCallAccumulators.get(tc.index)!
+					const acc = toolCallAccumulators.get(tc.index)
+					if (!acc) continue
 					if (tc.id) acc.id = tc.id
 					if (tc.function?.name) acc.name = tc.function.name
 					if (tc.function?.arguments) acc.argsBuf += tc.function.arguments

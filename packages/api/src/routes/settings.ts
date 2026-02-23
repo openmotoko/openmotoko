@@ -19,10 +19,11 @@ const ALLOWED_SETTINGS_KEYS = new Set([
 	'app.host',
 ])
 
-const updateSettingsSchema = z.record(z.string(), z.unknown()).refine(
-	(data) => Object.keys(data).every((key) => ALLOWED_SETTINGS_KEYS.has(key)),
-	{ message: 'Unknown setting key' },
-)
+const updateSettingsSchema = z
+	.record(z.string(), z.unknown())
+	.refine((data) => Object.keys(data).every((key) => ALLOWED_SETTINGS_KEYS.has(key)), {
+		message: 'Unknown setting key',
+	})
 
 export default async function settingsRoutes(fastify: FastifyInstance) {
 	fastify.get('/api/settings', async (_request, reply) => {

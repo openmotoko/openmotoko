@@ -103,7 +103,9 @@ export class RegistryClient {
 	}
 
 	async getSkillDetail(id: string): Promise<SkillDetail> {
-		const res = await fetch(`${this.config.registryUrl.replace('/index.json', '')}/api/skills/${id}`)
+		const res = await fetch(
+			`${this.config.registryUrl.replace('/index.json', '')}/api/skills/${id}`,
+		)
 		if (!res.ok) throw new Error(`Failed to fetch skill detail: ${res.status}`)
 		return (await res.json()) as SkillDetail
 	}

