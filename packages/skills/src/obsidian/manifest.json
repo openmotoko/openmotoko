@@ -1,0 +1,111 @@
+{
+	"id": "obsidian",
+	"name": "Obsidian",
+	"version": "0.1.3",
+	"description": "Read, create, search, and manage notes in an Obsidian vault with frontmatter and wiki-link support",
+	"author": "openmotoko",
+	"capabilities": {
+		"filesystem": {
+			"enabled": true,
+			"paths": []
+		},
+		"env": ["OBSIDIAN_VAULT_PATH"]
+	},
+	"tools": [
+		{
+			"name": "list_notes",
+			"description": "List all markdown notes in the vault or a specific folder",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"folder": {
+						"type": "string",
+						"description": "Subfolder path within the vault to list (default: vault root)"
+					}
+				}
+			}
+		},
+		{
+			"name": "read_note",
+			"description": "Read the full content of a note including parsed frontmatter",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Path to the note relative to the vault root (e.g., 'folder/note.md')"
+					}
+				},
+				"required": ["path"]
+			}
+		},
+		{
+			"name": "create_note",
+			"description": "Create a new note with optional YAML frontmatter",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Path for the new note relative to the vault root"
+					},
+					"content": {
+						"type": "string",
+						"description": "Markdown content of the note"
+					},
+					"frontmatter": {
+						"type": "object",
+						"description": "YAML frontmatter key-value pairs (e.g., tags, aliases)"
+					}
+				},
+				"required": ["path", "content"]
+			}
+		},
+		{
+			"name": "search_notes",
+			"description": "Search notes by content or title keyword",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"description": "Search query to match against note titles and content"
+					}
+				},
+				"required": ["query"]
+			}
+		},
+		{
+			"name": "update_note",
+			"description": "Update the content of an existing note",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Path to the note relative to the vault root"
+					},
+					"content": {
+						"type": "string",
+						"description": "New markdown content for the note"
+					}
+				},
+				"required": ["path", "content"]
+			}
+		},
+		{
+			"name": "get_backlinks",
+			"description": "Find all notes that link to a given note via wiki-links",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Path to the note to find backlinks for"
+					}
+				},
+				"required": ["path"]
+			}
+		}
+	]
+}

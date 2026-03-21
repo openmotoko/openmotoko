@@ -474,6 +474,109 @@ class ApiClient {
 	async getModels(): Promise<ModelsResponse> {
 		return this.request('/models')
 	}
+
+	// ─── Security Dashboard ──────────────────────────────────────────────────
+
+	async getSecurityDashboard(): Promise<SecurityDashboard> {
+		return this.request('/security/dashboard')
+	}
+
+	async getSecurityAudit(
+		params?: PaginationParams & { type?: string; skillId?: string; from?: number; to?: number },
+	): Promise<{ entries: AuditEntry[]; total: number }> {
+		const query = new URLSearchParams()
+		if (params?.limit) query.set('limit', String(params.limit))
+		if (params?.offset) query.set('offset', String(params.offset))
+		if (params?.type) query.set('type', params.type)
+		if (params?.skillId) query.set('skillId', params.skillId)
+		if (params?.from) query.set('from', String(params.from))
+		if (params?.to) query.set('to', String(params.to))
+		const qs = query.toString()
+		return this.request(`/security/audit${qs ? `?${qs}` : ''}`)
+	}
+
+	async getSecurityThreats(): Promise<{ threats: ThreatEntry[]; total: number }> {
+		return this.request('/security/threats')
+	}
+
+	async storeSecret(key: string, secret: string): Promise<{ success: boolean }> {
+		return this.request('/security/vault', {
+			method: 'POST',
+			body: JSON.stringify({ key, secret }),
+		})
+	}
+
+	async listSecrets(): Promise<{ secrets: VaultKeyInfo[] }> {
+		return this.request('/security/vault')
+	}
+
+	async deleteSecret(key: string): Promise<void> {
+		return this.request(`/security/vault/${encodeURIComponent(key)}`, { method: 'DELETE' })
+	}
+
+	async getSecurityPermissions(): Promise<{ grants: PermissionGrant[] }> {
+		return this.request('/security/permissions')
+	}
+
+	async revokeSkillPermissions(skillId: string): Promise<void> {
+		return this.request(`/security/permissions/${skillId}/revoke`, { method: 'POST' })
+	}
+
+	async getSecurityScore(): Promise<{ score: number; checks: SecurityCheck[] }> {
+		return this.request('/security/score')
+	}
+}
+
+// ─── Security Types ──────────────────────────────────────────────────────────
+
+export interface SecurityDashboard {
+	injectionBlocked24h: number
+	permissionViolations24h: number
+	firewallBlocks24h: number
+	securityScore: number
+	auditEvents24h: number
+	activeSessions: number
+}
+
+export interface AuditEntry {
+	id: string
+	prevHash: string
+	eventType: string
+	skillId: string | null
+	data: unknown
+	hash: string
+	createdAt: number
+}
+
+export interface ThreatEntry {
+	id: string
+	category: string
+	severity: 'low' | 'medium' | 'high' | 'critical'
+	source: string
+	details: string
+	blocked: boolean
+	createdAt: number
+}
+
+export interface VaultKeyInfo {
+	key: string
+	createdAt: number
+	rotatedAt: number | null
+}
+
+export interface PermissionGrant {
+	id: string
+	skillId: string
+	permissionType: string
+	scope: string
+	grantedAt: number
+	expiresAt: number | null
+}
+
+export interface SecurityCheck {
+	name: string
+	passed: boolean
+	description: string
 }
 
 export const api = new ApiClient()

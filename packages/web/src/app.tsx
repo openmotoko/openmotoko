@@ -6,6 +6,7 @@ import { ChatPage } from './pages/chat'
 import { CostsPage } from './pages/costs'
 import { OnboardPage } from './pages/onboard'
 import { SchedulerPage } from './pages/scheduler'
+import { SecurityPage } from './pages/security'
 import { SettingsPage } from './pages/settings'
 import { SkillsPage } from './pages/skills'
 
@@ -90,6 +91,10 @@ export const router = createBrowserRouter([
 			{
 				path: '/canvas/:id',
 				element: <CanvasPage />,
+			},
+			{
+				path: '/security',
+				element: <SecurityPage />,
 			},
 			{
 				path: '/settings',

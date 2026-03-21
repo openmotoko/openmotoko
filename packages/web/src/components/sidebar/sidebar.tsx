@@ -1,4 +1,13 @@
-import { Activity, Clock, DollarSign, Layers, MessageSquare, Puzzle, Settings } from 'lucide-react'
+import {
+	Activity,
+	Clock,
+	DollarSign,
+	Layers,
+	MessageSquare,
+	Puzzle,
+	Settings,
+	Shield,
+} from 'lucide-react'
 import { useStore } from '../../lib/store'
 import { GlitchText } from '../shared/glitch-text'
 import { ConversationList } from './conversation-list'
@@ -38,6 +47,7 @@ export function Sidebar() {
 				<NavItem to="/skills" label="Skills" icon={Puzzle} />
 				<NavItem to="/scheduler" label="Scheduler" icon={Clock} />
 				<NavItem to="/canvas" label="Canvas" icon={Layers} />
+				<NavItem to="/security" label="Security" icon={Shield} />
 				<NavItem to="/settings" label="Settings" icon={Settings} />
 			</div>
 

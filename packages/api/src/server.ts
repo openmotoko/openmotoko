@@ -20,6 +20,7 @@ import modelRoutes from './routes/models.js'
 import openaiCompatRoutes from './routes/openai-compat.js'
 import registryRoutes from './routes/registry.js'
 import schedulerRoutes from './routes/scheduler.js'
+import securityRoutes from './routes/security.js'
 import settingsRoutes from './routes/settings.js'
 import skillRoutes from './routes/skills.js'
 import tailscaleRoutes from './routes/tailscale.js'
@@ -69,6 +70,7 @@ export async function createServer() {
 		await scope.register(channelPluginRoutes)
 		await scope.register(modelRoutes)
 		await scope.register(openaiCompatRoutes)
+		await scope.register(securityRoutes)
 	})
 
 	watchConfig(undefined, () => {

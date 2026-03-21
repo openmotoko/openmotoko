@@ -1,0 +1,94 @@
+{
+	"id": "spotify",
+	"name": "Spotify",
+	"version": "0.1.3",
+	"description": "Control Spotify playback, search tracks, and manage playlists",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true,
+		"env": ["SPOTIFY_CLIENT_ID", "SPOTIFY_CLIENT_SECRET", "SPOTIFY_REFRESH_TOKEN"]
+	},
+	"tools": [
+		{
+			"name": "now_playing",
+			"description": "Get the currently playing track",
+			"inputSchema": {
+				"type": "object",
+				"properties": {}
+			}
+		},
+		{
+			"name": "play",
+			"description": "Start or resume playback, optionally with a specific track or context URI",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"uri": {
+						"type": "string",
+						"description": "Spotify URI to play (e.g., spotify:track:xxx or spotify:album:xxx)"
+					}
+				}
+			}
+		},
+		{
+			"name": "pause",
+			"description": "Pause the current playback",
+			"inputSchema": {
+				"type": "object",
+				"properties": {}
+			}
+		},
+		{
+			"name": "skip",
+			"description": "Skip to the next track",
+			"inputSchema": {
+				"type": "object",
+				"properties": {}
+			}
+		},
+		{
+			"name": "search_tracks",
+			"description": "Search for tracks on Spotify",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"description": "Search query string"
+					},
+					"limit": {
+						"type": "number",
+						"description": "Maximum number of results (default 10, max 50)"
+					}
+				},
+				"required": ["query"]
+			}
+		},
+		{
+			"name": "get_playlists",
+			"description": "Get the current user's playlists",
+			"inputSchema": {
+				"type": "object",
+				"properties": {}
+			}
+		},
+		{
+			"name": "add_to_playlist",
+			"description": "Add a track to a playlist",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"playlistId": {
+						"type": "string",
+						"description": "Spotify playlist ID"
+					},
+					"trackUri": {
+						"type": "string",
+						"description": "Spotify track URI to add (e.g., spotify:track:xxx)"
+					}
+				},
+				"required": ["playlistId", "trackUri"]
+			}
+		}
+	]
+}

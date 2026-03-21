@@ -1,0 +1,104 @@
+{
+	"id": "skill-creator",
+	"name": "Skill Creator",
+	"version": "0.1.3",
+	"description": "Meta-skill that creates new skills from natural language descriptions",
+	"author": "openmotoko",
+	"capabilities": {
+		"filesystem": {
+			"enabled": true,
+			"paths": ["~/.openmotoko/skills"]
+		},
+		"shell": false
+	},
+	"tools": [
+		{
+			"name": "create_skill",
+			"description": "Generate a new skill from a natural language description, producing manifest.json and index.ts",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"description": "Human-readable name for the skill"
+					},
+					"description": {
+						"type": "string",
+						"description": "Natural language description of what the skill should do"
+					},
+					"tools": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"name": {
+									"type": "string",
+									"description": "Tool function name"
+								},
+								"description": {
+									"type": "string",
+									"description": "What this tool does"
+								},
+								"parameters": {
+									"type": "object",
+									"description": "Parameter definitions with name, type, and description"
+								}
+							},
+							"required": ["name", "description"]
+						},
+						"description": "Array of tool definitions for the skill"
+					},
+					"capabilities": {
+						"type": "object",
+						"properties": {
+							"network": {
+								"type": "boolean"
+							},
+							"filesystem": {
+								"type": "object",
+								"properties": {
+									"enabled": { "type": "boolean" },
+									"paths": {
+										"type": "array",
+										"items": { "type": "string" }
+									}
+								}
+							},
+							"shell": {
+								"type": "boolean"
+							},
+							"env": {
+								"type": "array",
+								"items": { "type": "string" }
+							}
+						},
+						"description": "Capability requirements for the skill"
+					}
+				},
+				"required": ["name", "description", "tools"]
+			}
+		},
+		{
+			"name": "list_templates",
+			"description": "List available skill templates that can be used as starting points",
+			"inputSchema": {
+				"type": "object",
+				"properties": {}
+			}
+		},
+		{
+			"name": "validate_skill",
+			"description": "Validate a skill directory by checking its manifest and performing basic code quality checks",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Path to the skill directory to validate"
+					}
+				},
+				"required": ["path"]
+			}
+		}
+	]
+}

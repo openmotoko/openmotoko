@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { ActivityItem, Conversation, Message } from './api'
+import type { ActivityItem, Conversation, Message, SecurityDashboard } from './api'
 
 interface StreamingToolCall {
 	id: string
@@ -33,6 +33,9 @@ interface AppState {
 
 	wsConnected: boolean
 	costToday: number
+
+	securityDashboard: SecurityDashboard | null
+	setSecurityDashboard: (dashboard: SecurityDashboard) => void
 
 	setConversations: (conversations: Conversation[]) => void
 	setActiveConversation: (id: string | null) => void
@@ -83,6 +86,9 @@ export const useStore = create<AppState>((set) => ({
 
 	wsConnected: false,
 	costToday: 0,
+
+	securityDashboard: null,
+	setSecurityDashboard: (dashboard) => set({ securityDashboard: dashboard }),
 
 	setConversations: (conversations) => set({ conversations }),
 
