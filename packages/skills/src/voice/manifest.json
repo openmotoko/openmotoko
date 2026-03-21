@@ -1,0 +1,53 @@
+{
+	"id": "voice",
+	"name": "Voice",
+	"version": "0.1.3",
+	"description": "Text-to-speech via ElevenLabs and speech-to-text via OpenAI Whisper",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true,
+		"filesystem": {
+			"enabled": true,
+			"paths": []
+		},
+		"env": ["ELEVENLABS_API_KEY", "OPENAI_API_KEY"]
+	},
+	"tools": [
+		{
+			"name": "text_to_speech",
+			"description": "Convert text to speech audio using ElevenLabs and save to a file",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"text": {
+						"type": "string",
+						"description": "Text to convert to speech"
+					},
+					"voice": {
+						"type": "string",
+						"description": "ElevenLabs voice ID (default: '21m00Tcm4TlvDq8ikWAM' - Rachel)"
+					},
+					"speed": {
+						"type": "number",
+						"description": "Speech speed multiplier (0.5 to 2.0, default 1.0)"
+					}
+				},
+				"required": ["text"]
+			}
+		},
+		{
+			"name": "transcribe_audio",
+			"description": "Transcribe an audio file to text using OpenAI Whisper",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"audioPath": {
+						"type": "string",
+						"description": "Absolute path to the audio file to transcribe"
+					}
+				},
+				"required": ["audioPath"]
+			}
+		}
+	]
+}

@@ -3,11 +3,13 @@ import {
 	activity,
 	conversations,
 	costLog,
+	detectInjection,
 	eventBus,
 	getAgentRuntime,
 	getDb,
 	messages,
 	nanoid,
+	verifyPromptIntegrity,
 } from '@openmotoko/core'
 import { eq } from 'drizzle-orm'
 import type { FastifyInstance } from 'fastify'
@@ -82,6 +84,30 @@ export default async function messageRoutes(fastify: FastifyInstance) {
 					error: 'Conversation not found',
 					code: 'NOT_FOUND',
 				})
+			}
+
+			// ─── Security: Prompt injection detection ────────────────────────
+			const injectionResult = detectInjection(content)
+			if (injectionResult.blocked) {
+				return reply.status(403).send({
+					error: 'Message blocked: potential prompt injection detected',
+					code: 'INJECTION_BLOCKED',
+					threats: injectionResult.threats.map((t) => ({
+						category: t.category,
+						severity: t.severity,
+					})),
+				})
+			}
+
+			// ─── Security: System prompt integrity verification ───────────
+			if (conversation.systemPrompt) {
+				const integrityResult = verifyPromptIntegrity(conversationId, conversation.systemPrompt)
+				if (integrityResult && !integrityResult.valid) {
+					return reply.status(500).send({
+						error: 'System prompt integrity violation detected',
+						code: 'PROMPT_INTEGRITY_VIOLATION',
+					})
+				}
 			}
 
 			const userMessageId = nanoid()

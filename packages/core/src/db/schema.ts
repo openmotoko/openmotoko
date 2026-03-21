@@ -149,3 +149,90 @@ export type Agent = typeof agents.$inferSelect
 export type NewAgent = typeof agents.$inferInsert
 export type ChannelAllowlistEntry = typeof channelAllowlist.$inferSelect
 export type NewChannelAllowlistEntry = typeof channelAllowlist.$inferInsert
+
+// ─── Security: Secrets Vault ─────────────────────────────────────────────────
+
+export const secretsVault = sqliteTable('secrets_vault', {
+	id: text()
+		.primaryKey()
+		.$defaultFn(() => nanoid()),
+	key: text().notNull().unique(),
+	encryptedValue: text().notNull(),
+	iv: text().notNull(),
+	authTag: text().notNull(),
+	salt: text().notNull(),
+	createdAt: integer()
+		.notNull()
+		.$defaultFn(() => Date.now()),
+	rotatedAt: integer(),
+})
+
+// ─── Security: Cryptographic Audit Chain ─────────────────────────────────────
+
+export const auditChain = sqliteTable('audit_chain', {
+	id: text()
+		.primaryKey()
+		.$defaultFn(() => nanoid()),
+	prevHash: text().notNull(),
+	eventType: text().notNull(),
+	skillId: text(),
+	data: text().notNull(),
+	hash: text().notNull(),
+	createdAt: integer()
+		.notNull()
+		.$defaultFn(() => Date.now()),
+})
+
+// ─── Security: Permission Grants ─────────────────────────────────────────────
+
+export const permissionGrants = sqliteTable('permission_grants', {
+	id: text()
+		.primaryKey()
+		.$defaultFn(() => nanoid()),
+	skillId: text().notNull(),
+	permissionType: text().notNull(),
+	scope: text().notNull(),
+	grantedAt: integer()
+		.notNull()
+		.$defaultFn(() => Date.now()),
+	expiresAt: integer(),
+})
+
+// ─── Security: Threat Log ────────────────────────────────────────────────────
+
+export const threatLog = sqliteTable('threat_log', {
+	id: text()
+		.primaryKey()
+		.$defaultFn(() => nanoid()),
+	category: text().notNull(),
+	severity: text().notNull(),
+	source: text().notNull(),
+	details: text().notNull(),
+	blocked: integer().notNull().default(1),
+	createdAt: integer()
+		.notNull()
+		.$defaultFn(() => Date.now()),
+})
+
+// ─── Security: Prompt Integrity ──────────────────────────────────────────────
+
+export const promptIntegrity = sqliteTable('prompt_integrity', {
+	conversationId: text().primaryKey(),
+	promptHash: text().notNull(),
+	createdAt: integer()
+		.notNull()
+		.$defaultFn(() => Date.now()),
+})
+
+// ─── Security types ──────────────────────────────────────────────────────────
+
+export type SecretVaultEntry = typeof secretsVault.$inferSelect
+export type NewSecretVaultEntry = typeof secretsVault.$inferInsert
+export type AuditChainEntry = typeof auditChain.$inferSelect
+export type NewAuditChainEntry = typeof auditChain.$inferInsert
+export type PermissionGrantEntry = typeof permissionGrants.$inferSelect
+export type NewPermissionGrantEntry = typeof permissionGrants.$inferInsert
+export type ThreatLogEntry = typeof threatLog.$inferSelect
+export type NewThreatLogEntry = typeof threatLog.$inferInsert
+export type PromptIntegrityEntry = typeof promptIntegrity.$inferSelect
+export type NewPromptIntegrityEntry = typeof promptIntegrity.$inferInsert

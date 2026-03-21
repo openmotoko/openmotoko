@@ -3,36 +3,81 @@
 > _"The Net is vast and infinite."_
 > Motoko Kusanagi
 
-[Documentation](https://openmotoko.ai/docs/) | [Quick Start](#quick-start) | [Features](#features) | [Architecture](#architecture) | [Skills](#skills) | [Channels](#channels) | [Deployment](#deployment) | [Writing a Skill](#writing-a-skill) | [API](#api) | [Environment Variables](#environment-variables)
+[Documentation](https://openmotoko.ai/docs/) | [Quick Start](#quick-start) | [Features](#features) | [Security](#security-architecture) | [Architecture](#architecture) | [Skills](#skills) | [Channels](#channels) | [Deployment](#deployment) | [Writing a Skill](#writing-a-skill) | [API](#api) | [Environment Variables](#environment-variables)
 
 ---
 
-OpenMotoko is a self-hosted AI agent that lives on your machine or server. It can run shell commands, read and write files, browse the web, send emails, manage your calendar, interact with GitHub, and search the internet. You talk to it through Telegram, WhatsApp, Discord, Slack, Signal, iMessage, Google Chat, Microsoft Teams, or the built-in web chat.
+OpenMotoko is a **security-first**, self-hosted AI agent that lives on your machine or server. It can run shell commands, read and write files, browse the web, send emails, manage your calendar, interact with GitHub, and search the internet. You talk to it through Telegram, WhatsApp, Discord, Slack, Signal, iMessage, Google Chat, Microsoft Teams, or the built-in web chat.
 
-It ships with a full UI: live activity feed, visual permission controls, cost tracking, a skill marketplace, and a Canvas workspace for artifacts. No YAML files. No terminal-only setup.
+Unlike other AI agent platforms, OpenMotoko is **secure by architecture, not by prompt**. Every skill runs in a zero-trust sandbox, every action is cryptographically audited, and prompt injection attacks are detected and blocked before they reach the LLM.
+
+It ships with a full UI: live activity feed, security dashboard, visual permission controls, cost tracking, a skill marketplace, and a Canvas workspace for artifacts. No YAML files. No terminal-only setup.
 
 Local-first. MIT licensed.
 
 **[openmotoko.ai](https://openmotoko.ai)** | **[Full Documentation](https://openmotoko.ai/docs/)**
 
+## Why OpenMotoko?
+
+| Feature | OpenMotoko | OpenClaw |
+|---------|-----------|----------|
+| Prompt injection detection | Built-in ML-based engine | None (vulnerable) |
+| Skill code signing | Ed25519 signatures required | No verification (341 malicious skills found) |
+| Secrets management | AES-256-GCM encrypted vault | Plaintext env vars |
+| Network firewall | Per-skill domain allowlists | No network isolation |
+| Audit trail | SHA-256 cryptographic hash chain | Basic logging |
+| System prompt protection | Immutable with integrity verification | Writable SOUL.md (persistent injection vector) |
+| Permission framework | Zero-trust capability-based | Ambient authority |
+| E2E encryption | X25519 + AES-256-GCM | None |
+| Security dashboard | Real-time threat monitoring | None |
+| Self-improving skills | With security gates | Unrestricted code generation |
+| Supply chain security | Signed + scanned + sandboxed | VirusTotal only (added after breach) |
+
+## One-Line Install
+
+```bash
+curl -fsSL https://openmotoko.ai/install | bash
+```
+
 ## Features
 
-- **9 built-in skills** : Shell, filesystem, web fetch, web search, browser control, calendar, email, GitHub, timer/cron
+### Agent Capabilities
+
+- **21 built-in skills** : Shell, filesystem, web fetch, web search, browser control (with form filling & data extraction), calendar, email, GitHub, timer/cron, Gmail, Spotify, Todoist, Obsidian, home automation, voice I/O, skill creator, code runner, image gen, PDF reader, memory, summarizer, translator
 - **14 messaging channels** : Telegram, WhatsApp, Discord, Slack, Signal, iMessage, Google Chat, Microsoft Teams, Matrix, Feishu/Lark, LINE, IRC, Mattermost, plus WebChat built in
 - **Multi-LLM support** : Anthropic Claude (Haiku 4.5 / Sonnet 4.6 / Opus 4.6), OpenAI, Google Gemini, Ollama for local models, or any OpenAI-compatible endpoint
 - **Multi-agent orchestration** : The primary agent can spawn sub-agents for parallel specialized tasks
-- **Proactive agent** : Pulse scheduler, intent system with approve/edit/reject, autonomy dial with trust levels, immutable action log with HMAC tamper detection
+- **Self-improving skills** : The agent can create new skills on-the-fly, learn from errors, and optimize its own capabilities — with mandatory security review on all generated code
+- **Hot-reload** : Skills reload automatically when files change, no restart needed
+- **Proactive agent** : Pulse scheduler, intent system with approve/edit/reject, autonomy dial with trust levels
 - **Layered memory** : Working memory (sliding window + summary), semantic memory (facts/preferences), episodic memory (interaction history), procedural memory (learned skills)
 - **RAG pipeline** : Hybrid vector + BM25 search, cross-encoder reranking, semantic chunking
 - **MCP support** : Both client (connect to external MCP servers) and server (expose tools via MCP)
+- **Voice I/O** : Speech-to-text via Whisper, text-to-speech via ElevenLabs or system TTS
+- **Webhooks** : Inbound webhook triggers with HMAC-SHA256 verification for GitHub, Stripe, IFTTT, and more
+
+### Security Architecture
+
+- **Prompt injection detection** : ML-based pattern analysis blocks role impersonation, encoding attacks, and delimiter injection before messages reach the LLM
+- **Zero-trust permissions** : Capability-based access control — every skill action requires explicit grant with path globs, domain allowlists, and command restrictions
+- **Encrypted secrets vault** : AES-256-GCM encryption at rest for all API keys and credentials, with PBKDF2 key derivation and automatic rotation reminders
+- **Network firewall** : Per-skill network policies with domain allowlists, private IP blocking (SSRF prevention), DNS rebinding protection, and rate limiting
+- **Cryptographic audit chain** : SHA-256 hash chain on all security events — tamper-evident, exportable for compliance
+- **E2E encryption** : X25519 key exchange + AES-256-GCM for channel messages, encrypted at rest
+- **Skill code signing** : Ed25519 signatures on all skill packages — unsigned or tampered skills are rejected
+- **Immutable system prompts** : SHA-256 integrity verification prevents prompt modification attacks (unlike OpenClaw's writable SOUL.md)
+- **Security dashboard** : Real-time threat monitoring, audit trail viewer, permission management, and security score
+- **Docker sandbox** : Run untrusted commands in isolated containers
+
+### UI & Platform
+
 - **Real-time UI** : Live activity feed, WebSocket events, cost dashboard, budget controls
-- **Skill marketplace** : Browse, install, rate community skills from the registry
+- **Security dashboard** : Threat monitoring, audit trail, permission grants, secrets vault management
+- **Skill marketplace** : Browse, install, rate community skills — all cryptographically signed
 - **Canvas / A2UI** : Agent-generated artifacts (code, markdown, HTML, Mermaid diagrams) rendered visually
 - **Desktop app** : Tauri 2.0 for macOS, Windows, Linux with system tray, global shortcuts, auto-update
 - **PWA** : Install as a progressive web app on any device
 - **Tailscale integration** : Expose your instance securely via `tailscale serve`
-- **Docker sandbox** : Run untrusted commands in isolated containers
-- **Security hardening** : Session expiry, environment sandboxing, path validation, command blocking, rate limiting, CSP headers, XSS sanitization, sensitive data redaction
 
 ## Quick Start
 

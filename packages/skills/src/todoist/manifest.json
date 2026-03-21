@@ -1,0 +1,108 @@
+{
+	"id": "todoist",
+	"name": "Todoist",
+	"version": "0.1.3",
+	"description": "Manage tasks and projects in Todoist via the REST API",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true,
+		"env": ["TODOIST_API_KEY"]
+	},
+	"tools": [
+		{
+			"name": "list_tasks",
+			"description": "List active tasks, optionally filtered by project or filter expression",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"project_id": {
+						"type": "string",
+						"description": "Filter tasks by project ID"
+					},
+					"filter": {
+						"type": "string",
+						"description": "Todoist filter expression (e.g., 'today', 'overdue', 'priority 1')"
+					}
+				}
+			}
+		},
+		{
+			"name": "create_task",
+			"description": "Create a new task in Todoist",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"content": {
+						"type": "string",
+						"description": "Task title/content"
+					},
+					"description": {
+						"type": "string",
+						"description": "Detailed task description"
+					},
+					"due_date": {
+						"type": "string",
+						"description": "Due date in YYYY-MM-DD format or natural language (e.g., 'tomorrow', 'next Monday')"
+					},
+					"priority": {
+						"type": "number",
+						"description": "Task priority from 1 (normal) to 4 (urgent)"
+					},
+					"project_id": {
+						"type": "string",
+						"description": "Project ID to add the task to"
+					}
+				},
+				"required": ["content"]
+			}
+		},
+		{
+			"name": "complete_task",
+			"description": "Mark a task as completed",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"task_id": {
+						"type": "string",
+						"description": "The task ID to complete"
+					}
+				},
+				"required": ["task_id"]
+			}
+		},
+		{
+			"name": "update_task",
+			"description": "Update an existing task",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"task_id": {
+						"type": "string",
+						"description": "The task ID to update"
+					},
+					"content": {
+						"type": "string",
+						"description": "New task title/content"
+					},
+					"due_date": {
+						"type": "string",
+						"description": "New due date in YYYY-MM-DD format or natural language"
+					},
+					"priority": {
+						"type": "number",
+						"description": "New priority from 1 (normal) to 4 (urgent)"
+					}
+				},
+				"required": ["task_id"]
+			}
+		},
+		{
+			"name": "list_projects",
+			"description": "List all projects in Todoist",
+			"inputSchema": {
+				"type": "object",
+				"properties": {}
+			}
+		}
+	]
+}

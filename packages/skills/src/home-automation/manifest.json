@@ -1,0 +1,105 @@
+{
+	"id": "home-automation",
+	"name": "Home Automation",
+	"version": "0.1.3",
+	"description": "Control smart home devices, scenes, and lights via Home Assistant",
+	"author": "openmotoko",
+	"capabilities": {
+		"network": true,
+		"env": ["HOME_ASSISTANT_URL", "HOME_ASSISTANT_TOKEN"]
+	},
+	"tools": [
+		{
+			"name": "list_devices",
+			"description": "List all smart home devices and their current states",
+			"inputSchema": {
+				"type": "object",
+				"properties": {}
+			}
+		},
+		{
+			"name": "control_device",
+			"description": "Send a control action to a device (e.g., turn_on, turn_off, toggle)",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"device_id": {
+						"type": "string",
+						"description": "Entity ID of the device (e.g., 'switch.living_room')"
+					},
+					"action": {
+						"type": "string",
+						"description": "Action to perform (e.g., 'turn_on', 'turn_off', 'toggle')"
+					},
+					"params": {
+						"type": "object",
+						"description": "Additional parameters for the action (e.g., brightness, color)"
+					}
+				},
+				"required": ["device_id", "action"]
+			}
+		},
+		{
+			"name": "get_device_state",
+			"description": "Get the current state and attributes of a specific device",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"device_id": {
+						"type": "string",
+						"description": "Entity ID of the device"
+					}
+				},
+				"required": ["device_id"]
+			}
+		},
+		{
+			"name": "list_scenes",
+			"description": "List all available scenes",
+			"inputSchema": {
+				"type": "object",
+				"properties": {}
+			}
+		},
+		{
+			"name": "activate_scene",
+			"description": "Activate a Home Assistant scene",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"scene_id": {
+						"type": "string",
+						"description": "Entity ID of the scene (e.g., 'scene.movie_night')"
+					}
+				},
+				"required": ["scene_id"]
+			}
+		},
+		{
+			"name": "set_light",
+			"description": "Control a light with brightness, color, and on/off state",
+			"inputSchema": {
+				"type": "object",
+				"properties": {
+					"device_id": {
+						"type": "string",
+						"description": "Entity ID of the light (e.g., 'light.bedroom')"
+					},
+					"brightness": {
+						"type": "number",
+						"description": "Brightness level from 0 to 255"
+					},
+					"color": {
+						"type": "string",
+						"description": "Color as hex string (e.g., '#FF0000') or color name"
+					},
+					"on": {
+						"type": "boolean",
+						"description": "Turn the light on (true) or off (false)"
+					}
+				},
+				"required": ["device_id"]
+			}
+		}
+	]
+}

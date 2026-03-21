@@ -8,11 +8,14 @@ const validManifest: SkillManifest = {
 	version: '1.0.0',
 	description: 'test skill',
 	author: 'tester',
+	trustLevel: 'unsigned',
 	capabilities: {
 		network: false,
-		filesystem: { enabled: false, paths: [] },
+		filesystem: { enabled: false, paths: [], readOnly: false },
 		shell: false,
 		env: [],
+		browser: false,
+		database: false,
 	},
 	tools: [
 		{

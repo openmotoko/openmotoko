@@ -9,11 +9,14 @@ const manifest: SkillManifest = {
 	version: '1.0.0',
 	description: 'simple calculator',
 	author: 'test',
+	trustLevel: 'unsigned',
 	capabilities: {
 		network: false,
-		filesystem: { enabled: false, paths: [] },
+		filesystem: { enabled: false, paths: [], readOnly: false },
 		shell: false,
 		env: [],
+		browser: false,
+		database: false,
 	},
 	tools: [
 		{ name: 'add', description: 'Add two numbers', inputSchema: { type: 'object' } },
